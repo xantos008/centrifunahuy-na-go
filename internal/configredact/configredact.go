@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 // Package configredact walks an effective Centrifugo configuration via
 // reflection and produces a redacted node tree. It is the one place that
 // decides which config values may be shown.
@@ -29,7 +31,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 )
 
 // Masking policy — the single place to tune how much of a value is revealed.

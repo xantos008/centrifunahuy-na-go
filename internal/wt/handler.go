@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package wt
 
 import (
@@ -7,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/logging"
+	"github.com/xantos008/centrifunahuy-na-go/internal/logging"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/centrifugal/protocol"

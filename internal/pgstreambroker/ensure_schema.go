@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package pgstreambroker
 
 import (
@@ -5,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/centrifugal/centrifugo/v6/internal/pgschema"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgschema"
 )
 
 // reconcileShardLock ensures the shard_lock table (for both variants) has

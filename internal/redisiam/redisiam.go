@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 // Package redisiam provides dynamic Redis credentials for cloud IAM authentication
 // (Amazon ElastiCache, Google Cloud Memorystore and Azure Managed Redis).
 package redisiam
@@ -13,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"

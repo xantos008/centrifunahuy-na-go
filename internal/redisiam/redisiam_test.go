@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package redisiam
 
 import (
@@ -7,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"

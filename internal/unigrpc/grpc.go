@@ -1,10 +1,12 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package unigrpc
 
 import (
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/logging"
-	"github.com/centrifugal/centrifugo/v6/internal/unigrpc/unistream"
+	"github.com/xantos008/centrifunahuy-na-go/internal/logging"
+	"github.com/xantos008/centrifunahuy-na-go/internal/unigrpc/unistream"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/centrifugal/protocol"

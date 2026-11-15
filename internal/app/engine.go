@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package app
 
 import (
@@ -5,14 +7,14 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/confighelpers"
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
-	"github.com/centrifugal/centrifugo/v6/internal/controllers"
-	"github.com/centrifugal/centrifugo/v6/internal/natsbroker"
-	"github.com/centrifugal/centrifugo/v6/internal/pgmapbroker"
-	"github.com/centrifugal/centrifugo/v6/internal/pgstreambroker"
-	"github.com/centrifugal/centrifugo/v6/internal/redisnatsbroker"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/confighelpers"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/controllers"
+	"github.com/xantos008/centrifunahuy-na-go/internal/natsbroker"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgmapbroker"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgstreambroker"
+	"github.com/xantos008/centrifunahuy-na-go/internal/redisnatsbroker"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/rs/zerolog/log"

@@ -1,10 +1,12 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package redisnatsbroker
 
 import (
 	"context"
 	"errors"
 
-	"github.com/centrifugal/centrifugo/v6/internal/natsbroker"
+	"github.com/xantos008/centrifunahuy-na-go/internal/natsbroker"
 
 	"github.com/centrifugal/centrifuge"
 )

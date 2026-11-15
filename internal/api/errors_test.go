@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package api
 
 import (
@@ -6,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
-	. "github.com/centrifugal/centrifugo/v6/internal/apiproto"
-	"github.com/centrifugal/centrifugo/v6/internal/config"
+	. "github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/stretchr/testify/require"

@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package pgoutbox
 
 import (
@@ -7,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/pgschema"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgschema"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"

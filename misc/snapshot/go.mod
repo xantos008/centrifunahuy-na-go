@@ -1,11 +1,11 @@
-module github.com/centrifugal/centrifugo/v6/misc/snapshot
+module github.com/xantos008/centrifunahuy-na-go/misc/snapshot
 
 go 1.27.0
 
-replace github.com/centrifugal/centrifugo/v6 => ../../
+replace github.com/xantos008/centrifunahuy-na-go => ../../
 
 require (
-	github.com/centrifugal/centrifugo/v6 v6.0.0-00010101000000-000000000000
+	github.com/xantos008/centrifunahuy-na-go v0.0.0-00010101000000-000000000000
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/stretchr/testify v1.12.1

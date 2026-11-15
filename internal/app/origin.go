@@ -1,11 +1,13 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package app
 
 import (
 	"net/http"
 	"sync"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/origin"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/origin"
 
 	"github.com/rs/zerolog/log"
 )

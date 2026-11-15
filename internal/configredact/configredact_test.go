@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package configredact
 
 import (
@@ -6,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 )
 
 func TestMaskSecret(t *testing.T) {

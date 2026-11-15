@@ -1,9 +1,11 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package tools
 
 import (
 	"net/http"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
 	"github.com/centrifugal/centrifuge"
 )

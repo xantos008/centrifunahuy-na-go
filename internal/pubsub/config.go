@@ -1,9 +1,11 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package pubsub
 
 import (
 	"fmt"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 )
 
 // Config configures PubSub creation.

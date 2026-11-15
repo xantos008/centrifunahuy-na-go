@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package jwtverify
 
 import (
@@ -14,10 +16,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/jwks"
-	"github.com/centrifugal/centrifugo/v6/internal/subsource"
-	"github.com/centrifugal/centrifugo/v6/internal/tools"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/jwks"
+	"github.com/xantos008/centrifunahuy-na-go/internal/subsource"
+	"github.com/xantos008/centrifunahuy-na-go/internal/tools"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/cristalhq/jwt/v5"

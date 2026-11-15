@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package main
 
 import (
@@ -12,7 +14,7 @@ import (
 	"time"
 	"unicode"
 
-	_ "github.com/centrifugal/centrifugo/v6/internal/proxyproto" // registers proxy proto types.
+	_ "github.com/xantos008/centrifunahuy-na-go/internal/proxyproto" // registers proxy proto types.
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package config
 
 import (
@@ -6,7 +8,7 @@ import (
 	"sync/atomic"
 	"unicode"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 )
 
 // Container wraps configuration providing sync access, reload and compilation of required parts.

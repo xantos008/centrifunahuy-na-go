@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package cli
 
 import (
@@ -8,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/tools"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/tools"
 
 	"github.com/pelletier/go-toml/v2"
 	"github.com/spf13/cobra"

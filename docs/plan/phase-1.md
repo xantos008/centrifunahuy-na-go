@@ -64,8 +64,8 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 | `Dockerfile` | keep; binary name via 1.5 | |
 
 ### 1.4 Module path rename
-- `go.mod`: `module github.com/centrifugal/centrifugo/v6` → `module github.com/xantos008/centrifunahuy-na-go`.
-- Rewrite imports with `gofmt -r` / `go mod edit` plus a scripted import rewrite. Update `go_package` options in `internal/apiproto/*.proto`, `internal/proxyproto/*.proto` and `internal/unigrpc/unistream/*.proto` and in their generated `*.pb.go`. Then run upstream `misc/scripts/generate.sh` and check that regeneration produces **no diff**; any diff is a pin problem to fix first.
+- `go.mod`: `module github.com/centrifugal/centrifugo/v6` → `module github.com/xantos008/centrifunahuy-na-go`. This is the repository address; the product, binary and every user-visible name is `cedrazeka` (step 1.5 sets the binary name explicitly, since Go would default to `centrifunahuy-na-go`).
+- Rewrite imports with `gofmt -r` / `go mod edit` plus a scripted import rewrite. Update `go_package` options in `internal/apiproto/*.proto`, `internal/proxyproto/*.proto` and `internal/unigrpc/unistream/*.proto` and in their generated `*.pb.go`. Result (2026-11-15): every `go_package` is relative (`./;apiproto` etc.), so neither `.proto` nor `.pb.go` contains the module path, and regeneration is **not needed** for the rename. Regenerating with upstream `generate.sh` needs protoc v7.34.0 plus 5 Go plugins installed globally; this is deferred until a `.proto` actually changes, and the tools will then be pinned project-locally.
 - One mechanical commit. Provenance §3 records it as "module path, all files".
 - Tests: build plus the unit test set equals the baseline.
 

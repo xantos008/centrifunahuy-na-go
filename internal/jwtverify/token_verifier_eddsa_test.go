@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package jwtverify
 
 import (
@@ -7,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 
 	"github.com/cristalhq/jwt/v5"
 	"github.com/stretchr/testify/require"

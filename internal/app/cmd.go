@@ -1,8 +1,10 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package app
 
 import (
-	"github.com/centrifugal/centrifugo/v6/internal/config"
 	"github.com/spf13/cobra"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 )
 
 // Centrifugo returns the root command running the server with opts.

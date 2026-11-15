@@ -1,10 +1,12 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package proxy
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/centrifugal/centrifugo/v6/internal/proxyproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/proxyproto"
 )
 
 // HTTPRPCProxy ...

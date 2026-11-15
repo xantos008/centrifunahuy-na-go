@@ -1,9 +1,11 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package proxy
 
 import (
 	"context"
 
-	"github.com/centrifugal/centrifugo/v6/internal/proxyproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/proxyproto"
 )
 
 // RPCProxy allows to proxy RPC requests to application backend.

@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package proxy
 
 import (
@@ -10,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/proxyproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/proxyproto"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/stretchr/testify/require"

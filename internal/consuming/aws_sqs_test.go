@@ -1,3 +1,4 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
 //go:build integration
 
 package consuming
@@ -11,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"

@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package app
 
 import (
@@ -14,18 +16,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/admin"
-	"github.com/centrifugal/centrifugo/v6/internal/api"
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/conninit"
-	"github.com/centrifugal/centrifugo/v6/internal/health"
-	"github.com/centrifugal/centrifugo/v6/internal/middleware"
-	"github.com/centrifugal/centrifugo/v6/internal/swaggerui"
-	"github.com/centrifugal/centrifugo/v6/internal/tools"
-	"github.com/centrifugal/centrifugo/v6/internal/unihttpstream"
-	"github.com/centrifugal/centrifugo/v6/internal/unisse"
-	"github.com/centrifugal/centrifugo/v6/internal/uniws"
-	"github.com/centrifugal/centrifugo/v6/internal/wt"
+	"github.com/xantos008/centrifunahuy-na-go/internal/admin"
+	"github.com/xantos008/centrifunahuy-na-go/internal/api"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/conninit"
+	"github.com/xantos008/centrifunahuy-na-go/internal/health"
+	"github.com/xantos008/centrifunahuy-na-go/internal/middleware"
+	"github.com/xantos008/centrifunahuy-na-go/internal/swaggerui"
+	"github.com/xantos008/centrifunahuy-na-go/internal/tools"
+	"github.com/xantos008/centrifunahuy-na-go/internal/unihttpstream"
+	"github.com/xantos008/centrifunahuy-na-go/internal/unisse"
+	"github.com/xantos008/centrifunahuy-na-go/internal/uniws"
+	"github.com/xantos008/centrifunahuy-na-go/internal/wt"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/justinas/alice"

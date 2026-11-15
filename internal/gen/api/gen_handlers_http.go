@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package main
 
 func generateHandlersHTTP() {
@@ -12,8 +14,8 @@ import (
 	"io"
 	"net/http"
 
-	. "github.com/centrifugal/centrifugo/v6/internal/apiproto"
-	"github.com/centrifugal/centrifugo/v6/internal/metrics"
+	. "github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/metrics"
 
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"

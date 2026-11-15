@@ -1,9 +1,11 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package unigrpc
 
 import (
 	"sync"
 
-	"github.com/centrifugal/centrifugo/v6/internal/unigrpc/unistream"
+	"github.com/xantos008/centrifunahuy-na-go/internal/unigrpc/unistream"
 
 	"github.com/centrifugal/centrifuge"
 )

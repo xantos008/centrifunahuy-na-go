@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 // Package natsbroker defines custom Nats Broker for Centrifuge library.
 package natsbroker
 
@@ -9,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
-	"github.com/centrifugal/centrifugo/v6/internal/tools"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/tools"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/centrifugal/protocol"

@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 // Package pgstreambroker implements centrifuge.Broker using PostgreSQL as
 // the backing store for stream subscriptions. It provides:
 //
@@ -30,9 +32,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
-	"github.com/centrifugal/centrifugo/v6/internal/pgschema"
-	"github.com/centrifugal/centrifugo/v6/internal/pgshard"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgschema"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgshard"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/jackc/pgx/v5"

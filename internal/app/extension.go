@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package app
 
 import (
@@ -5,9 +7,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/centrifugal/centrifugo/v6/internal/api"
-	"github.com/centrifugal/centrifugo/v6/internal/client"
-	"github.com/centrifugal/centrifugo/v6/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/api"
+	"github.com/xantos008/centrifunahuy-na-go/internal/client"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 
 	"github.com/centrifugal/centrifuge"
 )

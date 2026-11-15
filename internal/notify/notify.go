@@ -1,8 +1,10 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package notify
 
 import (
 	"github.com/centrifugal/centrifuge"
-	"github.com/centrifugal/centrifugo/v6/internal/usage"
+	"github.com/xantos008/centrifunahuy-na-go/internal/usage"
 )
 
 func RegisterHandlers(node *centrifuge.Node, statsSender *usage.Sender) {

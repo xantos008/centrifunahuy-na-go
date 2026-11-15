@@ -22,6 +22,9 @@ Both are skipped unconditionally upstream (`t.Skip()` at `internal/consuming/kaf
 
 Integration package times (s): app 21.5, consuming 23.2, pgmapbroker 7.1, pgstreambroker 3.7, pgoutbox 2.8, pgschema 2.8, controllers 2.6, natsbroker 1.4, redisqueue 1.2, redisnatsbroker 1.1, pgshard 1.1.
 
+## Known pre-existing breakage (not ours)
+- `misc/snapshot` (a separate module, used by `make snapshot-test` and the label-triggered `snapshot.yml` workflow) **does not build at upstream v6.10.3**: `go build ./...` fails with "updates to go.mod needed", because its `go.mod` lags behind the root module's requirements (pgx v5.11.0 vs v5.12.0, rueidis, …). Verified on a clean `git archive refs/upstream/v6.10.3` on 2026-11-15. It is not part of the unit or integration sets. We do not fix it during phase 1 renames, so that upstream bytes stay intact. IDEs (GoLand) rewrite this `go.mod` automatically; the repo sets `skip-worktree` locally on it (see provenance.md §3).
+
 ## How integration tests are run (isolated)
 The upstream tests hardcode `localhost:6379`, `localhost:5432`, `localhost:4222`, `localhost:29092`, `localhost:8085` and `localhost:4566`. Those ports may be taken by other services on a developer machine. So the tests run with [test/integration/compose.isolated.yml](../../test/integration/compose.isolated.yml):
 - All services and the test container share one network namespace (`network_mode: service:netns`). The hardcoded `localhost` addresses reach the test services, and **no host ports are published**.

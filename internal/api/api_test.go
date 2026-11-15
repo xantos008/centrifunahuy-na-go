@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package api
 
 import (
@@ -11,11 +13,11 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/centrifugal/centrifugo/v6/internal/apiproto"
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
-	"github.com/centrifugal/centrifugo/v6/internal/metrics"
-	"github.com/centrifugal/centrifugo/v6/internal/survey"
+	. "github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/metrics"
+	"github.com/xantos008/centrifunahuy-na-go/internal/survey"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/prometheus/client_golang/prometheus"

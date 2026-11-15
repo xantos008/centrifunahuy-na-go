@@ -1,10 +1,12 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package redisshard
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
 	"github.com/stretchr/testify/require"
 )

@@ -1,3 +1,4 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
 //go:build !appengine
 
 package pgstreambroker
@@ -8,7 +9,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/centrifugal/centrifugo/v6/internal/convert"
+	"github.com/xantos008/centrifunahuy-na-go/internal/convert"
 )
 
 // byteArena is a chunked arena allocator for byte data. It copies incoming

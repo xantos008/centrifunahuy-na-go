@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package pgmapbroker
 
 import (
@@ -12,10 +14,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
-	"github.com/centrifugal/centrifugo/v6/internal/pgoutbox"
-	"github.com/centrifugal/centrifugo/v6/internal/pgschema"
-	"github.com/centrifugal/centrifugo/v6/internal/pgshard"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgoutbox"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgschema"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgshard"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/jackc/pgx/v5"

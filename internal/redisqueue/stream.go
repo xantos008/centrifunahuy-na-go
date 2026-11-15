@@ -1,10 +1,12 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package redisqueue
 
 import (
 	"context"
 	"strings"
 
-	"github.com/centrifugal/centrifugo/v6/internal/redisshard"
+	"github.com/xantos008/centrifunahuy-na-go/internal/redisshard"
 
 	"github.com/redis/rueidis"
 )

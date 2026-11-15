@@ -1,4 +1,4 @@
-module github.com/centrifugal/centrifugo/v6
+module github.com/xantos008/centrifunahuy-na-go
 
 go 1.27.0
 

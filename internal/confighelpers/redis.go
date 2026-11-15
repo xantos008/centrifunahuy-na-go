@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package confighelpers
 
 import (
@@ -6,8 +8,8 @@ import (
 	"net"
 	"strings"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
-	"github.com/centrifugal/centrifugo/v6/internal/redisiam"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/redisiam"
 
 	"github.com/centrifugal/centrifuge"
 )

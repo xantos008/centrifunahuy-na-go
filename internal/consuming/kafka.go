@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package consuming
 
 import (
@@ -12,10 +14,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/api"
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
-	"github.com/centrifugal/centrifugo/v6/internal/logging"
-	"github.com/centrifugal/centrifugo/v6/internal/metrics"
+	"github.com/xantos008/centrifunahuy-na-go/internal/api"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/logging"
+	"github.com/xantos008/centrifunahuy-na-go/internal/metrics"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsv2cfg "github.com/aws/aws-sdk-go-v2/config"

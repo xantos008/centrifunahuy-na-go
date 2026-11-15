@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package telemetry
 
 import (
@@ -6,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/centrifugal/centrifugo/v6/internal/build"
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/build"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel"

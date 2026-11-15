@@ -1,10 +1,12 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package config
 
 import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
 	"github.com/stretchr/testify/require"
 )
@@ -148,7 +150,7 @@ func TestSharedPollConfig_VersionlessPublishEnabled(t *testing.T) {
 				ChannelOptions: configtypes.ChannelOptions{
 					SubscriptionType: "shared_poll",
 					SharedPoll: configtypes.SharedPollConfig{
-						Mode:    "",
+						Mode:           "",
 						PublishEnabled: true,
 					},
 				},
@@ -169,7 +171,7 @@ func TestSharedPollConfig_VersionlessPublishEnabled(t *testing.T) {
 				ChannelOptions: configtypes.ChannelOptions{
 					SubscriptionType: "shared_poll",
 					SharedPoll: configtypes.SharedPollConfig{
-						Mode:    "versionless",
+						Mode:           "versionless",
 						PublishEnabled: true,
 					},
 				},
@@ -190,7 +192,7 @@ func TestSharedPollConfig_VersionlessPublishEnabled(t *testing.T) {
 				ChannelOptions: configtypes.ChannelOptions{
 					SubscriptionType: "shared_poll",
 					SharedPoll: configtypes.SharedPollConfig{
-						Mode:    "versioned",
+						Mode:           "versioned",
 						PublishEnabled: true,
 					},
 				},

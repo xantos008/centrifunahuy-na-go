@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package wt_test
 
 import (
@@ -16,11 +18,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/middleware"
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
 	"github.com/quic-go/webtransport-go"
 	"github.com/stretchr/testify/require"
+	"github.com/xantos008/centrifunahuy-na-go/internal/middleware"
 )
 
 // generateTestTLSCert creates a self-signed TLS certificate for testing.

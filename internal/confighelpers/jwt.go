@@ -1,11 +1,13 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package confighelpers
 
 import (
 	"fmt"
 
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
-	"github.com/centrifugal/centrifugo/v6/internal/jwtutils"
-	"github.com/centrifugal/centrifugo/v6/internal/jwtverify"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/jwtutils"
+	"github.com/xantos008/centrifunahuy-na-go/internal/jwtverify"
 )
 
 func MakeVerifierConfig(tokenConf configtypes.Token) (jwtverify.VerifierConfig, error) {

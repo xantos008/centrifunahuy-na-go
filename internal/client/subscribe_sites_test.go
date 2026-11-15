@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package client
 
 import (
@@ -6,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
-	"github.com/centrifugal/centrifugo/v6/internal/jwtverify"
-	"github.com/centrifugal/centrifugo/v6/internal/proxy"
-	"github.com/centrifugal/centrifugo/v6/internal/subsource"
-	"github.com/centrifugal/centrifugo/v6/internal/tools"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/jwtverify"
+	"github.com/xantos008/centrifunahuy-na-go/internal/proxy"
+	"github.com/xantos008/centrifunahuy-na-go/internal/subsource"
+	"github.com/xantos008/centrifunahuy-na-go/internal/tools"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/cristalhq/jwt/v5"

@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package proxy
 
 import (
@@ -6,11 +8,11 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/clientstorage"
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/metrics"
-	"github.com/centrifugal/centrifugo/v6/internal/proxyproto"
-	"github.com/centrifugal/centrifugo/v6/internal/subsource"
+	"github.com/xantos008/centrifunahuy-na-go/internal/clientstorage"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/metrics"
+	"github.com/xantos008/centrifunahuy-na-go/internal/proxyproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/subsource"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/prometheus/client_golang/prometheus"

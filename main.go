@@ -11,11 +11,13 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
+//
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
 package main
 
 import (
-	"github.com/centrifugal/centrifugo/v6/internal/app"
-	"github.com/centrifugal/centrifugo/v6/internal/cli"
+	"github.com/xantos008/centrifunahuy-na-go/internal/app"
+	"github.com/xantos008/centrifunahuy-na-go/internal/cli"
 )
 
 //go:generate internal/gen/api/generate.sh

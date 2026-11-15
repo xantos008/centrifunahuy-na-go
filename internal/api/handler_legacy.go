@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package api
 
 import (
@@ -11,7 +13,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/centrifugal/centrifugo/v6/internal/apiproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
 
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel/attribute"

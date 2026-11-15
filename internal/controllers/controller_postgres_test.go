@@ -1,3 +1,4 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
 //go:build integration
 
 package controllers
@@ -10,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/pgtest"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgtest"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/jackc/pgx/v5/pgxpool"

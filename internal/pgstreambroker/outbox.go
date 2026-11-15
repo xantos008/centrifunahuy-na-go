@@ -1,10 +1,12 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package pgstreambroker
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/centrifugal/centrifugo/v6/internal/pgoutbox"
+	"github.com/xantos008/centrifunahuy-na-go/internal/pgoutbox"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/jackc/pgx/v5/pgxpool"

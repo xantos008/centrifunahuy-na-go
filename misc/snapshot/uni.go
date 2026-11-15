@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package main
 
 import (
@@ -11,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/centrifugal/centrifugo/v6/internal/unigrpc/unistream" // registers uni stream proto types.
+	_ "github.com/xantos008/centrifunahuy-na-go/internal/unigrpc/unistream" // registers uni stream proto types.
 
 	"github.com/gorilla/websocket"
 	"google.golang.org/grpc"

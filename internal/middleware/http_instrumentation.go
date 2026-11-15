@@ -1,10 +1,12 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package middleware
 
 import (
 	"net/http"
 	"strconv"
 
-	"github.com/centrifugal/centrifugo/v6/internal/metrics"
+	"github.com/xantos008/centrifunahuy-na-go/internal/metrics"
 )
 
 // HTTPServerInstrumentation is a middleware to instrument HTTP handlers.

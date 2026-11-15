@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package app
 
 import (
@@ -16,11 +18,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/client"
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/confighelpers"
-	"github.com/centrifugal/centrifugo/v6/internal/jwtverify"
-	"github.com/centrifugal/centrifugo/v6/internal/service"
+	"github.com/xantos008/centrifunahuy-na-go/internal/client"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/confighelpers"
+	"github.com/xantos008/centrifunahuy-na-go/internal/jwtverify"
+	"github.com/xantos008/centrifunahuy-na-go/internal/service"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"

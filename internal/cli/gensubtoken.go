@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package cli
 
 import (
@@ -7,9 +9,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/confighelpers"
-	"github.com/centrifugal/centrifugo/v6/internal/jwtverify"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/confighelpers"
+	"github.com/xantos008/centrifunahuy-na-go/internal/jwtverify"
 
 	"github.com/cristalhq/jwt/v5"
 	"github.com/spf13/cobra"

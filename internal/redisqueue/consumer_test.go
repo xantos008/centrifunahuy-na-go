@@ -1,3 +1,4 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
 //go:build integration
 
 package redisqueue
@@ -8,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/redisshard"
+	"github.com/xantos008/centrifunahuy-na-go/internal/redisshard"
 
 	"github.com/redis/rueidis"
 	"github.com/stretchr/testify/assert"

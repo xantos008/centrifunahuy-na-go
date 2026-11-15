@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package pgmapbroker
 
 import (
@@ -6,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/metrics"
+	"github.com/xantos008/centrifunahuy-na-go/internal/metrics"
 )
 
 // mapMetricsSampler periodically samples PG-specific gauge metrics: outbox

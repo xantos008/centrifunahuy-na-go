@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package uniws
 
 import (
@@ -5,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/centrifugal/centrifugo/v6/internal/convert"
-	"github.com/centrifugal/centrifugo/v6/internal/logging"
-	"github.com/centrifugal/centrifugo/v6/internal/websocket"
+	"github.com/xantos008/centrifunahuy-na-go/internal/convert"
+	"github.com/xantos008/centrifunahuy-na-go/internal/logging"
+	"github.com/xantos008/centrifunahuy-na-go/internal/websocket"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/centrifugal/protocol"

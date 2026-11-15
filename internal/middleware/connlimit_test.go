@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package middleware
 
 import (
@@ -6,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/tools"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/tools"
 
 	"github.com/stretchr/testify/require"
 	"golang.org/x/time/rate"

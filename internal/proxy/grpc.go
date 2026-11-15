@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package proxy
 
 import (
@@ -7,8 +9,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/centrifugal/centrifugo/v6/internal/clientcontext"
-	"github.com/centrifugal/centrifugo/v6/internal/middleware"
+	"github.com/xantos008/centrifunahuy-na-go/internal/clientcontext"
+	"github.com/xantos008/centrifunahuy-na-go/internal/middleware"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

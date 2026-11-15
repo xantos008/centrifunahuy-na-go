@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package logging
 
 import (
@@ -7,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config"
-	"github.com/centrifugal/centrifugo/v6/internal/logutils"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/logutils"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/mattn/go-isatty"

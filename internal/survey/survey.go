@@ -1,10 +1,12 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package survey
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/centrifugal/centrifugo/v6/internal/apiproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/gobwas/glob"

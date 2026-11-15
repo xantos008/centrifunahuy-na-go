@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 // Package config contains Centrifugo Config and the code to load it.
 package config
 
@@ -10,8 +12,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/centrifugal/centrifugo/v6/internal/config/envconfig"
-	"github.com/centrifugal/centrifugo/v6/internal/configtypes"
+	"github.com/xantos008/centrifunahuy-na-go/internal/config/envconfig"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/hashicorp/go-envparse"
