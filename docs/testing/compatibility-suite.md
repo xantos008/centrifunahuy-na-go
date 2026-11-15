@@ -75,6 +75,8 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 
 **Status 2026-11-15:** all ★ scenarios are implemented and green in diff mode (ref vs sut) and golden mode on the memory profile, plus CS-PUB-01, CS-HIST-01 (memory only; the R/P profiles come in phase 2). Test-config specifics: `ping_interval` 2s / `pong_timeout` 1s (CS-PROTO-04), and `allow_publish_for_client` in `pub:` so publisher and subscriber are separate sockets. CS-PROTO-03 records only the first reaction per malformed frame.
 
+**Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
+
 Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` NATS (broker only), `P` PostgreSQL (broker and controller only; no presence).
 
 ### CS-PROTO: protocol and codecs (OSS-PROTO-*)
