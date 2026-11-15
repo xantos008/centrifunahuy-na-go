@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	h "github.com/xantos008/centrifunahuy-na-go/test/compat/harness"
 )
@@ -39,5 +40,72 @@ func TestCS_HIST_01(t *testing.T) {
 		hist(`,"limit":10,"since":{"offset":1,"epoch":"wrong-epoch"}`)
 		s.API(h.APIRequest{Path: "/api/history_remove", Body: fmt.Sprintf(`{"channel":%q}`, ch)})
 		hist(`,"limit":10`) // empty, top position kept
+	})
+}
+
+// CS-HIST-02: history_ttl and history_meta_ttl expiry (namespace hmeta:
+// history_ttl 1s, history_meta_ttl 5s). Publications vanish first, the
+// stream position later (offset 0, new epoch). Every history read extends
+// the meta TTL (centrifuge: Redis broker_history_stream.lua, memory
+// historyHub), so the scenario must not poll: it waits out the TTLs. The
+// memory engine counts TTLs in whole seconds and cleans up once a second, so
+// each wait leaves a margin of more than one second on both sides (the documented exception to
+// "no sleeps", compatibility-suite.md §5). history_remove keeping the top
+// position is covered by CS-HIST-01.
+func TestCS_HIST_02(t *testing.T) {
+	h.Profiles(t, "m", "r", "rc", "p")
+	h.Run(t, "CS-HIST-02", func(s *h.Session) {
+		ch := s.Ch("hmeta:h2")
+		for i := 1; i <= 2; i++ {
+			s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"n":%d}}`, ch, i)})
+		}
+		hist := h.APIRequest{Path: "/api/history", Body: fmt.Sprintf(`{"channel":%q,"limit":10}`, ch)}
+		s.API(hist)
+		s.Note("wait 2.5s: history_ttl 1s passed, meta TTL 5s not")
+		time.Sleep(2500 * time.Millisecond)
+		s.API(hist)
+		s.Note("wait 6.5s: meta TTL 5s passed since the last read")
+		time.Sleep(6500 * time.Millisecond)
+		s.API(hist)
+		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"n":3}}`, ch)})
+	})
+}
+
+// CS-HIST-04: history and recovery publication limits, global
+// (client.history_max_publication_limit / recovery_max_publication_limit = 8)
+// and per namespace (hlim: 3 / 2), and permission gating of client history.
+func TestCS_HIST_04(t *testing.T) {
+	h.Profiles(t, "m", "r", "p")
+	h.Run(t, "CS-HIST-04", func(s *h.Session) {
+		clientHistory := func(ch string, n int) {
+			for i := 1; i <= n; i++ {
+				s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"n":%d}}`, ch, i)})
+			}
+			ws := connect(s, h.HS256(h.Claims{Sub: "u1"}))
+			ws.Send(fmt.Sprintf(`{"id":2,"subscribe":{"channel":%q}}`, ch))
+			ws.Next()
+			for i, limit := range []int{100, 5, -1, 0} {
+				ws.Send(fmt.Sprintf(`{"id":%d,"history":{"channel":%q,"limit":%d}}`, 3+i, ch, limit))
+				ws.Next()
+			}
+		}
+		clientHistory(s.Ch("hist:h4"), 10) // global limit 8
+		clientHistory(s.Ch("hlim:h4"), 4)  // namespace limit 3
+
+		recoverAfter(s, s.Ch("hist:h4-8"), 8) // = global recovery limit
+		recoverAfter(s, s.Ch("hist:h4-9"), 9) // above it
+		recoverAfter(s, s.Ch("hlim:h4-2"), 2) // = namespace recovery limit
+		recoverAfter(s, s.Ch("hlim:h4-3"), 3) // above it
+
+		// Permission gating.
+		ws := connect(s, h.HS256(h.Claims{Sub: "u1"}))
+		ws.Send(fmt.Sprintf(`{"id":2,"history":{"channel":%q,"limit":10}}`, s.Ch("hist:h4"))) // not subscribed
+		ws.Next()
+		for i, ch := range []string{s.Ch("hnoperm:h4"), s.Ch("pub:h4")} { // no history permission; no history
+			ws.Send(fmt.Sprintf(`{"id":%d,"subscribe":{"channel":%q}}`, 3+2*i, ch))
+			ws.Next()
+			ws.Send(fmt.Sprintf(`{"id":%d,"history":{"channel":%q,"limit":10}}`, 4+2*i, ch))
+			ws.Next()
+		}
 	})
 }

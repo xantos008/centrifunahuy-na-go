@@ -11,9 +11,9 @@ import (
 // Event is one observable wire event. Body is JSON (a frame, an HTTP body, or
 // a JSON string for non-JSON bodies).
 type Event struct {
-	Kind   string          `json:"kind"`             // ws_send, ws_recv, ws_close, http
-	Text   string          `json:"text,omitempty"`   // close reason, or "POST /api/publish"
-	Code   int             `json:"code,omitempty"`   // close code
+	Kind   string          `json:"kind"`             // ws_send, ws_recv, ws_close, http, note, exit
+	Text   string          `json:"text,omitempty"`   // close reason, "POST /api/publish", note text, env of a failed start
+	Code   int             `json:"code,omitempty"`   // close code, or process exit status
 	Status int             `json:"status,omitempty"` // HTTP status
 	Body   json.RawMessage `json:"body,omitempty"`
 }

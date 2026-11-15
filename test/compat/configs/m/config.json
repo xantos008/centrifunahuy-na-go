@@ -10,7 +10,9 @@
       "*"
     ],
     "ping_interval": "2s",
-    "pong_timeout": "1s"
+    "pong_timeout": "1s",
+    "history_max_publication_limit": 8,
+    "recovery_max_publication_limit": 8
   },
   "http_api": {
     "key": "compat-test-api-key"
@@ -43,6 +45,86 @@
       },
       {
         "name": "closed"
+      },
+      {
+        "name": "hmeta",
+        "history_size": 10,
+        "history_ttl": "1s",
+        "history_meta_ttl": "5s",
+        "allow_subscribe_for_client": true,
+        "allow_history_for_subscriber": true
+      },
+      {
+        "name": "hlim",
+        "history_size": 20,
+        "history_ttl": "300s",
+        "history_max_publication_limit": 3,
+        "recovery_max_publication_limit": 2,
+        "allow_subscribe_for_client": true,
+        "allow_history_for_subscriber": true,
+        "allow_recovery": true
+      },
+      {
+        "name": "hnoperm",
+        "history_size": 10,
+        "history_ttl": "300s",
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "cache",
+        "history_size": 1,
+        "history_ttl": "300s",
+        "allow_recovery": true,
+        "force_recovery_mode": "cache",
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "acache",
+        "history_size": 1,
+        "history_ttl": "300s",
+        "force_recovery": true,
+        "force_recovery_mode": "cache",
+        "auto_cache_recover": true,
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "pos",
+        "history_size": 10,
+        "history_ttl": "300s",
+        "force_positioning": true,
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "delta",
+        "history_size": 1,
+        "history_ttl": "60s",
+        "force_positioning": true,
+        "allowed_delta_types": [
+          "fossil"
+        ],
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "deltap",
+        "history_size": 1,
+        "history_ttl": "60s",
+        "force_positioning": true,
+        "allowed_delta_types": [
+          "fossil"
+        ],
+        "delta_publish": true,
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "tags",
+        "allow_tags_filter": true,
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "ver",
+        "history_size": 10,
+        "history_ttl": "300s",
+        "allow_subscribe_for_client": true
       }
     ]
   },

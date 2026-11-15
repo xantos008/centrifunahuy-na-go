@@ -1,6 +1,8 @@
 package harness
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os/exec"
 	"slices"
@@ -11,8 +13,10 @@ import (
 // Engine profiles (docs/plan/phase-2.md). COMPAT_PROFILE selects the one the
 // targets were started with (`make compat-up PROFILE=…`); default "m".
 var profiles = map[string]profileSpec{
-	"m": {nodes: 1},
-	"r": {nodes: 2, backends: []string{"redis"}},
+	"m":       {nodes: 1},
+	"r":       {nodes: 2, backends: []string{"redis"}},
+	"r-opt":   {nodes: 1, backends: []string{"redis"}},
+	"r-lists": {nodes: 1, backends: []string{"redis"}},
 }
 
 type profileSpec struct {
@@ -131,4 +135,37 @@ func docker(args ...string) (string, error) {
 		return "", fmt.Errorf("docker %s: %w\n%s", strings.Join(args, " "), err, out)
 	}
 	return string(out), nil
+}
+
+// StartFails starts a one-off copy of this side's node A with extra env
+// settings (KEY=VALUE), expects it to exit, and records the exit status and
+// the fatal log line (level, error, message; time dropped).
+func (s *Session) StartFails(env ...string) {
+	s.T.Helper()
+	args := []string{"compose", "-f", envOr("COMPAT_COMPOSE_FILE", "../docker-compose.yml"), "--profile", Profile(), "run", "--rm", "--no-deps"}
+	for _, e := range env {
+		args = append(args, "-e", e)
+	}
+	args = append(args, serviceFor("node", s.Target.Name))
+	out, err := exec.Command("docker", args...).CombinedOutput() //nolint:gosec // fixed binary, args from scenario code
+	var ee *exec.ExitError
+	if err != nil && !errors.As(err, &ee) {
+		s.T.Fatalf("%s: docker %s: %v", s.Target.Name, strings.Join(args, " "), err)
+	}
+	var fatal json.RawMessage
+	for _, line := range strings.Split(string(out), "\n") {
+		var l struct {
+			Level   string `json:"level"`
+			Error   string `json:"error"`
+			Message string `json:"message"`
+		}
+		if json.Unmarshal([]byte(line), &l) == nil && l.Level == "fatal" {
+			fatal, _ = json.Marshal(l)
+		}
+	}
+	code := 0
+	if ee != nil {
+		code = ee.ExitCode()
+	}
+	s.tr.add(Event{Kind: "exit", Text: strings.Join(env, " "), Code: code, Body: fatal})
 }

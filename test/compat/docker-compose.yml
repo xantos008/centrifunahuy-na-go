@@ -43,7 +43,7 @@ x-redis: &redis
     test: ["CMD", "redis-cli", "--no-auth-warning", "--user", "compat", "--pass", "compat-test-redis-password", "ping"]
     interval: 1s
     retries: 30
-  profiles: [r]
+  profiles: [r, r-opt, r-lists]
 
 services:
   ref:

@@ -81,6 +81,13 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 
 **Status 2026-11-16 (phase 2, step 2.2):** profile `r` (Redis 8 standalone, two nodes per target) is green in diff and golden mode for CS-PUB-01, CS-HIST-01, CS-REC-01/02, CS-PRES-01; `golden/r` is byte-identical to `golden/m` for these five.
 
+**Status 2026-11-16 (phase 2, step 2.3):** these new scenarios are green in diff and golden mode:
+- CS-HIST-02, CS-HIST-04, CS-REC-03, CS-REC-04, CS-PUB-03, CS-PUB-04 and CS-PUB-05 on `m` and `r`;
+- CS-REC-05 on `r`;
+- CS-ENG-CFG on `m`, plus the variants `r-opt` and `r-lists`.
+
+Configs: `configs/r` is `configs/m` plus the engine section; `r-opt` and `r-lists` are `r` plus one option each. Regenerate them with `jq` when `m` changes (see the step 2.3 notes in the plan). Note: `version` is a volatile key, so publication versions in CS-PUB-05 appear as placeholders. Equal versions keep equal placeholders, which is all the scenario needs.
+
 **Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
 
 Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` NATS (broker only), `P` PostgreSQL (broker and controller only; no presence).
@@ -151,6 +158,8 @@ Two sut nodes against each of R, N, P versus two ref nodes: cross-node fan-out, 
 - Fixed test keys and secrets live in `harness/token.go` (test-only values, not secrets).
 - Each scenario uses unique channel names (`cs-<id>-<rand>`) and normalizes the random suffix, so scenarios can run in parallel against one target.
 - Backends are flushed between engine profiles, not between scenarios.
+- **Exception: waiting out a configured TTL.** CS-HIST-02 sleeps for fixed periods, because every history read extends the meta TTL, so polling would keep the state alive. Each wait leaves more than a second of margin, because the memory engine counts TTLs in whole seconds and sweeps once a second. Waits for a state change (a backend coming back) poll with `Session.APIUntil` and record only the last answer.
+- **Outcome scenarios** (CS-REC-05) do their work in a throw-away session and record one note with the checked counts.
 - **CS-ISO-01 (isolation, phase-2 condition C2)** runs in `TestMain` for every profile with backends, before any scenario; a failure aborts the profile. It checks that every server container is attached only to its side's network, that each backend hostname (`redis`, …) resolves inside every server container to that side's backend container, that the two sides' backends share no mount, and that a probe key written through one side's Redis is absent on the other. Verified to fail (2026-11-16) when `sut` is also attached to `ref-net` and when the `redis` alias on `sut-net` points to `redis-ref`.
 
 ## 6. Exit criteria per implementation phase

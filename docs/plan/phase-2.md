@@ -156,6 +156,36 @@ This document with the D2-* decisions and conditions C1–C6; links to it from t
 ### 2.3 New single-node scenarios
 CS-HIST-02, CS-HIST-04, CS-REC-03, CS-REC-04, CS-REC-05, CS-PUB-03, CS-PUB-04, CS-PUB-05, CS-ENG-CFG on `m` and `r`; variants `r-opt`, `r-lists`.
 
+**Done (2026-11-16).**
+- **Scenarios:**
+  - CS-HIST-02 and CS-HIST-04 in `history_test.go`;
+  - CS-REC-03, CS-REC-04 and CS-REC-05 in `recovery_test.go`;
+  - CS-PUB-03, CS-PUB-04 and CS-PUB-05 in `pub_test.go`;
+  - CS-ENG-CFG in `engine_test.go`.
+  - Profile tags follow the tables above. `history_remove` is not repeated in CS-HIST-02: CS-HIST-01 already covers it.
+- **Harness:**
+  - `Session.APIUntil`: polls without recording and records the last answer.
+  - `WS.RecvUntil(marker)`.
+  - `Session.StartFails(env…)`: `docker compose run --rm --no-deps` of the side's node A with env overrides; records the exit status and the fatal log line. New event kind `exit`.
+- **Configs:**
+  - New namespaces in `m` (copied to all Redis profiles): `hmeta`, `hlim`, `hnoperm`, `cache`, `acache`, `pos`, `delta`, `deltap`, `tags`, `ver`.
+  - Global `client.history_max_publication_limit` and `client.recovery_max_publication_limit` set to 8.
+  - All existing golden files pass unchanged with the new configs.
+  - `r` = `m` + engine. `r-opt` = `r` + `presence_hash_field_ttl` + `presence_user_mapping`. `r-lists` = `r` + `history_use_lists`. All are generated with `jq` from `m`.
+  - Profiles `r-opt` and `r-lists` have 1 node each.
+- **Golden differences between engines:**
+  - `r` vs `m`: only the CS-REC-03 note (`restart redis` vs `restart node`).
+  - `r-opt` CS-PRES-01 equals `m`.
+  - `r-lists` CS-HIST-01 differs in one place: `reverse: true` returns `[1,2]` instead of `[3,2]`. Redis Lists do not support reverse order (docs, `engines.md` §`history_use_lists`; the option is deprecated). Ref and sut agree.
+- **Test defects found and fixed before recording; no server cause:**
+  1. CS-HIST-02 polled history while waiting for expiry, and every read extends the meta TTL (centrifuge `broker_history_stream.lua`, memory `historyHub`), so the position never expired. It now waits out the TTLs (see compatibility-suite.md §5).
+  2. The first fixed waits were too tight for the memory engine's whole-second TTLs: `history_meta_ttl` was raised from 3s to 5s, with waits of 2.5 s and 6.5 s.
+  3. CS-REC-04 on `r` gave a ref/sut diff: sut subscribes failed with 3004 right after CS-REC-03 restarted Redis. Ref logs show the same `pub/sub connection temporary unavailable` errors, and with equal time after a restart both sides match. Ref only had more time because its restart happened earlier. CS-REC-03 now waits until a probe subscription succeeds.
+  4. Cache-mode subscribe requests lacked `recoverable: true`, which SDKs send together with `recover` for an empty `since`.
+- **Answered (black box, ref v6.10.3):** OQ-ENG-04 (history part), OQ-HIST-01 (Redis), OQ-HIST-03; see open-questions.md.
+- **Observed, not a difference:** in compatibility mode the sut's development-build warning names Cedrazeka. Per ADR-0022, logs are product surface and log texts are deferred to phase 9.
+- **Checks:** `make compat-all` (m r r-opt r-lists) 3× green; golangci-lint on test/compat 0 issues. No server code changed.
+
 ### 2.4 Redis topologies (`rs`, `rc`, `rsh`)
 Sentinel and Cluster containers announcing container addresses; sharding with two Redis. The phase-2 single-node scenarios run on them per the tables.
 
