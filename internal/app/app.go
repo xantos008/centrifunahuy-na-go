@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package app
 
 import (
@@ -564,7 +566,6 @@ func (a *App) setupHandlers() error {
 func (a *App) setupServices() error {
 	cfg := a.cfg
 	node := a.node
-	proxyMap := a.proxyMap
 
 	useConsumingOpentelemetry := cfg.OpenTelemetry.Enabled && cfg.OpenTelemetry.Consuming
 	consumingHandler := api.NewConsumingHandler(node, a.consumingAPIExecutor, api.ConsumingHandlerConfig{
@@ -604,44 +605,9 @@ func (a *App) setupServices() error {
 		a.services.Register(exporter)
 	}
 
+	// Usage stats reporting is disabled: Cedrazeka sends no telemetry (KD-06).
+	// The usage_stats config key is still accepted and ignored.
 	var statsSender *usage.Sender
-	if !cfg.UsageStats.Disabled {
-		statsSender = usage.NewSender(node, a.container, usage.Features{
-			Edition:                edition,
-			Version:                build.Version,
-			EngineEnabled:          !cfg.Broker.Enabled || !cfg.PresenceManager.Enabled,
-			EngineType:             cfg.Engine.Type,
-			BrokerEnabled:          cfg.Broker.Enabled,
-			BrokerType:             cfg.Broker.Type,
-			PresenceManagerEnabled: cfg.PresenceManager.Enabled,
-			PresenceManagerType:    cfg.PresenceManager.Type,
-
-			Websocket:     !cfg.WebSocket.Disabled,
-			HTTPStream:    cfg.HTTPStream.Enabled,
-			SSE:           cfg.SSE.Enabled,
-			UniWebsocket:  cfg.UniWS.Enabled,
-			UniHTTPStream: cfg.UniHTTPStream.Enabled,
-			UniSSE:        cfg.UniSSE.Enabled,
-			UniGRPC:       cfg.UniGRPC.Enabled,
-			WebTransport:  cfg.WebTransport.Enabled,
-
-			EnabledConsumers: usage.GetEnabledConsumers(cfg.Consumers),
-
-			GrpcAPI:             cfg.GrpcAPI.Enabled,
-			SubscribeToPersonal: cfg.Client.SubscribeToUserPersonalChannel.Enabled,
-			Admin:               cfg.Admin.Enabled,
-
-			ConnectProxy:         proxyMap.ConnectProxy != nil,
-			RefreshProxy:         proxyMap.RefreshProxy != nil,
-			SubscribeProxy:       len(proxyMap.SubscribeProxies) > 0,
-			PublishProxy:         len(proxyMap.PublishProxies) > 0,
-			RPCProxy:             len(proxyMap.RpcProxies) > 0,
-			SubRefreshProxy:      len(proxyMap.SubRefreshProxies) > 0,
-			SubscribeStreamProxy: len(proxyMap.SubscribeStreamProxies) > 0,
-			Swagger:              cfg.Swagger.Enabled,
-		})
-		a.services.Register(statsSender)
-	}
 
 	notify.RegisterHandlers(node, statsSender)
 	return nil

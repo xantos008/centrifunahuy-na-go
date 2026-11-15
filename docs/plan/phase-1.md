@@ -57,7 +57,8 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 |---|---|---|
 | `internal/webui/` (statik bundle) and its wiring in `internal/admin` / `internal/app` | delete; admin serves only `admin.web_path` until our UI exists | branded UI assets (ADR-0016, ADR-0022) |
 | `misc/scripts/update_web.sh`, Makefile `web` target | delete | pulls the branded UI |
-| `.github/workflows/release.yml`, `snapshot.yml`, `misc/scripts/{release_*.sh, cosign_images.sh, package.sh}`, `.goreleaser.yml`, Makefile `package*` / `packagecloud*` targets, `.github/FUNDING.yml` | delete (after reading them) | they publish to upstream channels |
+| `.github/workflows/release.yml`, `misc/scripts/{release_*.sh, cosign_images.sh, package.sh}`, `misc/release/`, `misc/packaging/`, `misc/rpm/`, `.goreleaser.yml`, Makefile `package*` / `packagecloud*` targets, `.github/FUNDING.yml` | delete (after reading them) | they publish to upstream channels. `snapshot.yml` is **kept**: a before/after behavior check, no publishing |
+| Makefile `install-lint`, `vuln` | replace with project-local `.bin/` tools | they ran a global `go install` |
 | `.github/workflows/test.yml` | keep, adapted in 1.8 | CI |
 | `internal/usage/` reporter | keep the code, disable the start call in `internal/app` (KD-06); accept the config key, never send | no telemetry |
 | `Dockerfile` | keep; binary name via 1.5 | |

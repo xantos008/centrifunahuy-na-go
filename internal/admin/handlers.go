@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package admin
 
 import (
@@ -11,7 +13,6 @@ import (
 	"github.com/centrifugal/centrifugo/v6/internal/middleware"
 	"github.com/centrifugal/centrifugo/v6/internal/reverseproxy"
 	"github.com/centrifugal/centrifugo/v6/internal/tools"
-	"github.com/centrifugal/centrifugo/v6/internal/webui"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/gorilla/securecookie"
@@ -62,7 +63,10 @@ func NewHandler(n *centrifuge.Node, apiExecutor *api.Executor, c Config) (*Handl
 	} else if c.WebPath != "" {
 		mux.Handle(webPrefix, http.StripPrefix(webPrefix, http.FileServer(http.Dir(c.WebPath))))
 	} else {
-		mux.Handle(webPrefix, http.StripPrefix(webPrefix, http.FileServer(webui.FS)))
+		// The upstream embedded web UI is not shipped (ADR-0016, ADR-0022).
+		mux.HandleFunc(webPrefix, func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, "admin web UI is not bundled: set admin.web_path or admin.web_proxy_address", http.StatusNotFound)
+		})
 	}
 	h.mux = mux
 	return h, nil

@@ -1,5 +1,4 @@
-VERSION := $(shell git describe --tags | sed -e 's/^v//g' | awk -F "-" '{print $$1}')
-ITERATION := $(shell git describe --tags --long | awk -F "-" '{print $$2}')
+# Modified by the Cedrazeka authors, 2026. See NOTICE.
 TESTFOLDERS := $(shell go list ./... | grep -v /misc/)
 # Packages to test, all by default. To run a part of them like CI does:
 #   make test-integration TEST_PACKAGES="$(bash misc/scripts/test_packages.sh integration)"
@@ -17,36 +16,12 @@ generate:
 	bash misc/scripts/generate.sh
 	go generate ./...
 
-web:
-	./misc/scripts/update_web.sh
-
 swagger-web:
 	make generate
 	./misc/scripts/update_swagger_web.sh
 
-package:
-	./misc/scripts/package.sh $(VERSION) $(ITERATION)
-
 sync-websocket:
 	rsync -av --exclude '*/' ../centrifuge/internal/websocket/ internal/websocket/
-
-packagecloud:
-	make packagecloud-deb
-	make packagecloud-rpm
-
-packagecloud-deb:
-	# PACKAGECLOUD_TOKEN env must be set
-	package_cloud push --skip-duplicates FZambia/centrifugo/debian/buster PACKAGES/*.deb
-	package_cloud push --skip-duplicates FZambia/centrifugo/debian/bullseye PACKAGES/*.deb
-	package_cloud push --skip-duplicates FZambia/centrifugo/debian/bookworm PACKAGES/*.deb
-
-	package_cloud push --skip-duplicates FZambia/centrifugo/ubuntu/focal PACKAGES/*.deb
-	package_cloud push --skip-duplicates FZambia/centrifugo/ubuntu/jammy PACKAGES/*.deb
-	package_cloud push --skip-duplicates FZambia/centrifugo/ubuntu/noble PACKAGES/*.deb
-
-packagecloud-rpm:
-	# PACKAGECLOUD_TOKEN env must be set
-	package_cloud push --skip-duplicates FZambia/centrifugo/el/7 PACKAGES/*.rpm
 
 update-deps:
 	./misc/scripts/update-deps.sh
@@ -59,30 +34,17 @@ local-deps:
 	go mod download
 	go mod vendor
 
-GOLANGCI_LINT_VERSION := $(shell cat .golangci-lint-version)
+# Dev tools are project-local, pinned in tools/go.mod and built into .bin/
+# (docs/ai/tooling-lock.md). Nothing is installed globally.
+.PHONY: tools lint vuln
+tools:
+	go -C tools build -o ../.bin/ github.com/golangci/golangci-lint/v2/cmd/golangci-lint golang.org/x/vuln/cmd/govulncheck github.com/bufbuild/buf/cmd/buf
 
-lint:
-	@if ! command -v golangci-lint >/dev/null 2>&1; then \
-		echo "golangci-lint not found. Run 'make install-lint' to install $(GOLANGCI_LINT_VERSION)."; \
-		exit 1; \
-	fi
-	@INSTALLED=$$(golangci-lint version --short 2>/dev/null); \
-	EXPECTED=$$(echo $(GOLANGCI_LINT_VERSION) | sed 's/^v//'); \
-	if [ "$${INSTALLED%%.*}" != "$${EXPECTED%%.*}" ] || [ "$${INSTALLED#*.}" != "$${EXPECTED#*.}" ]; then \
-		echo "golangci-lint version mismatch: installed $${INSTALLED}, expected $${EXPECTED}. Run 'make install-lint'."; \
-		exit 1; \
-	fi
-	golangci-lint run --timeout 10m0s --verbose
+lint: tools
+	.bin/golangci-lint run --timeout 10m0s
 
-install-lint:
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
-
-vuln:
-	@if ! command -v govulncheck >/dev/null 2>&1; then \
-		echo "govulncheck not found, installing..."; \
-		go install golang.org/x/vuln/cmd/govulncheck@latest; \
-	fi
-	govulncheck ./...
+vuln: tools
+	.bin/govulncheck ./...
 
 # Compares what clients, backends and operators observe between BASE (a git
 # ref) and the current tree. See misc/snapshot/README.md.
