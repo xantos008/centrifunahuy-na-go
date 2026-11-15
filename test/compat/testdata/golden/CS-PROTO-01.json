@@ -1,0 +1,95 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "name": "compat",
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1MSJ9.iqsJb-QwGdu-FWA_dm-l2DPnQU1KupVOrogbd0axhTA"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 25,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "pub:proto01"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "pub:proto01",
+          "pub": {
+            "data": {
+              "text": "hello"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "subscribe": {
+          "channel": "pub:proto01-a"
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "subscribe": {
+          "channel": "pub:proto01-b"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 4,
+        "subscribe": {}
+      }
+    }
+  ]
+}

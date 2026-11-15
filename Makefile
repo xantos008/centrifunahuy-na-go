@@ -36,7 +36,30 @@ local-deps:
 
 # Dev tools are project-local, pinned in tools/go.mod and built into .bin/
 # (docs/ai/tooling-lock.md). Nothing is installed globally.
-.PHONY: tools lint vuln licenses licenses-check
+.PHONY: tools lint vuln licenses licenses-check compat-up compat-down compat compat-golden compat-record
+
+# Compatibility suite (ADR-0028): ref = centrifugo v6.10.3 image, sut = our build.
+# The sut binary is cross-compiled on the host and mounted into alpine, so
+# nothing is downloaded or built inside Docker.
+COMPAT_GOARCH ?= $(shell go env GOARCH)
+
+compat-up:
+	mkdir -p test/compat/.build
+	GOOS=linux GOARCH=$(COMPAT_GOARCH) CGO_ENABLED=0 go build -o test/compat/.build/cedrazeka .
+	cd test/compat && docker compose up -d --wait
+
+compat-down:
+	cd test/compat && docker compose down -v
+
+compat:
+	cd test/compat && COMPAT_MODE=diff go test -count=1 ./...
+
+compat-golden:
+	cd test/compat && COMPAT_MODE=golden go test -count=1 ./scenarios/
+
+compat-record:
+	cd test/compat && COMPAT_MODE=record go test -count=1 ./scenarios/
+
 
 # THIRD_PARTY_LICENSES from the modules linked into the binary (offline; fails on unknown licenses).
 licenses:

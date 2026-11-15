@@ -151,6 +151,13 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 | `test/compat/testdata/golden/*.json` | recorded from ref with `make compat-record` |
 | Makefile (root) | targets `compat`, `compat-golden`, `compat-record` |
 
+**Progress (2026-11-15), part A done:** harness, `docker-compose.yml`, the memory config, the Makefile targets, CS-PROTO-01 and CS-API-01. All three modes are verified (diff, golden, record), including a negative check: a tampered golden fails. Deviations:
+- No `Dockerfile.sut` (step 1.7). Docker DNS is unreliable on the dev machine (`apk`, `proxy.golang.org`), so the sut is the host-compiled linux binary mounted into `alpine:3.24`.
+- `rawclient.go` and `golden.go` are merged into `client.go` and `run.go`.
+- The client is gorilla/websocket instead of centrifuge-go, until behavior scenarios need the SDK.
+
+Part B: the remaining ★ scenarios (Protobuf, strict JSON, ping, auth, permissions, history, recovery, presence, all 21 API routes, CS-NAME-01).
+
 ### 1.9 CI
 `.github/workflows/test.yml`, adapted from upstream:
 - jobs `lint`, `unit` and `integration` (upstream services);

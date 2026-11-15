@@ -1,0 +1,55 @@
+{
+  "events": [
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish?api_key=compat-test-api-key",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 401
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 401
+    },
+    {
+      "kind": "http",
+      "text": "GET /api/publish",
+      "status": 405
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 400,
+      "body": "Bad Request"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/no_such_method",
+      "status": 404,
+      "body": "404 page not found"
+    }
+  ]
+}

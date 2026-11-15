@@ -1,0 +1,17 @@
+# Compatibility suite targets (ADR-0028, docs/testing/compatibility-suite.md).
+# Both servers get the same config; ports are bound to loopback only.
+# `make compat-up` cross-compiles the linux cedrazeka binary into .build/ first.
+name: cedrazeka-compat
+services:
+  ref:
+    image: centrifugo/centrifugo:v6.10.3@sha256:33fdbbce7d195dde316cbde17bc1d2a17b9e345de82799d1ec3c2bb8916e3803
+    command: ["centrifugo", "-c", "/etc/compat/config.json"]
+    volumes: ["./configs/memory:/etc/compat:ro"]
+    ports: ["127.0.0.1:18000:8000"]
+  sut:
+    # The linux binary from .build/ runs in a plain alpine image: no image build,
+    # so no network access is needed inside Docker.
+    image: alpine:3.24
+    command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/config.json"]
+    volumes: ["./configs/memory:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
+    ports: ["127.0.0.1:28000:8000"]
