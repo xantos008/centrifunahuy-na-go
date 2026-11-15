@@ -14,8 +14,9 @@ Cedrazeka is not affiliated with or endorsed by Centrifugal Labs LTD.
 "Centrifugo" is a name of Centrifugal Labs LTD and is used here only to
 describe the origin of the code.
 
-This product also includes third-party components; their licenses are in
-THIRD_PARTY_LICENSES and listed in docs/legal/provenance.md:
+This product also includes third-party components. Their license texts, and
+the NOTICE files of dependencies that have them, are in THIRD_PARTY_LICENSES;
+origins are listed in docs/legal/provenance.md. Among them:
 - WebSocket implementation derived from gorilla/websocket
   (internal/websocket), Copyright (c) 2013 The Gorilla WebSocket Authors,
   BSD-2-Clause.

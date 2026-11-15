@@ -118,6 +118,8 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 - Candidate: `github.com/google/go-licenses/v2` (Apache-2.0). Vet it per CLAUDE.md (source, license, maintenance, network use), pin it in `tools/go.mod`, and record it in `docs/ai/tooling-lock.md` **before** use. If vetting fails, fall back to a ~40-line script using `go list -m -json all` plus module-cache LICENSE files, in `scripts/`.
 - Add a Makefile target `licenses`. CI checks that the file is up to date.
 
+**Done (2026-11-15):** `go-licenses` was not adopted. A ~200-line stdlib-only generator (`scripts/thirdpartylicenses.go`, `//go:build ignore`) avoids vetting and pinning another tool with its own dependency tree. It is offline: `go list` plus the module cache. Targets: `make licenses`, `make licenses-check`.
+
 ### 1.7 Build image for the compatibility suite
 - `test/compat/Dockerfile.sut`: multi-stage build (`golang:1.27` builder → the same `alpine:3.24` base as upstream). It builds `./` into `/usr/local/bin/cedrazeka`.
 

@@ -36,7 +36,15 @@ local-deps:
 
 # Dev tools are project-local, pinned in tools/go.mod and built into .bin/
 # (docs/ai/tooling-lock.md). Nothing is installed globally.
-.PHONY: tools lint vuln
+.PHONY: tools lint vuln licenses licenses-check
+
+# THIRD_PARTY_LICENSES from the modules linked into the binary (offline; fails on unknown licenses).
+licenses:
+	go run scripts/thirdpartylicenses.go
+
+licenses-check:
+	go run scripts/thirdpartylicenses.go -check
+
 tools:
 	go -C tools build -o ../.bin/ github.com/golangci/golangci-lint/v2/cmd/golangci-lint golang.org/x/vuln/cmd/govulncheck github.com/bufbuild/buf/cmd/buf
 
