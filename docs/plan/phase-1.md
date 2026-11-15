@@ -1,6 +1,6 @@
 # Implementation phase 1 — upstream import, licensing, names, compatibility-suite harness
 
-Status: **plan, awaiting user approval**. Nothing below has been executed.
+Status: **done** (2026-11-15). Exit criteria results are at the end of this document.
 Decisions: DEC-01…DEC-12 (2026-11-15). License: Apache-2.0 (DEC-10). Names: Cedrazeka (DEC-12). Nothing is blocking.
 
 ## Goal and exit criteria
@@ -228,3 +228,21 @@ make compat && make compat-golden
 | Struct-tag defaults (`default:"centrifugo"`) cannot depend on mode | apply the mode-dependent default after load, only when the value is unset; test both modes |
 | Compatibility-suite nondeterminism (timing, ordering) | determinism rules (spec §5); normalization only for listed fields |
 | Docker Hub unavailable in CI | golden mode fallback |
+
+## Exit criteria results (2026-11-15)
+
+| # | Criterion | Result |
+|---|---|---|
+| 1 | Pristine import equals upstream v6.10.3 | Yes, for all 565 upstream paths from `4edc28d` on. Import commit `66d1418` itself carries IDE-made `misc/snapshot/go.{mod,sum}` bumps, reverted in the next commit (provenance.md §3) |
+| 2 | Upstream unit tests: same pass/fail set as baseline | Yes. 549/549 identical after every step; last full run at step 1.5. Steps 1.6–1.9 changed no code linked into the binary |
+| 3 | Upstream integration tests: same set | Yes. 301/301 identical (isolated runner, step 1.5); green in CI on `7a95c35` |
+| 4 | ★ scenarios green, diff and golden, memory profile | Yes. 15 scenarios; locally 3 diff and 2 golden runs; CI run 43723583072 |
+| 5 | CS-NAME-01 | Yes |
+| 6 | Provenance §3 complete; NOTICE, THIRD_PARTY_LICENSES, upstream/BASE | Yes. 232 modified and 27 deleted upstream files are covered; every modified file that can hold a comment carries the change notice |
+| 7 | Quality gates | Yes. gofmt, go vet, golangci-lint (new issues vs import commit: 0; test/compat: 0), govulncheck (exit 0), buf (`api/proto/cedrazeka` builds), licenses-check |
+
+Carried over to later phases:
+- R/N/P engine profiles of the suite (phase 2).
+- Human-readable text rebranding: logs, metric help, config `doc` strings (phase 9).
+- gRPC reflection names (KD-26).
+- `misc/snapshot` already fails to build upstream.

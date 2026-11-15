@@ -64,7 +64,21 @@ Revised 2026-11-15 after DEC-01 (fork). It follows the CLAUDE.md workflow. Phase
 | 8 | Push platform | PRO-01 | provider fakes contract; queue integration; delayed, cancel and retry tests |
 | 9 | Hardening and release: legal review (naming, NOTICE), SBOM, signing, Helm, load, chaos, soak | OSS-OPS, PRO-42 (for our artifacts), EXT-02 | full compatibility suite; release checklist |
 
-## Matrix
+## Phase 1 status (2026-11-15)
+
+UPSTREAM rows stay `inherited`. A row becomes `verified` only when its scenarios are green on **all** applicable engine profiles, and phase 1 ran the memory profile only (Redis, NATS and PostgreSQL come in phase 2). Green on memory, in diff mode (ref v6.10.3 vs sut) and golden mode, locally and in CI:
+
+| Scenario group | Rows exercised |
+|---|---|
+| CS-PROTO-01..04 | OSS-PROTO (JSON and Protobuf framing, batches, strict JSON → 3501, ping/pong → 3012), OSS-TRANS-01 (WebSocket) |
+| CS-AUTH-01/02 | OSS-AUTH (HS/RS/ES/EdDSA, expired → 109, invalid → 3500, alg=none, alg confusion) |
+| CS-SUB-01/02 | OSS-PERM, OSS-CH (namespaces, user-limited channels, 102/103/105), subscription tokens |
+| CS-PUB-01 | client publish permissions; API publish tags, idempotency key, skip_history |
+| CS-HIST-01, CS-REC-01/02 | OSS-HIST, OSS-SUB-08 (recovery within and beyond history) |
+| CS-PRES-01 | OSS-PRES (client and API) |
+| CS-API-01/02 | OSS-API-01 (auth variants, HTTP errors, all 21 routes) |
+| CS-NAME-01 | EXT-01 (own names / compatibility mode), now `implemented` |
+
 
 | ID | Category | Feature | Upstream status | Min ver | Config | API / protocol | Storage | Security | Tests | Impl status | Source | Open questions / notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -414,7 +428,7 @@ Our own capabilities (category EXTENSION). Each is off by default or invisible t
 
 | ID | Category | Feature | Upstream status | Min ver | Config | API / protocol | Storage | Security | Tests | Impl status | Source | Open questions / notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| EXT-01 | EXTENSION | Own default names plus `compat: centrifugo` mode | n/a | — | `--compat`, `CEDRAZEKA_COMPAT` | gRPC service names registered twice in compatibility mode | — | no brand in the product surface | CS-NAME-01 | not started | ADR-0022, DEC-04 | names: DEC-12 (Cedrazeka) |
+| EXT-01 | EXTENSION | Own default names plus `compat: centrifugo` mode | n/a | — | `--compat`, `CEDRAZEKA_COMPAT` | gRPC service names registered twice in compatibility mode | — | no brand in the product surface | CS-NAME-01 | implemented | ADR-0022, DEC-04 | names: DEC-12 (Cedrazeka) |
 | EXT-02 | EXTENSION | Readiness endpoint with backend checks | n/a | — | TBD | separate path; `/health` unchanged | — | no secrets in output | unit + integration | not started | KD-30 | |
 | EXT-03 | EXTENSION | Snapshot coverage fields (`nodes_responded`, `nodes_known`, partial flag) | n/a | — | — | `/admin/x/v1/*` | — | RBAC | multi-node | not started | KD-31, SPEC PRO-07 | |
 | EXT-04 | EXTENSION | Analytics field suppression / PII controls beyond `export_users`/`export_channels` | n/a | — | TBD | — | ClickHouse | PII | integration | not started | KD-32, SPEC PRO-03 | |

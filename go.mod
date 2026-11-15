@@ -1,3 +1,4 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
 module github.com/xantos008/centrifunahuy-na-go
 
 go 1.27.0
