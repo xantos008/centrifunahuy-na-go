@@ -183,7 +183,7 @@ Pinned actions:
 - setup-go v7.0.0 `b7ad1dad…`;
 - cache v6.1.0 `55cc8345…`.
 
-govulncheck reports GO-2026-5932 (`golang.org/x/crypto/openpgp`) only at module level: the code does not call it, so the exit code is 0.
+govulncheck reports GO-2026-5932 (`golang.org/x/crypto/openpgp`) only at module level: the code does not call it, so the exit code is 0. Cleared after phase 1 by the x/crypto v0.59.0 update (govulncheck: no vulnerabilities found).
 
 **Not yet verified:** the workflow has not run on GitHub. It runs on the next push.
 
@@ -245,4 +245,4 @@ Carried over to later phases:
 - R/N/P engine profiles of the suite (phase 2).
 - Human-readable text rebranding: logs, metric help, config `doc` strings (phase 9).
 - gRPC reflection names (KD-26).
-- `misc/snapshot` already fails to build upstream.
+- `misc/snapshot` already fails to build upstream. Fixed after phase 1: `go mod tidy` in the deps update of 2026-11-15; `skip-worktree` is no longer needed.
