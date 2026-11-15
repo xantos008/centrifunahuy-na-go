@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Test-only credentials, identical in configs/memory/config.json. Not secrets.
+// Test-only credentials, identical in configs/<profile>/config.json. Not secrets.
 const (
 	HMACSecret = "compat-test-hmac-secret-not-a-real-secret" //nolint:gosec // test-only value, also in configs/
 	APIKey     = "compat-test-api-key"                       //nolint:gosec // test-only value, also in configs/

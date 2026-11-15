@@ -26,7 +26,7 @@ test/compat/
 ├── go.mod                     module …/test/compat; requires gorilla/websocket v1.5.3 (more deps only when a scenario needs them)
 ├── docker-compose.yml         ref (image@digest) and sut (our linux binary from .build/, mounted into alpine:3.24: no image build,
 │                              no network inside Docker); backends are added with the phase-2 engine profiles
-├── configs/<engine>/          one config per engine profile, identical for ref and sut (sut adds --compat=centrifugo)
+├── configs/<profile>/         one config per engine profile (m, r, …), identical for ref and sut (sut adds --compat=centrifugo)
 ├── harness/
 │   ├── target.go              Target{Name, BaseURL}; COMPAT_REF_URL / COMPAT_SUT_URL (default 127.0.0.1:18000 / :28000); WaitReady
 │   ├── client.go              Session; raw WS client (exact JSON frames, batches, pings answered, close codes); HTTP API calls
@@ -34,18 +34,19 @@ test/compat/
 │   ├── run.go                 Run(t, name, scenario) per COMPAT_MODE = diff | golden | record; golden load/save
 │   └── token.go               HS256 test tokens (RS/ES/EdDSA added with CS-AUTH-01)
 ├── scenarios/                 one file per area (below), plain Go test functions
-└── testdata/golden/           recorded ref transcripts (committed)
+└── testdata/golden/<profile>/ recorded ref transcripts per profile (committed)
 ```
 
 Run modes (Makefile targets):
 
 | Target | What it does |
 |---|---|
-| `make compat-up` / `make compat-down` | cross-compile the linux binary into `test/compat/.build/`, start / stop both targets |
+| `make compat-up` / `make compat-down` | cross-compile the linux binary into `test/compat/.build/`, start / stop the targets and backends of `PROFILE` (default `m`; `down -v` flushes that profile's backends) |
 | `make compat` | run all scenarios on ref and sut, diff. **CI default** |
 | `make compat-golden` | sut vs committed golden transcripts (no ref container needed) |
-| `make compat-record` | re-record golden from ref (only on re-baseline; diff reviewed in the PR) |
-| `COMPAT_ENGINE=redis make compat` | restrict to one engine profile |
+| `make compat-record COMPAT_RECORD=CS-…[,…]` | re-record the **named** scenarios from ref, only after the diff is investigated and its cause established; there is no record-all (phase-2 condition C3) |
+| `make compat PROFILE=r` | run against one engine profile (scenarios outside it are skipped) |
+| `make compat-all COMPAT_PROFILES="m r …"` | for each profile: down, up, diff, golden, down |
 
 ## 3. Transcript and normalization
 An Event is one of:
@@ -67,7 +68,7 @@ Normalization replaces **only** these values with stable placeholders (`<client:
 | `token` values in sent commands | tokens embed `exp` times and random ECDSA signatures; only the server's reaction is compared |
 | the per-run suffix of channel names (`Session.Ch`) → `RUN` | keeps long-running targets' memory state (history, presence) apart between runs |
 | keys of maps keyed by client ID (presence results) | numbered like `client` values, in a stable order (by `user`, then ID) |
-| `info`: `metrics` dropped, all other values reduced to their type (`KeysOnly`) | node counters and observed-metric sets depend on process history |
+| `info`: `metrics` and `uptime` dropped, all other values reduced to their type (`KeysOnly`) | node counters and observed-metric sets depend on process history; `uptime` is omitted (zero) while a node is younger than 1 s, so its presence depends on timing |
 
 Never normalized: codes, messages, field presence or absence, offsets, `recovered`/`was_recovering`, data payloads, order of frames within a connection. Adding a normalization rule requires a KD entry or an amendment to this doc in the same PR.
 

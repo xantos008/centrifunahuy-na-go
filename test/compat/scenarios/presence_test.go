@@ -9,6 +9,7 @@ import (
 
 // CS-PRES-01: presence and presence_stats via client and API.
 func TestCS_PRES_01(t *testing.T) {
+	h.Profiles(t, "m", "r", "r-opt", "rs", "rc", "rsh", "n")
 	h.Run(t, "CS-PRES-01", func(s *h.Session) {
 		ch := s.Ch("presence")
 		a := connect(s, h.HS256(h.Claims{Sub: "u1", Info: &h.Info{Name: "a"}}))

@@ -17,6 +17,7 @@ func connect(s *h.Session, token string) *h.WS {
 
 // CS-AUTH-01: valid connection tokens for every supported algorithm family.
 func TestCS_AUTH_01(t *testing.T) {
+	h.Profiles(t, "m")
 	h.Run(t, "CS-AUTH-01", func(s *h.Session) {
 		c := h.Claims{Sub: "u1", Info: &h.Info{Name: "compat"}}
 		for _, tok := range []string{h.HS256(c), h.RS256(c), h.ES256(c), h.EdDSA(c)} {
@@ -27,6 +28,7 @@ func TestCS_AUTH_01(t *testing.T) {
 
 // CS-AUTH-02: rejected connection tokens.
 func TestCS_AUTH_02(t *testing.T) {
+	h.Profiles(t, "m")
 	h.Run(t, "CS-AUTH-02", func(s *h.Session) {
 		c := h.Claims{Sub: "u1"}
 		for _, tok := range []string{

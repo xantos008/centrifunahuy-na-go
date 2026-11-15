@@ -1,7 +1,7 @@
 package harness
 
 // Test-only key pairs for the compatibility suite (generated 2026-11-15).
-// The public halves are in configs/memory/config.json. Not secrets: never
+// The public halves are in configs/<profile>/config.json. Not secrets: never
 // use these keys anywhere else.
 const (
 	rsaPrivateKeyPEM = `-----BEGIN PRIVATE KEY-----

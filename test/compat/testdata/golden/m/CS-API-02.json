@@ -446,7 +446,6 @@
               "num_subs": "<float64>",
               "num_users": "<float64>",
               "uid": "<uid:1>",
-              "uptime": "<uptime:1>",
               "version": "<version:1>"
             }
           ]

@@ -11,6 +11,7 @@ import (
 // one invalid request. Results are recorded as returned (including errors for
 // features this config does not enable, e.g. map and shared poll channels).
 func TestCS_API_02(t *testing.T) {
+	h.Profiles(t, "m")
 	h.Run(t, "CS-API-02", func(s *h.Session) {
 		news, hist, pub := s.Ch("news"), s.Ch("hist:a"), s.Ch("pub:a")
 		type call struct{ method, valid, invalid string }
@@ -40,9 +41,10 @@ func TestCS_API_02(t *testing.T) {
 			s.API(h.APIRequest{Path: "/api/" + c.method, Body: c.valid})
 			s.API(h.APIRequest{Path: "/api/" + c.method, Body: c.invalid})
 		}
-		// info carries per-process numbers (uptime, counts): compare its shape only.
+		// info carries per-process numbers (counts): compare its shape only. uptime
+		// is dropped: it is omitted while a node is younger than one second.
 		// metrics.items keys appear as metrics are first observed, so they depend on
 		// the process history and are dropped.
-		s.API(h.APIRequest{Path: "/api/info", Body: `{}`, KeysOnly: true, Omit: []string{"metrics"}})
+		s.API(h.APIRequest{Path: "/api/info", Body: `{}`, KeysOnly: true, Omit: []string{"metrics", "uptime"}})
 	})
 }

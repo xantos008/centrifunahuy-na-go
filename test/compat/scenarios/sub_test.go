@@ -18,6 +18,7 @@ func subscribeFresh(s *h.Session, user, req string) {
 
 // CS-SUB-01: namespace permission matrix.
 func TestCS_SUB_01(t *testing.T) {
+	h.Profiles(t, "m")
 	h.Run(t, "CS-SUB-01", func(s *h.Session) {
 		news := s.Ch("news")
 		for _, ch := range []string{
@@ -41,6 +42,7 @@ func TestCS_SUB_01(t *testing.T) {
 
 // CS-SUB-02: subscription tokens for a namespace that requires them.
 func TestCS_SUB_02(t *testing.T) {
+	h.Profiles(t, "m")
 	h.Run(t, "CS-SUB-02", func(s *h.Session) {
 		ch := s.Ch("closed:tok")
 		for _, tok := range []string{

@@ -12,6 +12,7 @@ import (
 // CS-NAME-01 (sut only, ADR-0022): default mode exposes Cedrazeka names,
 // compatibility mode exposes the upstream ones.
 func TestCS_NAME_01(t *testing.T) {
+	h.Profiles(t, "m")
 	if h.Mode() == "record" {
 		t.Skip("sut-only scenario")
 	}

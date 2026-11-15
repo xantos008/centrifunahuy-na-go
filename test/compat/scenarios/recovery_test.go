@@ -30,10 +30,12 @@ func recoverAfter(s *h.Session, ch string, n int) {
 
 // CS-REC-01: the gap fits into history: recovered=true with exactly the missed publications.
 func TestCS_REC_01(t *testing.T) {
+	h.Profiles(t, "m", "r", "r-lists", "rs", "rc", "rsh", "p")
 	h.Run(t, "CS-REC-01", func(s *h.Session) { recoverAfter(s, s.Ch("hist:r1"), 3) })
 }
 
 // CS-REC-02: the gap is larger than history_size (10): recovered=false.
 func TestCS_REC_02(t *testing.T) {
+	h.Profiles(t, "m", "r", "r-lists", "rs", "rc", "rsh", "p")
 	h.Run(t, "CS-REC-02", func(s *h.Session) { recoverAfter(s, s.Ch("hist:r2"), 12) })
 }

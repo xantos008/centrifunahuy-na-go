@@ -15,6 +15,7 @@ type position struct {
 
 // CS-HIST-01: history API: position only, limit, since, reverse, oversized limit.
 func TestCS_HIST_01(t *testing.T) {
+	h.Profiles(t, "m", "r", "r-lists", "rs", "rc", "rsh", "p")
 	h.Run(t, "CS-HIST-01", func(s *h.Session) {
 		ch := s.Ch("hist:h1")
 		var last struct {

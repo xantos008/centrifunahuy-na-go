@@ -11,6 +11,7 @@ import (
 // Publisher and subscriber are separate connections, so reply and push order
 // never interleave on one socket.
 func TestCS_PUB_01(t *testing.T) {
+	h.Profiles(t, "m", "r", "rs", "rc", "rsh", "n", "p")
 	h.Run(t, "CS-PUB-01", func(s *h.Session) {
 		ch := s.Ch("pub:p1")
 		sub := connect(s, h.HS256(h.Claims{Sub: "u2"}))
