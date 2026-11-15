@@ -1,6 +1,7 @@
+# Modified by the Cedrazeka authors, 2026. See NOTICE.
 FROM alpine:3.24
 
-ARG USER=centrifugo
+ARG USER=cedrazeka
 ARG UID=1000
 ARG GID=1000
 
@@ -13,8 +14,8 @@ RUN apk --no-cache upgrade && \
 
 USER $USER
 
-WORKDIR /centrifugo
+WORKDIR /cedrazeka
 
-COPY centrifugo /usr/local/bin/centrifugo
+COPY cedrazeka /usr/local/bin/cedrazeka
 
-CMD ["centrifugo"]
+CMD ["cedrazeka"]

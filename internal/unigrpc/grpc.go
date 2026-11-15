@@ -5,6 +5,7 @@ package unigrpc
 import (
 	"time"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/logging"
 	"github.com/xantos008/centrifunahuy-na-go/internal/unigrpc/unistream"
 
@@ -16,7 +17,7 @@ import (
 
 // RegisterService ...
 func RegisterService(server *grpc.Server, service unistream.CentrifugoUniStreamServer) error {
-	unistream.RegisterCentrifugoUniStreamServer(server, service)
+	brand.RegisterGRPCService(server, &unistream.CentrifugoUniStream_ServiceDesc, service)
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/build"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 	"github.com/xantos008/centrifunahuy-na-go/internal/logging"
@@ -22,7 +23,7 @@ func (a *App) centrifugeNodeConfig() centrifuge.Config {
 	cfg := centrifuge.Config{}
 	cfg.Version = version + " " + strings.ToUpper(edition)
 	cfg.Metrics = centrifuge.MetricsConfig{
-		MetricsNamespace:                     "centrifugo",
+		MetricsNamespace:                     brand.Ident(),
 		EnableRecoveredPublicationsHistogram: appCfg.Prometheus.RecoveredPublicationsHistogram,
 		EnableNativeHistograms:               appCfg.Prometheus.NativeHistograms,
 		RegistererGatherer:                   a.metricsRegistry,

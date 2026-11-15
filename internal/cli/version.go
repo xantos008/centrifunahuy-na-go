@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/build"
 
 	"github.com/spf13/cobra"
@@ -14,8 +15,8 @@ import (
 func Version() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
-		Short: "Centrifugo version information",
-		Long:  `Print the version information of Centrifugo`,
+		Short: brand.Product + " version information",
+		Long:  "Print the version information of " + brand.Product,
 		Run: func(cmd *cobra.Command, args []string) {
 			version()
 		},
@@ -23,5 +24,5 @@ func Version() *cobra.Command {
 }
 
 func version() {
-	fmt.Printf("Centrifugo v%s (Go version: %s)\n", build.Version, runtime.Version())
+	fmt.Printf("%s v%s (Go version: %s)\n", brand.Product, build.Version, runtime.Version())
 }

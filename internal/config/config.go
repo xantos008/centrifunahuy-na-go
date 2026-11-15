@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config/envconfig"
 	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
@@ -230,14 +231,14 @@ func GetConfig(cmd *cobra.Command, configFile string) (Config, Meta, error) {
 	}
 
 	knownEnvVars := map[string]envconfig.VarInfo{}
-	varInfo, err := envconfig.ProcessWithoutNestedKeys("CENTRIFUGO", conf, flagsSet)
+	varInfo, err := envconfig.ProcessWithoutNestedKeys(brand.EnvPrefix(), conf, flagsSet)
 	if err != nil {
 		return Config{}, Meta{}, fmt.Errorf("error processing env: %w", err)
 	}
 	extendKnownEnvVars(knownEnvVars, varInfo)
 
 	for i, item := range conf.Channel.Namespaces {
-		varInfo, err = envconfig.Process("CENTRIFUGO_CHANNEL_NAMESPACES_"+configtypes.NameForEnv(item.Name), &item)
+		varInfo, err = envconfig.Process(brand.EnvVar("CHANNEL_NAMESPACES_")+configtypes.NameForEnv(item.Name), &item)
 		if err != nil {
 			return Config{}, Meta{}, fmt.Errorf("error processing env namespaces: %w", err)
 		}
@@ -246,7 +247,7 @@ func GetConfig(cmd *cobra.Command, configFile string) (Config, Meta, error) {
 	}
 
 	for i, item := range conf.RPC.Namespaces {
-		varInfo, err = envconfig.Process("CENTRIFUGO_RPC_NAMESPACES_"+configtypes.NameForEnv(item.Name), &item)
+		varInfo, err = envconfig.Process(brand.EnvVar("RPC_NAMESPACES_")+configtypes.NameForEnv(item.Name), &item)
 		if err != nil {
 			return Config{}, Meta{}, fmt.Errorf("error processing env rpc namespaces: %w", err)
 		}
@@ -255,7 +256,7 @@ func GetConfig(cmd *cobra.Command, configFile string) (Config, Meta, error) {
 	}
 
 	for i, item := range conf.Proxies {
-		varInfo, err = envconfig.Process("CENTRIFUGO_PROXIES_"+configtypes.NameForEnv(item.Name), &item)
+		varInfo, err = envconfig.Process(brand.EnvVar("PROXIES_")+configtypes.NameForEnv(item.Name), &item)
 		if err != nil {
 			return Config{}, Meta{}, fmt.Errorf("error processing env named proxies: %w", err)
 		}
@@ -264,7 +265,7 @@ func GetConfig(cmd *cobra.Command, configFile string) (Config, Meta, error) {
 	}
 
 	for i, item := range conf.Consumers {
-		varInfo, err = envconfig.Process("CENTRIFUGO_CONSUMERS_"+configtypes.NameForEnv(item.Name), &item)
+		varInfo, err = envconfig.Process(brand.EnvVar("CONSUMERS_")+configtypes.NameForEnv(item.Name), &item)
 		if err != nil {
 			return Config{}, Meta{}, fmt.Errorf("error processing env consumers: %w", err)
 		}
@@ -383,8 +384,14 @@ func appendKeyPath(parent, key string) string {
 
 func checkEnvironmentVars(knownEnvVars map[string]envconfig.VarInfo) []string {
 	var unknownEnvs []string
-	envPrefix := "CENTRIFUGO_"
+	envPrefix := brand.EnvVar("")
 	envVars := os.Environ()
+	// In default mode, upstream CENTRIFUGO_* variables are not read; report
+	// them as unknown so a drop-in deployment without --compat is noticed.
+	upstreamPrefix := ""
+	if brand.Current() == brand.ModeDefault {
+		upstreamPrefix = "CENTRIFUGO_"
+	}
 
 	for _, envVar := range envVars {
 		kv, err := envparse.Parse(strings.NewReader(envVar))
@@ -392,6 +399,10 @@ func checkEnvironmentVars(knownEnvVars map[string]envconfig.VarInfo) []string {
 			continue
 		}
 		for envKey := range kv {
+			if upstreamPrefix != "" && strings.HasPrefix(envKey, upstreamPrefix) {
+				unknownEnvs = append(unknownEnvs, envKey)
+				continue
+			}
 			if !strings.HasPrefix(envKey, envPrefix) {
 				continue
 			}
@@ -421,10 +432,13 @@ func checkEnvironmentVars(knownEnvVars map[string]envconfig.VarInfo) []string {
 // Centrifugo automatically scans environment variables starting with CENTRIFUGO_ and converts them to configuration options.
 // However, Kubernetes automatically injects environment variables, so this regular expression filters out Kubernetes-injected environment variables.
 // See isKubernetesEnvVar function for usage.
-var k8sEnvRegex = regexp.MustCompile(`^CENTRIFUGO(?:_[A-Z0-9_]+)?_(PORT|SERVICE_)`)
+var k8sEnvRegex = map[brand.Mode]*regexp.Regexp{
+	brand.ModeDefault:    regexp.MustCompile(`^CEDRAZEKA(?:_[A-Z0-9_]+)?_(PORT|SERVICE_)`),
+	brand.ModeCentrifugo: regexp.MustCompile(`^CENTRIFUGO(?:_[A-Z0-9_]+)?_(PORT|SERVICE_)`),
+}
 
 func isKubernetesEnvVar(envKey string) bool {
-	return k8sEnvRegex.MatchString(envKey)
+	return k8sEnvRegex[brand.Current()].MatchString(envKey)
 }
 
 // extraKnownEnvVars holds environment variables Centrifugo reads directly
@@ -442,7 +456,7 @@ func RegisterKnownEnvVar(envKey string) {
 func isCustomEnvVar(envKey string) bool {
 	// Custom environment variables should start with "CENTRIFUGO_VAR_" prefix.
 	// This function checks if the environment variable is a custom one.
-	return strings.HasPrefix(envKey, "CENTRIFUGO_VAR_")
+	return strings.HasPrefix(envKey, brand.EnvVar("VAR_"))
 }
 
 // DefaultConfig is a helper to be used in tests.

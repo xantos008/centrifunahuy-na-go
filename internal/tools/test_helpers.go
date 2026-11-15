@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"sync"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/proxyproto"
 
 	"github.com/centrifugal/centrifuge"
@@ -189,7 +190,7 @@ func NewCommonGRPCProxyTestCase(ctx context.Context, srv proxyproto.CentrifugoPr
 
 	listener := bufconn.Listen(1024)
 	server := grpc.NewServer()
-	proxyproto.RegisterCentrifugoProxyServer(server, srv)
+	brand.RegisterGRPCService(server, &proxyproto.CentrifugoProxy_ServiceDesc, srv)
 
 	go func() {
 		if err := server.Serve(listener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 	"github.com/xantos008/centrifunahuy-na-go/internal/confighelpers"
 	"github.com/xantos008/centrifunahuy-na-go/internal/jwtverify"
@@ -48,7 +49,7 @@ func checkSubToken(cmd *cobra.Command, checkSubTokenConfigFile string, args []st
 		}
 	}
 	if len(args) != 1 {
-		fmt.Printf("error: provide token to check [centrifugo checksubtoken <TOKEN>]\n")
+		fmt.Printf("error: provide token to check [%s checksubtoken <TOKEN>]\n", brand.Binary)
 		os.Exit(1)
 	}
 	subject, channel, claims, err := parseAndVerifySubToken(verifierConfig, cfg, args[0])

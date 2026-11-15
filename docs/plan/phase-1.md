@@ -106,6 +106,14 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 - gRPC test over `bufconn`: default mode serves `/cedrazeka.api.v1.Api/Publish` and rejects the upstream path; compatibility mode serves both;
 - compatibility scenario CS-NAME-01.
 
+**Done (2026-11-15), deviations from the plan above:**
+- The mode is process-wide, set in `main`, rather than a `Names` struct passed down (ADR-0022 implementation notes).
+- Defaults are mapped in envconfig, not after load.
+- The upstream tests that assert upstream names run in compatibility mode.
+- The gRPC rename test lives in `internal/brand/e2e`.
+- Reflection limitation: KD-26.
+- Operator doc: `docs/operations/compat-mode.md`.
+
 ### 1.6 THIRD_PARTY_LICENSES generation
 - Candidate: `github.com/google/go-licenses/v2` (Apache-2.0). Vet it per CLAUDE.md (source, license, maintenance, network use), pin it in `tools/go.mod`, and record it in `docs/ai/tooling-lock.md` **before** use. If vetting fails, fall back to a ~40-line script using `go list -m -json all` plus module-cache LICENSE files, in `scripts/`.
 - Add a Makefile target `licenses`. CI checks that the file is up to date.

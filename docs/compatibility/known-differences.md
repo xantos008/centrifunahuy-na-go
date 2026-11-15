@@ -43,6 +43,7 @@ Status values:
 | KD-23 | CEL | Resource limits undocumented | Cost limit, deadline, expression length cap; fail closed | proposed |
 | KD-24 | Labels | Size limits undocumented (PRO-OQ-15) | Documented caps on count and key/value length | proposed |
 | KD-25 | gRPC server API | No auth by default | Same default (compatibility), plus a startup WARN when exposed without a key | proposed |
+| KD-26 | gRPC server reflection | Describes `centrifugal.centrifugo.api.CentrifugoApi` | In default mode the API service is `cedrazeka.api.v1.Api`, but reflection still describes only the upstream name; `grpcurl` by our name needs `api/proto/cedrazeka/api.proto` | accepted (limitation; ADR-0022), revisit in phase 9 |
 
 ## Extensions (additive, off by default or invisible to compatible clients)
 

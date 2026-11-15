@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/build"
 	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
@@ -48,7 +49,7 @@ const googleCloudAuthScope = "https://www.googleapis.com/auth/cloud-platform"
 func newResource(ctx context.Context, instanceID string, detectors ...resource.Detector) (*resource.Resource, error) {
 	serviceName := os.Getenv("OTEL_SERVICE_NAME")
 	if serviceName == "" {
-		serviceName = "centrifugo"
+		serviceName = brand.Ident()
 	}
 	rs, err := resource.New(ctx,
 		resource.WithSchemaURL(semconv.SchemaURL),

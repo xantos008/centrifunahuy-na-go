@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 
 	"github.com/spf13/cobra"
@@ -18,7 +19,7 @@ func CheckConfig() *cobra.Command {
 	var checkConfigCmd = &cobra.Command{
 		Use:   "checkconfig",
 		Short: "Check configuration file",
-		Long:  `Check Centrifugo configuration file`,
+		Long:  "Check " + brand.Product + " configuration file",
 		Run: func(cmd *cobra.Command, args []string) {
 			checkConfig(cmd, checkConfigFile, checkConfigStrict)
 		},

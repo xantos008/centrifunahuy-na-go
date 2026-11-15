@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package configtypes
 
 import (
@@ -8,13 +10,19 @@ import (
 	"regexp"
 
 	"github.com/go-viper/mapstructure/v2"
+
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 )
 
 type MapStringString map[string]string
 
-var customEnvVarRegex = regexp.MustCompile(`\$\{(CENTRIFUGO_VAR_[^}]+)}`)
+var customEnvVarRegexes = map[brand.Mode]*regexp.Regexp{
+	brand.ModeDefault:    regexp.MustCompile(`\$\{(CEDRAZEKA_VAR_[^}]+)}`),
+	brand.ModeCentrifugo: regexp.MustCompile(`\$\{(CENTRIFUGO_VAR_[^}]+)}`),
+}
 
 func expandEnvVars(m map[string]string) error {
+	customEnvVarRegex := customEnvVarRegexes[brand.Current()]
 	for key, val := range m {
 		// First check if all CENTRIFUGO_VAR_ environment variables exist.
 		matches := customEnvVarRegex.FindAllStringSubmatch(val, -1)

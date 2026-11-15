@@ -55,6 +55,7 @@ snapshot-diff:
 snapshot-test:
 	cd misc/snapshot && go vet ./... && go test -count=1 ./...
 
+# The module path is the repository address; the binary is always named cedrazeka.
 build:
-	CGO_ENABLED=0 go build
+	CGO_ENABLED=0 go build -o cedrazeka .
 

@@ -17,6 +17,7 @@ import (
 
 	_ "embed"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/build"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
@@ -36,8 +37,8 @@ func ConfigDoc() *cobra.Command {
 	var baseLevel int
 	var configDocCmd = &cobra.Command{
 		Use:   "configdoc",
-		Short: "Show Centrifugo configuration documentation generated from source code",
-		Long:  `Show Centrifugo configuration documentation generated from source code`,
+		Short: "Show " + brand.Product + " configuration documentation generated from source code",
+		Long:  "Show " + brand.Product + " configuration documentation generated from source code",
 		Run: func(cmd *cobra.Command, args []string) {
 			configDoc(port, mdOutput, section, baseLevel)
 		},
@@ -124,12 +125,12 @@ func convertDocsToMarkdown(docs []FieldDoc, section string, baseLevel int, mdOut
 		var envVar string
 		if !strings.Contains(doc.Field, "[]") {
 			if !doc.IsComplexType {
-				envVar = "CENTRIFUGO_" + strings.ToUpper(strings.ReplaceAll(doc.Field, `.`, "_"))
+				envVar = brand.EnvVar("") + strings.ToUpper(strings.ReplaceAll(doc.Field, `.`, "_"))
 			} else {
 				if strings.Contains(doc.Field, "namespaces") || strings.Contains(doc.Field, "proxies") || strings.Contains(doc.Field, "consumers") {
-					envVar = "CENTRIFUGO_" + strings.ToUpper(strings.ReplaceAll(doc.Field, `.`, "_"))
+					envVar = brand.EnvVar("") + strings.ToUpper(strings.ReplaceAll(doc.Field, `.`, "_"))
 				} else if doc.Default == "[]" {
-					envVar = "CENTRIFUGO_" + strings.ToUpper(strings.ReplaceAll(doc.Field, `.`, "_"))
+					envVar = brand.EnvVar("") + strings.ToUpper(strings.ReplaceAll(doc.Field, `.`, "_"))
 				}
 			}
 		} else {
@@ -139,7 +140,7 @@ func convertDocsToMarkdown(docs []FieldDoc, section string, baseLevel int, mdOut
 					strings.HasPrefix(doc.Field, "consumers")) &&
 				(!doc.IsComplexType || doc.Default == "[]") {
 				field := strings.Replace(doc.Field, `[]`, "_<NAME>", 1)
-				envVar = "CENTRIFUGO_" + strings.ToUpper(strings.ReplaceAll(field, `.`, "_"))
+				envVar = brand.EnvVar("") + strings.ToUpper(strings.ReplaceAll(field, `.`, "_"))
 			}
 			if strings.Contains(envVar, "[]") {
 				envVar = ""
@@ -321,7 +322,7 @@ func documentStruct(cfg interface{}, parentKey string, level int) []FieldDoc {
 			GoName:        field.Name,
 			Level:         fieldLevel,
 			Type:          displayType,
-			Default:       field.Tag.Get("default"),
+			Default:       brand.MapDefault(field.Tag.Get("default")),
 			IsComplexType: isComplex,
 			Comment:       convertDocCodes(field.Tag.Get("doc")),
 		}

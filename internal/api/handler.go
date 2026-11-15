@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	. "github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/rs/zerolog/log"
@@ -93,5 +94,5 @@ func (s *Handler) writeJsonCustomStatus(w http.ResponseWriter, statusCode int, d
 }
 
 func (s *Handler) useTransportErrorMode(r *http.Request) bool {
-	return s.config.UseTransportErrorMode || r.Header.Get("X-Centrifugo-Error-Mode") == "transport"
+	return s.config.UseTransportErrorMode || r.Header.Get(brand.Header("Error-Mode")) == "transport"
 }

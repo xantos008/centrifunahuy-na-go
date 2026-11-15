@@ -5,8 +5,10 @@ package api
 import (
 	"context"
 	"crypto/subtle"
+	"strings"
 
 	. "github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 
 	"github.com/centrifugal/centrifuge"
 	"google.golang.org/grpc"
@@ -47,7 +49,7 @@ type GRPCAPIServiceConfig struct {
 
 // RegisterGRPCServerAPI registers GRPC API service in provided GRPC server.
 func RegisterGRPCServerAPI(n *centrifuge.Node, apiExecutor *Executor, server *grpc.Server, config GRPCAPIServiceConfig) error {
-	RegisterCentrifugoApiServer(server, newGRPCAPIService(n, apiExecutor, config))
+	brand.RegisterGRPCService(server, &CentrifugoApi_ServiceDesc, newGRPCAPIService(n, apiExecutor, config))
 	return nil
 }
 
@@ -72,7 +74,7 @@ func (s *grpcAPIService) useTransportErrorMode(ctx context.Context) bool {
 		return true
 	}
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		errorMode := md.Get("x-centrifugo-error-mode")
+		errorMode := md.Get(strings.ToLower(brand.Header("Error-Mode")))
 		return len(errorMode) > 0 && errorMode[0] == "transport"
 	}
 	return false

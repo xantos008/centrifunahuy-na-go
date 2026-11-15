@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/proxyproto"
 
 	"google.golang.org/grpc"
@@ -36,7 +37,7 @@ func NewGRPCConnectProxy(name string, p Config) (*GRPCConnectProxy, error) {
 	}
 	return &GRPCConnectProxy{
 		config: p,
-		client: proxyproto.NewCentrifugoProxyClient(conn),
+		client: proxyproto.NewCentrifugoProxyClient(brand.GRPCClientConn(conn)),
 		conn:   conn,
 	}, nil
 }

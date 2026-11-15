@@ -1,3 +1,5 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
 package metrics
 
 import (
@@ -5,6 +7,8 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 )
 
 const defaultMetricsNamespace = "centrifugo"
@@ -164,7 +168,7 @@ func newRegistry(cfg Config) (*Registry, error) {
 
 	metricsNamespace := cfg.Namespace
 	if metricsNamespace == "" {
-		metricsNamespace = defaultMetricsNamespace
+		metricsNamespace = brand.MapDefault(defaultMetricsNamespace)
 	}
 
 	constLabels := prometheus.Labels(cfg.ConstLabels)

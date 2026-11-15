@@ -5,6 +5,29 @@
 - Feature IDs: OSS-CFG (env), OSS-OBS (metrics), OSS-API-02, OSS-PROXY (gRPC), OSS-CONS (Kafka headers), OSS-TRANS (uni gRPC); KD-17
 - Legal notes: [naming-and-trademarks.md](../../legal/naming-and-trademarks.md)
 
+## Implementation notes (step 1.5, 2026-11-15)
+- **Process-wide mode.** `internal/brand` keeps one mode for the process. `main` resolves it from `--compat` or `CEDRAZEKA_COMPAT` before cobra and config run, and it is read-only afterwards. This replaces "no globals beyond constants" from point 1 below: passing `Names` through about 40 upstream call sites would have made every upstream merge expensive.
+- **Defaults.** All about 45 upstream defaults that carry `centrifugo` (key prefixes, consumer header and field names, Graphite prefix) are mapped in one place: the `default` tag lookup in `internal/config/envconfig`, plus the config viewer and `configdoc`. Struct tags are unchanged. An explicitly set value is never rewritten.
+- **Also mode-dependent:**
+  - the `X-<Ident>-Error-Mode` HTTP header and the `x-<ident>-error-mode` gRPC metadata;
+  - OTel span attribute prefix `<ident>.channel`;
+  - OTel service name, Kafka client ID, MSK session name;
+  - centrifuge node metrics namespace.
+- **Not renamed** (internal, not user-facing; ADR-0023):
+  - NATS epoch tag `__centrifugo_epoch`;
+  - PG consumer advisory-lock prefix.
+- **Deferred to phase 9:** human-readable texts — log messages, metric help strings, config `doc` strings.
+- **gRPC.**
+  - Server: a copy of the generated `ServiceDesc` with our `ServiceName` is registered, and the upstream one too in compatibility mode.
+  - Proxy client: the connection is wrapped to rewrite `/<upstream service>/<Method>` paths.
+  - Published schemas for default mode: `api/proto/cedrazeka/*.proto`, which rename only the package and service; messages are identical.
+  - Known limitation (KD-26): gRPC server reflection describes only the upstream service names.
+- **Default mode warns about upstream env.** `CENTRIFUGO_*` variables are reported as unknown env vars, so a drop-in deployment without `--compat` is noticed.
+- **Tests.**
+  - Upstream tests that assert upstream names (`app`, `cli`, `config`, `configredact`, `configtypes`, `telemetry`) run in compatibility mode through a `brand_compat_test.go` `init`.
+  - The upstream proxy tests run in default mode: the test gRPC server registers through `brand.RegisterGRPCService`, so they exercise the client-side rename.
+  - Default-mode end-to-end tests are in `internal/brand/e2e`.
+
 ## Context
 The fork contains the upstream brand in several places with different weight.
 
@@ -17,7 +40,7 @@ The fork contains the upstream brand in several places with different weight.
 
 **Operator contracts.** Renaming these breaks existing deployments, not clients:
 - the env prefix `CENTRIFUGO_` (`internal/config/config.go`: `envconfig` prefix, `CENTRIFUGO_VAR_`, k8s regex);
-- the default metric namespace `centrifugo` (`internal/metrics`, already configurable upstream);
+- the metric namespace `centrifugo` (`internal/metrics` and the centrifuge node; not configurable by users);
 - the default key prefixes (`centrifugo` for Redis, NATS and PG);
 - the binary name and CLI help.
 

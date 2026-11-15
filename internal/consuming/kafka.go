@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/xantos008/centrifunahuy-na-go/internal/api"
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 	"github.com/xantos008/centrifunahuy-na-go/internal/logging"
 	"github.com/xantos008/centrifunahuy-na-go/internal/metrics"
@@ -121,7 +122,8 @@ func NewKafkaConsumer(
 	return consumer, nil
 }
 
-const kafkaClientID = "centrifugo"
+// kafkaClientID and mskAssumeRoleSessionName follow the brand mode (ADR-0022).
+func kafkaClientID() string { return brand.Ident() }
 
 // kgoZerologAdapter adapts zerolog.Logger to kgo.Logger interface.
 type kgoZerologAdapter struct {
@@ -184,7 +186,7 @@ func (c *KafkaConsumer) leaveGroup(ctx context.Context, client *kgo.Client) erro
 }
 
 // mskAssumeRoleSessionName is the STS RoleSessionName for AssumeRole calls.
-const mskAssumeRoleSessionName = "centrifugo-msk"
+func mskAssumeRoleSessionName() string { return brand.Ident() + "-msk" }
 
 // mskAssumeRoleAuth obtains fresh STS credentials for each MSK IAM SASL handshake.
 // Call AssumeRole directly on every callback; do not use CredentialsCache, which can
@@ -210,7 +212,7 @@ func newMSKAssumeRoleAuth(ctx context.Context, roleARN string) (*mskAssumeRoleAu
 func (a *mskAssumeRoleAuth) auth(ctx context.Context) (mskaws.Auth, error) {
 	out, err := a.stsClient.AssumeRole(ctx, &sts.AssumeRoleInput{
 		RoleArn:         aws.String(a.roleARN),
-		RoleSessionName: aws.String(mskAssumeRoleSessionName),
+		RoleSessionName: aws.String(mskAssumeRoleSessionName()),
 	})
 	if err != nil {
 		return mskaws.Auth{}, err
@@ -263,7 +265,7 @@ func (c *KafkaConsumer) initClient() (*kgo.Client, error) {
 		kgo.OnPartitionsLost(c.lost),
 		kgo.AutoCommitMarks(),
 		kgo.BlockRebalanceOnPoll(),
-		kgo.ClientID(kafkaClientID),
+		kgo.ClientID(kafkaClientID()),
 		kgo.FetchMaxWait(time.Duration(c.config.FetchMaxWait)),
 		kgo.WithLogger(&kgoZerologAdapter{log: c.common.log}),
 	}

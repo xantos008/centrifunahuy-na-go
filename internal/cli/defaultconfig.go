@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 	"github.com/xantos008/centrifunahuy-na-go/internal/tools"
 
@@ -25,7 +26,7 @@ func DefaultConfig() *cobra.Command {
 	var defaultConfigCmd = &cobra.Command{
 		Use:   "defaultconfig",
 		Short: "Generate full configuration file with defaults",
-		Long:  `Generate full Centrifugo configuration file with defaults`,
+		Long:  "Generate full " + brand.Product + " configuration file with defaults",
 		Run: func(cmd *cobra.Command, args []string) {
 			defaultConfig(defaultConfigFile, baseConfigFile, dryRun)
 		},

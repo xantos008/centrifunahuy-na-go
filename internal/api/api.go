@@ -10,6 +10,7 @@ import (
 	"time"
 
 	. "github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 	"github.com/xantos008/centrifunahuy-na-go/internal/metrics"
@@ -198,7 +199,7 @@ func (h *Executor) Publish(ctx context.Context, cmd *PublishRequest) *PublishRes
 
 	if h.config.UseOpenTelemetry {
 		span := trace.SpanFromContext(ctx)
-		span.SetAttributes(attribute.String("centrifugo.channel", ch))
+		span.SetAttributes(attribute.String(brand.Ident()+".channel", ch))
 	}
 
 	resp := &PublishResponse{}
@@ -293,7 +294,7 @@ func (h *Executor) Broadcast(ctx context.Context, cmd *BroadcastRequest) *Broadc
 
 	if h.config.UseOpenTelemetry {
 		span := trace.SpanFromContext(ctx)
-		span.SetAttributes(attribute.Int("centrifugo.num_channels", len(channels)))
+		span.SetAttributes(attribute.Int(brand.Ident()+".num_channels", len(channels)))
 	}
 
 	if len(channels) == 0 {
@@ -915,7 +916,7 @@ func (h *Executor) MapPublish(ctx context.Context, cmd *MapPublishRequest) *MapP
 	ch := cmd.Channel
 	if h.config.UseOpenTelemetry {
 		span := trace.SpanFromContext(ctx)
-		span.SetAttributes(attribute.String("centrifugo.channel", ch))
+		span.SetAttributes(attribute.String(brand.Ident()+".channel", ch))
 	}
 
 	resp := &MapPublishResponse{}
@@ -1003,7 +1004,7 @@ func (h *Executor) MapRemove(ctx context.Context, cmd *MapRemoveRequest) *MapRem
 	ch := cmd.Channel
 	if h.config.UseOpenTelemetry {
 		span := trace.SpanFromContext(ctx)
-		span.SetAttributes(attribute.String("centrifugo.channel", ch))
+		span.SetAttributes(attribute.String(brand.Ident()+".channel", ch))
 	}
 
 	resp := &MapRemoveResponse{}
@@ -1053,7 +1054,7 @@ func (h *Executor) MapReadState(ctx context.Context, cmd *MapReadStateRequest) *
 	ch := cmd.Channel
 	if h.config.UseOpenTelemetry {
 		span := trace.SpanFromContext(ctx)
-		span.SetAttributes(attribute.String("centrifugo.channel", ch))
+		span.SetAttributes(attribute.String(brand.Ident()+".channel", ch))
 	}
 
 	resp := &MapReadStateResponse{}
@@ -1127,7 +1128,7 @@ func (h *Executor) MapReadStream(ctx context.Context, cmd *MapReadStreamRequest)
 	ch := cmd.Channel
 	if h.config.UseOpenTelemetry {
 		span := trace.SpanFromContext(ctx)
-		span.SetAttributes(attribute.String("centrifugo.channel", ch))
+		span.SetAttributes(attribute.String(brand.Ident()+".channel", ch))
 	}
 
 	resp := &MapReadStreamResponse{}
@@ -1200,7 +1201,7 @@ func (h *Executor) MapStats(ctx context.Context, cmd *MapStatsRequest) *MapStats
 	ch := cmd.Channel
 	if h.config.UseOpenTelemetry {
 		span := trace.SpanFromContext(ctx)
-		span.SetAttributes(attribute.String("centrifugo.channel", ch))
+		span.SetAttributes(attribute.String(brand.Ident()+".channel", ch))
 	}
 
 	resp := &MapStatsResponse{}
@@ -1243,7 +1244,7 @@ func (h *Executor) MapClear(ctx context.Context, cmd *MapClearRequest) *MapClear
 	ch := cmd.Channel
 	if h.config.UseOpenTelemetry {
 		span := trace.SpanFromContext(ctx)
-		span.SetAttributes(attribute.String("centrifugo.channel", ch))
+		span.SetAttributes(attribute.String(brand.Ident()+".channel", ch))
 	}
 
 	resp := &MapClearResponse{}
@@ -1283,7 +1284,7 @@ func (h *Executor) SharedPollPublish(ctx context.Context, cmd *SharedPollPublish
 	ch := cmd.Channel
 	if h.config.UseOpenTelemetry {
 		span := trace.SpanFromContext(ctx)
-		span.SetAttributes(attribute.String("centrifugo.channel", ch))
+		span.SetAttributes(attribute.String(brand.Ident()+".channel", ch))
 	}
 
 	resp := &SharedPollPublishResponse{}

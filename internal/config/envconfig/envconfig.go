@@ -1,6 +1,7 @@
 // Copyright (c) 2013 Kelsey Hightower. All rights reserved.
 // Use of this source code is governed by the MIT License that can be found in
 // the LICENSE file.
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
 
 package envconfig
 
@@ -15,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 )
 
 // ErrInvalidSpecification indicates that a specification is of the wrong type.
@@ -234,7 +237,8 @@ func ProcessWithoutNestedKeys(prefix string, spec interface{}, excludeKeys []str
 		}
 
 		var defaultIsUsed bool
-		def := info.Tags.Get("default")
+		// Cedrazeka: upstream defaults carrying the "centrifugo" identifier follow the mode (ADR-0022).
+		def := brand.MapDefault(info.Tags.Get("default"))
 		if def != "" && (!ok || value == "") { // Empty values are considered unset.
 			value = def
 			defaultIsUsed = true

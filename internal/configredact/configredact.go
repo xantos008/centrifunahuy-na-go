@@ -31,6 +31,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 )
 
@@ -395,9 +396,9 @@ func buildDoc(f reflect.StructField, path string) *Doc {
 	// only derivable where path is known (not under a map or a non-named array
 	// element). This mirrors the env-var rules of the `centrifugo configdoc` tool.
 	if path != envSuppressed && !configtypes.IsComplexType(f.Type) {
-		d.Env = "CENTRIFUGO_" + strings.ToUpper(strings.ReplaceAll(path, ".", "_"))
+		d.Env = brand.EnvVar("") + strings.ToUpper(strings.ReplaceAll(path, ".", "_"))
 	}
-	if def := f.Tag.Get("default"); def != "" {
+	if def := brand.MapDefault(f.Tag.Get("default")); def != "" {
 		d.Default = def
 	}
 	return d

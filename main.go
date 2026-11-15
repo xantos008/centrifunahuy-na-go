@@ -16,15 +16,27 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/xantos008/centrifunahuy-na-go/internal/app"
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/cli"
 )
 
 //go:generate internal/gen/api/generate.sh
 func main() {
+	// The compatibility mode must be known before any configuration is read (ADR-0022).
+	mode, err := brand.Resolve(os.Args[1:], os.Getenv)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
+	brand.Set(mode)
+
 	root := app.Centrifugo(app.Options{})
 	// Register helper CLI.
-	// See `centrifugo -h` and https://centrifugal.dev/docs/server/console_commands.
+	// See `cedrazeka -h`.
 	root.AddCommand(
 		cli.Version(), cli.CheckConfig(), cli.GenConfig(), cli.GenToken(),
 		cli.GenSubToken(), cli.CheckToken(), cli.CheckSubToken(), cli.DefaultConfig(),

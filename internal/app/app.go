@@ -17,6 +17,7 @@ import (
 	"sync/atomic"
 
 	"github.com/xantos008/centrifunahuy-na-go/internal/api"
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/build"
 	"github.com/xantos008/centrifunahuy-na-go/internal/client"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
@@ -377,10 +378,10 @@ func (a *App) setupConfigAndLogging() error {
 	if !cfg.Broker.Enabled || !cfg.PresenceManager.Enabled {
 		entry = entry.Str("engine", cfg.Engine.Type)
 	}
-	entry.Msg("starting Centrifugo")
+	entry.Msg("starting " + brand.Product)
 
 	if build.Version == "0.0.0" {
-		log.Warn().Msg("running a development build of Centrifugo (version 0.0.0), ensure to use release build in production")
+		log.Warn().Msg("running a development build of " + brand.Product + " (version 0.0.0), ensure to use release build in production")
 	}
 	return nil
 }
@@ -402,7 +403,7 @@ func (a *App) setupContainer() error {
 	// config.
 	a.metricsRegistry = newMetricsRegistry()
 	metricsConfig := metrics.Config{
-		Namespace:        "",  // Use default "centrifugo" namespace.
+		Namespace:        "",  // Use the default namespace (brand.Ident()).
 		ConstLabels:      nil, // Can be populated from config in the future.
 		Registerer:       a.metricsRegistry,
 		NativeHistograms: cfg.Prometheus.NativeHistograms,

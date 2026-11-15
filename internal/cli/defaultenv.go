@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config/envconfig"
 
@@ -24,7 +25,7 @@ func DefaultEnv() *cobra.Command {
 	var defaultEnvCmd = &cobra.Command{
 		Use:   "defaultenv",
 		Short: "Generate full environment var list with defaults",
-		Long:  `Generate full Centrifugo environment var list with defaults`,
+		Long:  "Generate full " + brand.Product + " environment var list with defaults",
 		Run: func(cmd *cobra.Command, args []string) {
 			defaultEnv(baseConfigFile, baseNonZeroOnly)
 		},
@@ -47,11 +48,13 @@ func defaultEnv(baseFile string, baseNonZeroOnly bool) {
 	printSortedEnvVars(meta.KnownEnvVars, baseNonZeroOnly)
 }
 
-var namedArrayEnvVars = []string{
-	"CENTRIFUGO_CHANNEL_NAMESPACES",
-	"CENTRIFUGO_RPC_NAMESPACES",
-	"CENTRIFUGO_CONSUMERS",
-	"CENTRIFUGO_PROXIES",
+func namedArrayEnvVars() []string {
+	return []string{
+		brand.EnvVar("CHANNEL_NAMESPACES"),
+		brand.EnvVar("RPC_NAMESPACES"),
+		brand.EnvVar("CONSUMERS"),
+		brand.EnvVar("PROXIES"),
+	}
 }
 
 func printSortedEnvVars(knownEnvVars map[string]envconfig.VarInfo, baseNonZeroOnly bool) {
@@ -73,7 +76,7 @@ func printSortedEnvVars(knownEnvVars map[string]envconfig.VarInfo, baseNonZeroOn
 			continue
 		}
 		value := valueToStringReflect(knownEnvVars[env].Field)
-		if slices.Contains(namedArrayEnvVars, env) { // Special handling for named array env vars.
+		if slices.Contains(namedArrayEnvVars(), env) { // Special handling for named array env vars.
 			var items []struct {
 				Name string `json:"name"`
 			}
