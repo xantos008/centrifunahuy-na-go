@@ -1,0 +1,31 @@
+Cedrazeka
+Copyright 2026 Cedrazeka authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+It is provided "AS IS", without warranties or conditions of any kind; see
+sections 7 and 8 of the License for the disclaimer of warranty and the
+limitation of liability.
+
+This product includes software developed by Centrifugal Labs LTD:
+Centrifugo OSS v6.10.3 (https://github.com/centrifugal/centrifugo),
+Copyright 2023 Centrifugal Labs LTD, licensed under the Apache License 2.0.
+Files derived from it keep their original notices; modified files are marked.
+Cedrazeka is not affiliated with or endorsed by Centrifugal Labs LTD.
+"Centrifugo" is a name of Centrifugal Labs LTD and is used here only to
+describe the origin of the code.
+
+This product also includes third-party components; their licenses are in
+THIRD_PARTY_LICENSES and listed in docs/legal/provenance.md:
+- WebSocket implementation derived from gorilla/websocket
+  (internal/websocket), Copyright (c) 2013 The Gorilla WebSocket Authors,
+  BSD-2-Clause.
+- envconfig (internal/config/envconfig), Copyright (c) 2013 Kelsey
+  Hightower, MIT.
+- Swagger UI v4.18.1 bundle (internal/swaggerui), Apache-2.0.
+  Its NOTICE file reads:
+    swagger-ui
+    Copyright 2020-2021 SmartBear Software Inc.
+- Google API annotation protos (internal/apiproto/swagger/google/api),
+  Copyright 2015 Google LLC, Apache-2.0.
+- centrifuge (Go module), Copyright (c) 2023 Centrifugal Labs LTD, MIT.
+- protocol (Go module), Copyright (c) 2023 Centrifugal Labs LTD, MIT.

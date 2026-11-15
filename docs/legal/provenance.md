@@ -1,6 +1,6 @@
 # Component provenance and license obligations
 
-Status: **pre-import**. No upstream code is in the repo yet. This register lists what the Phase 1 import will bring in, verified against the upstream tree at `v6.10.3` on 2026-11-15. Each row is updated at import time with the exact commit and the first repo commit that contains it.
+Status: **imported** on 2026-11-15. Repo commit `66d1418` holds the upstream tree; the local ref `refs/upstream/v6.10.3` points at upstream commit `4b6d86e`. The rows below were verified against the upstream tree at `v6.10.3`.
 
 Rules (ADR-0002, user requirement E):
 - **Never delete or rewrite** a license file, copyright line or license header of imported code. That includes "Copyright (c) Centrifugal Labs LTD" headers and the gorilla/Kelsey Hightower notices.
@@ -35,13 +35,17 @@ Rules (ADR-0002, user requirement E):
 
 ## 3. Upstream files modified or deleted
 
-Empty until import. Format: `path | change | commit | ADR`.
+| Path | Change | Step / commit | ADR |
+|---|---|---|---|
+| `README.md` | replaced by the Cedrazeka README, with an origin/license section; the upstream text stays in the import commit | 1.2 | ADR-0002 |
+| `.gitignore` | merged: all upstream rules except `.claude/` (our project skills are tracked), plus `/cedrazeka` and our rules | 1.2 | ADR-0020 |
+| `misc/snapshot/go.mod`, `misc/snapshot/go.sum` | **history note, no change**: import commit `66d1418` accidentally contains IDE-made dependency bumps. The next commit (`fixup!`, `4edc28d`) restores the upstream bytes. From `4edc28d` on, the tree equals upstream for all upstream paths | 1.1 | — |
 
 ## 4. Attribution files to create at import
 
-- `NOTICE`: our project name and copyright; "This product includes software developed by Centrifugal Labs LTD (Centrifugo, https://github.com/centrifugal/centrifugo), licensed under the Apache License 2.0"; and the PRV-02..06 attributions.
-- `THIRD_PARTY_LICENSES`: full license texts for PRV-02, 03, 05, 06, 10, 11, 12.
-- `upstream/BASE`: `centrifugo v6.10.3 4b6d86e23452a6fa1bd424ffe4526862efae85b8`.
+- `NOTICE`: created in step 1.2. It reproduces the Swagger UI NOTICE text, as Apache-2.0 §4(d) requires; upstream Centrifugo has no NOTICE file.
+- `THIRD_PARTY_LICENSES`: created in step 1.2 with PRV-02, 03, 10 and 11. The Apache-2.0 components (PRV-01, 05, 06) are covered by `LICENSE`. PRV-12 comes in step 1.6. PRV-04 is removed in step 1.3.
+- `upstream/BASE`: created in step 1.2.
 
 ## 5. Not imported, never to be imported
 
