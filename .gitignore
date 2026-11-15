@@ -1,3 +1,37 @@
+.DS_Store
+centrifugo
+/config.yaml
+/config.*.yaml
+/config.json
+/config.*.json
+/config.toml
+/config.*.toml
+BUILDS
+PACKAGES
+/dist/
+FlameGraph
+torch.svg
+protoc-3*
+.env
+/*.env
+.venv
+.vscode
+.idea
+docs/site
+internal/ultra
+misc/clickhouse_cluster/clickhouse*
+misc/clickhouse_cluster/zookeeper
+misc/redis_instances/redis_data
+misc/redis_cluster/cluster_data
+misc/redis_sentinel/sentinel_data
+misc/nats_cluster/nats_logs
+vendor/
+*.orig
+tmp/
+.rocks/
+/cedrazeka
+
+# --- Cedrazeka additions (merged 2026-11-15; upstream '.claude/' rule dropped: project skills are tracked) ---
 # Go binaries, plugins and test artifacts
 *.exe
 *.exe~
@@ -26,8 +60,6 @@ go.work.sum
 *.ipr
 out/
 
-# Vendor directory (раскомментируйте строку ниже, если используете vendor в репозитории)
-# vendor/
 
 # OS generated files
 .DS_Store

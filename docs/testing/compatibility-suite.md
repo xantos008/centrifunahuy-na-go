@@ -23,15 +23,16 @@ A diff fails CI unless the scenario is mapped to an **accepted** entry in [known
 
 ```
 test/compat/
-├── go.mod                     module …/test/compat; requires centrifuge-go v0.13.0, protocol v0.23.1, grpc
-├── docker-compose.yml         ref (image@digest), sut (built from repo Dockerfile), redis, nats, postgres
+├── go.mod                     module …/test/compat; requires gorilla/websocket v1.5.3 (more deps only when a scenario needs them)
+├── docker-compose.yml         ref (image@digest) and sut (our linux binary from .build/, mounted into alpine:3.24: no image build,
+│                              no network inside Docker); backends are added with the phase-2 engine profiles
 ├── configs/<engine>/          one config per engine profile, identical for ref and sut (sut adds --compat=centrifugo)
 ├── harness/
-│   ├── target.go              Target{Name, WSURL, HTTPURL, APIKey, GRPCAddr, Secret}; read from env COMPAT_{REF,SUT}_*
-│   ├── rawclient.go           raw WS client: exact JSON / Protobuf frames, records every frame
-│   ├── transcript.go          Transcript, Event, Normalize, Diff (unified text diff of canonical JSON)
-│   ├── golden.go              load/store testdata/golden/<scenario>.json; -update re-records from ref only
-│   └── token.go               HS256/RS256/ES256/EdDSA test tokens with fixed test keys (no real secrets)
+│   ├── target.go              Target{Name, BaseURL}; COMPAT_REF_URL / COMPAT_SUT_URL (default 127.0.0.1:18000 / :28000); WaitReady
+│   ├── client.go              Session; raw WS client (exact JSON frames, batches, pings answered, close codes); HTTP API calls
+│   ├── transcript.go          Transcript, Event, Normalize, Diff (line diff of canonical JSON, no HTML escaping)
+│   ├── run.go                 Run(t, name, scenario) per COMPAT_MODE = diff | golden | record; golden load/save
+│   └── token.go               HS256 test tokens (RS/ES/EdDSA added with CS-AUTH-01)
 ├── scenarios/                 one file per area (below), plain Go test functions
 └── testdata/golden/           recorded ref transcripts (committed)
 ```
@@ -40,7 +41,8 @@ Run modes (Makefile targets):
 
 | Target | What it does |
 |---|---|
-| `make compat` | `docker compose up`, run all scenarios on ref and sut, diff. **CI default** |
+| `make compat-up` / `make compat-down` | cross-compile the linux binary into `test/compat/.build/`, start / stop both targets |
+| `make compat` | run all scenarios on ref and sut, diff. **CI default** |
 | `make compat-golden` | sut vs committed golden transcripts (no ref container needed) |
 | `make compat-record` | re-record golden from ref (only on re-baseline; diff reviewed in the PR) |
 | `COMPAT_ENGINE=redis make compat` | restrict to one engine profile |

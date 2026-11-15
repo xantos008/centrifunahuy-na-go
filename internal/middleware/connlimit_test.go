@@ -1,0 +1,43 @@
+// Modified by the Cedrazeka authors, 2026. See NOTICE.
+
+package middleware
+
+import (
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/tools"
+
+	"github.com/stretchr/testify/require"
+	"golang.org/x/time/rate"
+)
+
+func TestConnLimit_ConnectionRate(t *testing.T) {
+	node := tools.NodeWithMemoryEngineNoHandlers()
+	defer func() { _ = node.Shutdown(context.Background()) }()
+
+	cfg := config.DefaultConfig()
+	cfg.Client.ConnectionRateLimit = 10
+	cfgContainer, err := config.NewContainer(cfg)
+	require.NoError(t, err)
+
+	connLimit := NewConnLimit(node, cfgContainer)
+	require.Equal(t, rate.Limit(10), connLimit.rl.Limit())
+	require.Equal(t, 10, connLimit.rl.Burst())
+
+	ts := httptest.NewServer(connLimit.Middleware(testHandler()))
+	defer ts.Close()
+
+	for i := 0; i < 20; i++ {
+		res, err := http.Post(ts.URL, "application/json", nil)
+		require.NoError(t, err)
+		if res.StatusCode == http.StatusServiceUnavailable {
+			require.True(t, i >= 10)
+			return
+		}
+	}
+	require.Fail(t, "no rate limit hit upon sending 10 requests to a server")
+}

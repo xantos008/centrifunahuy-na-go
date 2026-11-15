@@ -68,5 +68,5 @@ If any deferred MCP requires `npx`/`uvx` it would populate user-level caches (`~
 ## Decisions 2026-11-15 (ADR-0026)
 
 - DEC-08: GitHub MCP and Context7 are not installed. Everything stays project-local: `tools/go.mod` → `.bin/`, `.claude/skills/`, and a future project `.mcp.json` only.
-- Phase 1 candidate to vet before use: `github.com/google/go-licenses/v2` (Apache-2.0), for `THIRD_PARTY_LICENSES` (phase-1 plan step 1.6). Not installed yet.
+- `github.com/google/go-licenses/v2`: **not adopted** (step 1.6). It was replaced by the in-repo stdlib-only generator `scripts/thirdpartylicenses.go`. No new tool installed.
 - Side effect, recorded for transparency: verifying centrifuge at the pinned pseudo-version (`go mod download`) put the module into the standard Go module cache (`$GOMODCACHE`), the same cache the dev tools use. This is a download cache, not an install.

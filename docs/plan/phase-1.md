@@ -57,14 +57,15 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 |---|---|---|
 | `internal/webui/` (statik bundle) and its wiring in `internal/admin` / `internal/app` | delete; admin serves only `admin.web_path` until our UI exists | branded UI assets (ADR-0016, ADR-0022) |
 | `misc/scripts/update_web.sh`, Makefile `web` target | delete | pulls the branded UI |
-| `.github/workflows/release.yml`, `snapshot.yml`, `misc/scripts/{release_*.sh, cosign_images.sh, package.sh}`, `.goreleaser.yml`, Makefile `package*` / `packagecloud*` targets, `.github/FUNDING.yml` | delete (after reading them) | they publish to upstream channels |
+| `.github/workflows/release.yml`, `misc/scripts/{release_*.sh, cosign_images.sh, package.sh}`, `misc/release/`, `misc/packaging/`, `misc/rpm/`, `.goreleaser.yml`, Makefile `package*` / `packagecloud*` targets, `.github/FUNDING.yml` | delete (after reading them) | they publish to upstream channels. `snapshot.yml` is **kept**: a before/after behavior check, no publishing |
+| Makefile `install-lint`, `vuln` | replace with project-local `.bin/` tools | they ran a global `go install` |
 | `.github/workflows/test.yml` | keep, adapted in 1.8 | CI |
 | `internal/usage/` reporter | keep the code, disable the start call in `internal/app` (KD-06); accept the config key, never send | no telemetry |
 | `Dockerfile` | keep; binary name via 1.5 | |
 
 ### 1.4 Module path rename
-- `go.mod`: `module github.com/centrifugal/centrifugo/v6` → `module github.com/xantos008/centrifunahuy-na-go`.
-- Rewrite imports with `gofmt -r` / `go mod edit` plus a scripted import rewrite. Update `go_package` options in `internal/apiproto/*.proto`, `internal/proxyproto/*.proto` and `internal/unigrpc/unistream/*.proto` and in their generated `*.pb.go`. Then run upstream `misc/scripts/generate.sh` and check that regeneration produces **no diff**; any diff is a pin problem to fix first.
+- `go.mod`: `module github.com/centrifugal/centrifugo/v6` → `module github.com/xantos008/centrifunahuy-na-go`. This is the repository address; the product, binary and every user-visible name is `cedrazeka` (step 1.5 sets the binary name explicitly, since Go would default to `centrifunahuy-na-go`).
+- Rewrite imports with `gofmt -r` / `go mod edit` plus a scripted import rewrite. Update `go_package` options in `internal/apiproto/*.proto`, `internal/proxyproto/*.proto` and `internal/unigrpc/unistream/*.proto` and in their generated `*.pb.go`. Result (2026-11-15): every `go_package` is relative (`./;apiproto` etc.), so neither `.proto` nor `.pb.go` contains the module path, and regeneration is **not needed** for the rename. Regenerating with upstream `generate.sh` needs protoc v7.34.0 plus 5 Go plugins installed globally; this is deferred until a `.proto` actually changes, and the tools will then be pinned project-locally.
 - One mechanical commit. Provenance §3 records it as "module path, all files".
 - Tests: build plus the unit test set equals the baseline.
 
@@ -105,9 +106,19 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 - gRPC test over `bufconn`: default mode serves `/cedrazeka.api.v1.Api/Publish` and rejects the upstream path; compatibility mode serves both;
 - compatibility scenario CS-NAME-01.
 
+**Done (2026-11-15), deviations from the plan above:**
+- The mode is process-wide, set in `main`, rather than a `Names` struct passed down (ADR-0022 implementation notes).
+- Defaults are mapped in envconfig, not after load.
+- The upstream tests that assert upstream names run in compatibility mode.
+- The gRPC rename test lives in `internal/brand/e2e`.
+- Reflection limitation: KD-26.
+- Operator doc: `docs/operations/compat-mode.md`.
+
 ### 1.6 THIRD_PARTY_LICENSES generation
 - Candidate: `github.com/google/go-licenses/v2` (Apache-2.0). Vet it per CLAUDE.md (source, license, maintenance, network use), pin it in `tools/go.mod`, and record it in `docs/ai/tooling-lock.md` **before** use. If vetting fails, fall back to a ~40-line script using `go list -m -json all` plus module-cache LICENSE files, in `scripts/`.
 - Add a Makefile target `licenses`. CI checks that the file is up to date.
+
+**Done (2026-11-15):** `go-licenses` was not adopted. A ~200-line stdlib-only generator (`scripts/thirdpartylicenses.go`, `//go:build ignore`) avoids vetting and pinning another tool with its own dependency tree. It is offline: `go list` plus the module cache. Targets: `make licenses`, `make licenses-check`.
 
 ### 1.7 Build image for the compatibility suite
 - `test/compat/Dockerfile.sut`: multi-stage build (`golang:1.27` builder → the same `alpine:3.24` base as upstream). It builds `./` into `/usr/local/bin/cedrazeka`.
@@ -139,6 +150,13 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 | `test/compat/harness/transcript_test.go` | unit tests for normalization (placeholders are stable and numbered; non-volatile fields are untouched) and for Diff |
 | `test/compat/testdata/golden/*.json` | recorded from ref with `make compat-record` |
 | Makefile (root) | targets `compat`, `compat-golden`, `compat-record` |
+
+**Progress (2026-11-15), part A done:** harness, `docker-compose.yml`, the memory config, the Makefile targets, CS-PROTO-01 and CS-API-01. All three modes are verified (diff, golden, record), including a negative check: a tampered golden fails. Deviations:
+- No `Dockerfile.sut` (step 1.7). Docker DNS is unreliable on the dev machine (`apk`, `proxy.golang.org`), so the sut is the host-compiled linux binary mounted into `alpine:3.24`.
+- `rawclient.go` and `golden.go` are merged into `client.go` and `run.go`.
+- The client is gorilla/websocket instead of centrifuge-go, until behavior scenarios need the SDK.
+
+Part B: the remaining ★ scenarios (Protobuf, strict JSON, ping, auth, permissions, history, recovery, presence, all 21 API routes, CS-NAME-01).
 
 ### 1.9 CI
 `.github/workflows/test.yml`, adapted from upstream:
