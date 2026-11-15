@@ -54,7 +54,7 @@ An Event is one of:
 - `http{method, path, status, headers(allowlist), body}`;
 - `grpc{method, code, body}`.
 
-Normalization replaces **only** these values with stable placeholders (`<client:1>`, `<epoch:1>`…). Values are numbered in order of first appearance, so equality *within* a transcript is still checked:
+Normalization replaces **only** these values with stable placeholders (`<client:1>`, `<epoch:1>`…). Values are numbered in order of first appearance, so equality *within* a transcript is still checked. Scenarios must not use the volatile key names inside their own payloads.
 
 | Field | Why volatile |
 |---|---|
@@ -63,11 +63,17 @@ Normalization replaces **only** these values with stable placeholders (`<client:
 | node `uid`, `name`, `version`, `uptime`, metrics in `info` | per process |
 | timestamps (`time`, `expires`, `ttl` countdowns) | wall clock |
 | order of map-valued results (presence, channels) | unordered upstream |
-| `Server`/`Date` HTTP headers | per process |
+| `Server`/`Date` HTTP headers | per process (headers are not recorded at all) |
+| `token` values in sent commands | tokens embed `exp` times and random ECDSA signatures; only the server's reaction is compared |
+| the per-run suffix of channel names (`Session.Ch`) → `RUN` | keeps long-running targets' memory state (history, presence) apart between runs |
+| keys of maps keyed by client ID (presence results) | numbered like `client` values, in a stable order (by `user`, then ID) |
+| `info`: `metrics` dropped, all other values reduced to their type (`KeysOnly`) | node counters and observed-metric sets depend on process history |
 
 Never normalized: codes, messages, field presence or absence, offsets, `recovered`/`was_recovering`, data payloads, order of frames within a connection. Adding a normalization rule requires a KD entry or an amendment to this doc in the same PR.
 
 ## 4. Scenario catalogue (phase 1 delivers the ★ subset; the rest grows with each phase)
+
+**Status 2026-11-15:** all ★ scenarios are implemented and green in diff mode (ref vs sut) and golden mode on the memory profile, plus CS-PUB-01, CS-HIST-01 (memory only; the R/P profiles come in phase 2). Test-config specifics: `ping_interval` 2s / `pong_timeout` 1s (CS-PROTO-04), and `allow_publish_for_client` in `pub:` so publisher and subscriber are separate sockets. CS-PROTO-03 records only the first reaction per malformed frame.
 
 Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` NATS (broker only), `P` PostgreSQL (broker and controller only; no presence).
 

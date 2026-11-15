@@ -5,7 +5,7 @@
       "body": {
         "connect": {
           "name": "compat",
-          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1MSJ9.iqsJb-QwGdu-FWA_dm-l2DPnQU1KupVOrogbd0axhTA"
+          "token": "<token:1>"
         },
         "id": 1
       }
@@ -15,7 +15,7 @@
       "body": {
         "connect": {
           "client": "<client:1>",
-          "ping": 25,
+          "ping": 2,
           "pong": true,
           "version": "<version:1>"
         },
@@ -27,7 +27,7 @@
       "body": {
         "id": 2,
         "subscribe": {
-          "channel": "pub:proto01"
+          "channel": "pub:proto01-RUN"
         }
       }
     },
@@ -50,7 +50,7 @@
       "kind": "ws_recv",
       "body": {
         "push": {
-          "channel": "pub:proto01",
+          "channel": "pub:proto01-RUN",
           "pub": {
             "data": {
               "text": "hello"
@@ -64,7 +64,7 @@
       "body": {
         "id": 3,
         "subscribe": {
-          "channel": "pub:proto01-a"
+          "channel": "pub:proto01-RUN-a"
         }
       }
     },
@@ -73,7 +73,7 @@
       "body": {
         "id": 4,
         "subscribe": {
-          "channel": "pub:proto01-b"
+          "channel": "pub:proto01-RUN-b"
         }
       }
     },

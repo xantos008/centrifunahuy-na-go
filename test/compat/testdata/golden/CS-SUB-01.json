@@ -1,0 +1,289 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "news-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "closed:c-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 103,
+          "message": "permission denied"
+        },
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:3>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "unknown:c-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 102,
+          "message": "unknown channel"
+        },
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:4>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "news-RUN#u1"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:5>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "news-RUN#u2"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 103,
+          "message": "permission denied"
+        },
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:6>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": ""
+        }
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "bad request",
+      "code": 3501
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:7>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "news-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "subscribe": {
+          "channel": "news-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 105,
+          "message": "already subscribed"
+        },
+        "id": 3
+      }
+    }
+  ]
+}

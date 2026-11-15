@@ -2,6 +2,8 @@ package harness
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -10,11 +12,21 @@ import (
 	"testing"
 	"time"
 
+	"github.com/centrifugal/protocol"
 	"github.com/gorilla/websocket"
 )
 
 // Deadline for any single expected event (spec §5: no sleeps, wait with a deadline).
 const Deadline = 5 * time.Second
+
+// runID makes channel names unique per test process, so long-running targets
+// (memory history, presence) do not leak state between runs. It is replaced by
+// "RUN" before normalization.
+var runID = func() string {
+	b := make([]byte, 4)
+	_, _ = rand.Read(b)
+	return hex.EncodeToString(b)
+}()
 
 // Session records everything one scenario does against one target.
 type Session struct {
@@ -26,17 +38,78 @@ type Session struct {
 // Transcript returns what was recorded so far.
 func (s *Session) Transcript() Transcript { return s.tr }
 
-// WS is a raw protocol client: frames are sent and received byte-exact (JSON format).
+// Ch returns a channel (or other identifier) unique to this test run.
+func (s *Session) Ch(name string) string { return name + "-" + runID }
+
+// Note records a marker event, e.g. a pause between phases of a scenario.
+func (s *Session) Note(text string) { s.tr.add(Event{Kind: "note", Text: text}) }
+
+// codec converts between wire frames and the JSON recorded in transcripts.
+type codec interface {
+	messages(frame []byte) ([]json.RawMessage, error) // replies/pushes as JSON
+	pong() (int, []byte)                              // frame answering a server ping
+	query() string
+}
+
+type jsonCodec struct{}
+
+func (jsonCodec) query() string       { return "" }
+func (jsonCodec) pong() (int, []byte) { return websocket.TextMessage, []byte("{}") }
+func (jsonCodec) messages(frame []byte) ([]json.RawMessage, error) {
+	var out []json.RawMessage
+	for _, line := range bytes.Split(frame, []byte("\n")) {
+		if len(bytes.TrimSpace(line)) > 0 {
+			out = append(out, append(json.RawMessage(nil), line...))
+		}
+	}
+	return out, nil
+}
+
+type protobufCodec struct{}
+
+func (protobufCodec) query() string { return "?format=protobuf" }
+func (protobufCodec) pong() (int, []byte) {
+	b, _ := protocol.NewProtobufCommandEncoder().Encode(&protocol.Command{})
+	return websocket.BinaryMessage, b
+}
+func (protobufCodec) messages(frame []byte) ([]json.RawMessage, error) {
+	dec := protocol.NewProtobufReplyDecoder(frame)
+	enc := protocol.NewJSONReplyEncoder()
+	var out []json.RawMessage
+	for {
+		r, err := dec.Decode()
+		if errors.Is(err, io.EOF) {
+			return out, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+		b, err := enc.Encode(r)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, bytes.TrimSpace(b))
+	}
+}
+
+// WS is a raw protocol client: commands are sent byte-exact.
 type WS struct {
-	s    *Session
-	conn *websocket.Conn
-	buf  []json.RawMessage // received but not yet consumed messages
+	s     *Session
+	conn  *websocket.Conn
+	codec codec
+	buf   []json.RawMessage // received but not yet consumed messages
+	last  json.RawMessage
 }
 
 // Dial opens a JSON-protocol WebSocket connection.
-func (s *Session) Dial() *WS {
+func (s *Session) Dial() *WS { return s.dial(jsonCodec{}) }
+
+// DialProtobuf opens a Protobuf-protocol WebSocket connection.
+func (s *Session) DialProtobuf() *WS { return s.dial(protobufCodec{}) }
+
+func (s *Session) dial(c codec) *WS {
 	s.T.Helper()
-	conn, resp, err := websocket.DefaultDialer.Dial(s.Target.WSURL(), nil)
+	conn, resp, err := websocket.DefaultDialer.Dial(s.Target.WSURL()+c.query(), nil)
 	if resp != nil && resp.Body != nil {
 		_ = resp.Body.Close()
 	}
@@ -44,76 +117,178 @@ func (s *Session) Dial() *WS {
 		s.T.Fatalf("%s: dial: %v", s.Target.Name, err)
 	}
 	s.T.Cleanup(func() { _ = conn.Close() })
-	return &WS{s: s, conn: conn}
+	return &WS{s: s, conn: conn, codec: c}
 }
 
-// Send writes one frame; several commands may be joined with "\n".
-func (c *WS) Send(frame string) {
+// Close closes the connection from the client side (normal closure).
+func (c *WS) Close() {
+	_ = c.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	_ = c.conn.Close()
+}
+
+// Send writes one JSON frame; several commands may be joined with "\n".
+func (c *WS) Send(frame string) { c.SendRaw(websocket.TextMessage, []byte(frame)) }
+
+// SendRaw writes bytes as-is. Text frames are recorded per line; binary frames as their length.
+func (c *WS) SendRaw(msgType int, frame []byte) {
 	c.s.T.Helper()
-	for _, line := range strings.Split(frame, "\n") {
-		c.s.tr.add(Event{Kind: "ws_send", Body: json.RawMessage(line)})
+	if msgType == websocket.TextMessage {
+		for _, line := range strings.Split(string(frame), "\n") {
+			body := json.RawMessage(line)
+			if !json.Valid(body) {
+				body = asJSON([]byte(strings.ToValidUTF8(line, "�")))
+			}
+			c.s.tr.add(Event{Kind: "ws_send", Body: body})
+		}
 	}
-	if err := c.conn.WriteMessage(websocket.TextMessage, []byte(frame)); err != nil {
+	if err := c.conn.WriteMessage(msgType, frame); err != nil {
 		c.s.T.Fatalf("%s: write: %v", c.s.Target.Name, err)
 	}
 }
 
-// Recv waits for n messages (replies or pushes). Server pings ("{}") are
-// answered and not counted.
-func (c *WS) Recv(n int) {
+// SendCmd encodes commands with the Protobuf protocol into one frame. The
+// commands are recorded in their JSON form.
+func (c *WS) SendCmd(cmds ...*protocol.Command) {
 	c.s.T.Helper()
+	var frame []byte
+	jenc, penc := protocol.NewJSONCommandEncoder(), protocol.NewProtobufCommandEncoder()
+	for _, cmd := range cmds {
+		j, err := jenc.Encode(cmd)
+		if err != nil {
+			c.s.T.Fatal(err)
+		}
+		c.s.tr.add(Event{Kind: "ws_send", Body: bytes.TrimSpace(j)})
+		p, err := penc.Encode(cmd)
+		if err != nil {
+			c.s.T.Fatal(err)
+		}
+		frame = append(frame, p...)
+	}
+	if err := c.conn.WriteMessage(websocket.BinaryMessage, frame); err != nil {
+		c.s.T.Fatalf("%s: write: %v", c.s.Target.Name, err)
+	}
+}
+
+// read fills buf with at least one message, answering pings when answerPings
+// is set. It returns a close error when the server closes the connection.
+func (c *WS) read(answerPings bool) error {
 	_ = c.conn.SetReadDeadline(time.Now().Add(Deadline))
-	for len(c.buf) < n {
+	for {
 		_, data, err := c.conn.ReadMessage()
 		if err != nil {
-			c.s.T.Fatalf("%s: waiting for %d messages, got %d: %v", c.s.Target.Name, n, len(c.buf), err)
+			return err
 		}
-		for _, line := range bytes.Split(data, []byte("\n")) {
-			if len(bytes.TrimSpace(line)) == 0 {
+		msgs, err := c.codec.messages(data)
+		if err != nil {
+			c.s.T.Fatalf("%s: decode: %v", c.s.Target.Name, err)
+		}
+		added := false
+		for _, m := range msgs {
+			if answerPings && string(m) == "{}" {
+				t, b := c.codec.pong()
+				_ = c.conn.WriteMessage(t, b)
 				continue
 			}
-			if string(line) == "{}" {
-				_ = c.conn.WriteMessage(websocket.TextMessage, []byte("{}"))
-				continue
-			}
-			c.buf = append(c.buf, append(json.RawMessage(nil), line...))
+			c.buf = append(c.buf, m)
+			added = true
+		}
+		if added {
+			return nil
+		}
+	}
+}
+
+// Recv waits for n messages (replies or pushes). Server pings are answered and not counted.
+func (c *WS) Recv(n int) {
+	c.s.T.Helper()
+	for len(c.buf) < n {
+		if err := c.read(true); err != nil {
+			c.s.T.Fatalf("%s: waiting for %d messages, got %d: %v", c.s.Target.Name, n, len(c.buf), err)
 		}
 	}
 	for _, m := range c.buf[:n] {
 		c.s.tr.add(Event{Kind: "ws_recv", Body: m})
+		c.last = m
 	}
 	c.buf = c.buf[n:]
 }
 
-// ExpectClose waits for the server to close the connection and records code and reason.
-func (c *WS) ExpectClose() {
+// Next records the next message or the close of the connection, whichever
+// comes first. Use it where the server may answer with an error reply or a
+// disconnect.
+func (c *WS) Next() {
 	c.s.T.Helper()
-	_ = c.conn.SetReadDeadline(time.Now().Add(Deadline))
-	for {
-		_, _, err := c.conn.ReadMessage()
-		if err == nil {
-			continue
-		}
-		var ce *websocket.CloseError
-		if errors.As(err, &ce) {
-			c.s.tr.add(Event{Kind: "ws_close", Code: ce.Code, Text: ce.Text})
+	if len(c.buf) == 0 {
+		if err := c.read(true); err != nil {
+			c.recordClose(err)
 			return
 		}
-		c.s.T.Fatalf("%s: expected close frame, got %v", c.s.Target.Name, err)
+	}
+	c.Recv(1)
+}
+
+// ExpectClose waits for the server to close the connection, skipping messages.
+func (c *WS) ExpectClose() {
+	c.s.T.Helper()
+	for {
+		if err := c.read(true); err != nil {
+			c.recordClose(err)
+			return
+		}
+		c.buf = nil
+	}
+}
+
+func (c *WS) recordClose(err error) {
+	c.s.T.Helper()
+	var ce *websocket.CloseError
+	if errors.As(err, &ce) {
+		c.s.tr.add(Event{Kind: "ws_close", Code: ce.Code, Text: ce.Text})
+		return
+	}
+	c.s.T.Fatalf("%s: expected a message or a close frame, got %v", c.s.Target.Name, err)
+}
+
+// RecvPing waits for a server ping and records it. With answer=false no pong
+// is sent, so the server should disconnect for the missing pong.
+func (c *WS) RecvPing(answer bool) {
+	c.s.T.Helper()
+	if err := c.read(false); err != nil {
+		c.s.T.Fatalf("%s: waiting for ping: %v", c.s.Target.Name, err)
+	}
+	if len(c.buf) == 0 || string(c.buf[0]) != "{}" {
+		c.s.T.Fatalf("%s: expected ping, got %s", c.s.Target.Name, c.buf[0])
+	}
+	c.buf = c.buf[1:]
+	c.s.tr.add(Event{Kind: "ws_recv", Text: "ping", Body: json.RawMessage("{}")})
+	if answer {
+		t, b := c.codec.pong()
+		_ = c.conn.WriteMessage(t, b)
+		c.s.tr.add(Event{Kind: "ws_send", Text: "pong", Body: json.RawMessage("{}")})
+	}
+}
+
+// Last decodes the most recently received message into v.
+func (c *WS) Last(v any) {
+	c.s.T.Helper()
+	if err := json.Unmarshal(c.last, v); err != nil {
+		c.s.T.Fatalf("%s: decode %s: %v", c.s.Target.Name, c.last, err)
 	}
 }
 
 // APIRequest describes one server API HTTP call.
 type APIRequest struct {
-	Method  string            // HTTP method, default POST
-	Path    string            // e.g. "/api/publish" (query allowed)
-	Body    string            // raw body
-	Headers map[string]string // extra headers
-	NoKey   bool              // do not add the X-API-Key header
+	Method   string            // HTTP method, default POST
+	Path     string            // e.g. "/api/publish" (query allowed)
+	Body     string            // raw body
+	Headers  map[string]string // extra headers
+	NoKey    bool              // do not add the X-API-Key header
+	KeysOnly bool              // record only the shape of the JSON body (process-specific values)
+	Omit     []string          // object keys dropped anywhere in the body before recording
 }
 
-// API performs one HTTP call and records status and body.
-func (s *Session) API(r APIRequest) {
+// API performs one HTTP call, records status and body, and returns the raw body.
+func (s *Session) API(r APIRequest) []byte {
 	s.T.Helper()
 	method := r.Method
 	if method == "" {
@@ -138,7 +313,15 @@ func (s *Session) API(r APIRequest) {
 	if err != nil {
 		s.T.Fatal(err)
 	}
-	s.tr.add(Event{Kind: "http", Text: method + " " + r.Path, Status: resp.StatusCode, Body: asJSON(body)})
+	rec := asJSON(body)
+	if len(r.Omit) > 0 && rec != nil {
+		rec = omit(rec, r.Omit)
+	}
+	if r.KeysOnly && rec != nil {
+		rec = shape(rec)
+	}
+	s.tr.add(Event{Kind: "http", Text: method + " " + r.Path, Status: resp.StatusCode, Body: rec})
+	return body
 }
 
 // asJSON keeps JSON bodies as they are and wraps anything else as a JSON string.

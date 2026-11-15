@@ -88,3 +88,31 @@ func TestGoldenRoundTrip(t *testing.T) {
 		t.Fatalf("golden round trip changed the transcript:\n%s", d)
 	}
 }
+
+func TestPresenceKeysAndShape(t *testing.T) {
+	tr, err := Normalize(Transcript{Events: []Event{ev(`{"result":{"presence":{"c-111":{"client":"c-111","user":"u1"},"c-222":{"client":"c-222","user":"u2"}}}}`)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := Lines(tr)[0]
+	if strings.Contains(got, "c-111") || !strings.Contains(got, `"<client:1>":{"client":"<client:1>","user":"u1"}`) || !strings.Contains(got, `"<client:2>":{"client":"<client:2>","user":"u2"}`) {
+		t.Fatalf("presence keys not normalized consistently: %s", got)
+	}
+	if s := string(shape(json.RawMessage(`{"a":1,"b":["x",true],"c":null}`))); s != `{"a":"<float64>","b":["<string>","<bool>"],"c":"<null>"}` {
+		t.Fatalf("shape: %s", s)
+	}
+}
+
+func TestRunIDReplaced(t *testing.T) {
+	tr := withoutRunID(Transcript{Events: []Event{{Kind: "http", Text: "POST /api/x?c=" + runID, Body: json.RawMessage(`{"channel":"a-` + runID + `"}`)}}})
+	if strings.Contains(Lines(tr)[0], runID) || !strings.Contains(Lines(tr)[0], "a-RUN") {
+		t.Fatalf("run ID not replaced: %s", Lines(tr)[0])
+	}
+}
+
+func TestOmit(t *testing.T) {
+	got := string(omit(json.RawMessage(`{"result":{"nodes":[{"name":"n","metrics":{"items":{"a":1}}}]}}`), []string{"metrics"}))
+	if got != `{"result":{"nodes":[{"name":"n"}]}}` {
+		t.Fatalf("omit: %s", got)
+	}
+}

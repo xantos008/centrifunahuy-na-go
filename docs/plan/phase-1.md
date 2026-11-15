@@ -156,7 +156,13 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 - `rawclient.go` and `golden.go` are merged into `client.go` and `run.go`.
 - The client is gorilla/websocket instead of centrifuge-go, until behavior scenarios need the SDK.
 
-Part B: the remaining ★ scenarios (Protobuf, strict JSON, ping, auth, permissions, history, recovery, presence, all 21 API routes, CS-NAME-01).
+**Part B done (2026-11-15):** CS-PROTO-02/03/04, CS-AUTH-01/02, CS-SUB-01/02, CS-PUB-01, CS-HIST-01, CS-REC-01/02, CS-PRES-01, CS-API-02 (all 20 non-info routes valid and invalid, plus `info` by shape) and CS-NAME-01 (a third container, `sut-default`). Stable over 3 diff and 2 golden runs. Harness additions:
+- Protobuf codec (`centrifugal/protocol` v0.23.1);
+- `Next`, `RecvPing`, `Last`;
+- per-run channel suffix;
+- `KeysOnly` and `Omit`;
+- presence-key normalization;
+- RS256, ES256, EdDSA, alg=none and alg-confusion tokens (test-only keys in `harness/keys.go`).
 
 ### 1.9 CI
 `.github/workflows/test.yml`, adapted from upstream:
