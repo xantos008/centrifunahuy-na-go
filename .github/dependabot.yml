@@ -1,3 +1,4 @@
+# Modified by the Cedrazeka authors, 2026. See NOTICE.
 version: 2
 updates:
   - package-ecosystem: gomod
@@ -7,6 +8,10 @@ updates:
     ignore:
       - dependency-name: github.com/centrifugal/centrifuge # updating manually.
       - dependency-name: github.com/mailru/easyjson # updating manually.
+      # v0.65.0 changes http3.HTTPStreamer; webtransport-go v0.13.0 does not build with it
+      # (see the TODO in go.mod and internal/middleware/log.go). Bump both together by hand.
+      - dependency-name: github.com/quic-go/quic-go
+        versions: [">= 0.65.0"]
     groups:
       go-packages:
         patterns:
