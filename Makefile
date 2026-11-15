@@ -71,8 +71,13 @@ licenses-check:
 tools:
 	go -C tools build -o ../.bin/ github.com/golangci/golangci-lint/v2/cmd/golangci-lint golang.org/x/vuln/cmd/govulncheck github.com/bufbuild/buf/cmd/buf
 
+# Upstream code is linted for new issues only, relative to the import commit
+# (phase-1 plan); test/compat is our code and is linted fully.
+LINT_BASE ?= 66d1418
+
 lint: tools
-	.bin/golangci-lint run --timeout 10m0s
+	.bin/golangci-lint run --timeout 10m0s --new-from-rev=$(LINT_BASE) ./...
+	cd test/compat && ../../.bin/golangci-lint run --timeout 10m0s ./...
 
 vuln: tools
 	.bin/govulncheck ./...

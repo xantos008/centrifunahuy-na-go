@@ -173,6 +173,20 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 
 No publishing jobs. Third-party actions are pinned by commit SHA.
 
+**Done (2026-11-15):** `test.yml` now has three jobs:
+- `checks`: gofmt, vet, `make lint`, `make vuln`, `make licenses-check`;
+- `test`: upstream unit and integration tests, unchanged;
+- `compat`: `make compat-up`, `compat`, `compat-golden`.
+
+Pinned actions:
+- checkout v7.0.1 `3d3c42e5…`;
+- setup-go v7.0.0 `b7ad1dad…`;
+- cache v6.1.0 `55cc8345…`.
+
+govulncheck reports GO-2026-5932 (`golang.org/x/crypto/openpgp`) only at module level: the code does not call it, so the exit code is 0.
+
+**Not yet verified:** the workflow has not run on GitHub. It runs on the next push.
+
 ### 1.10 Docs updated in phase 1
 - provenance.md §1 and §3;
 - `docs/testing/baseline-upstream-tests.md`;
