@@ -1,0 +1,457 @@
+{
+  "events": [
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/broadcast",
+      "status": 200,
+      "body": {
+        "result": {
+          "responses": [
+            {
+              "result": {}
+            },
+            {
+              "result": {}
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/broadcast",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/subscribe",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/subscribe",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/unsubscribe",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/unsubscribe",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/disconnect",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/disconnect",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/refresh",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/refresh",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {}
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 108,
+          "message": "not available"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence_stats",
+      "status": 200,
+      "body": {
+        "result": {
+          "num_clients": 0,
+          "num_users": 0
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence_stats",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 108,
+          "message": "not available"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 0,
+          "publications": []
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 108,
+          "message": "not available"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history_remove",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history_remove",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/channels",
+      "status": 200,
+      "body": {
+        "result": {
+          "channels": {}
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/channels",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/batch",
+      "status": 200,
+      "body": {
+        "replies": [
+          {
+            "publish": {}
+          },
+          {
+            "presence_stats": {
+              "num_clients": 0,
+              "num_users": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/batch",
+      "status": 200,
+      "body": {
+        "replies": [
+          {
+            "error": {
+              "code": 104,
+              "message": "not found"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/rpc",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 104,
+          "message": "not found"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/rpc",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_publish",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_publish",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_remove",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_remove",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_read_state",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_read_state",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_read_stream",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_read_stream",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_stats",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_stats",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_clear",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_clear",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/shared_poll_publish",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/shared_poll_publish",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/info",
+      "status": 200,
+      "body": {
+        "result": {
+          "nodes": [
+            {
+              "name": "<string>",
+              "num_channels": "<float64>",
+              "num_clients": "<float64>",
+              "num_subs": "<float64>",
+              "num_users": "<float64>",
+              "uid": "<uid:1>",
+              "uptime": "<uptime:1>",
+              "version": "<version:1>"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

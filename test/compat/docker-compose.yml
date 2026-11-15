@@ -15,3 +15,9 @@ services:
     command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/config.json"]
     volumes: ["./configs/memory:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
     ports: ["127.0.0.1:28000:8000"]
+  sut-default:
+    # Same binary in default mode (Cedrazeka names), for CS-NAME-01.
+    image: alpine:3.24
+    command: ["/opt/cedrazeka/cedrazeka", "-c", "/etc/compat/config.json"]
+    volumes: ["./configs/memory:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
+    ports: ["127.0.0.1:28001:8000"]

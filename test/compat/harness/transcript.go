@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -38,6 +39,7 @@ var volatileKeys = map[string]bool{
 	"version": true, // server version
 	"uptime":  true,
 	"time":    true, // wall-clock timestamps
+	"token":   true, // tokens sent by scenarios embed exp times and random ECDSA signatures
 }
 
 // Normalize returns a copy of tr with volatile values replaced.
@@ -68,6 +70,27 @@ func Normalize(tr Transcript) (Transcript, error) {
 func normalizeValue(v any, seen map[string]map[string]int) any {
 	switch x := v.(type) {
 	case map[string]any:
+		if keyedByClient(x) {
+			// Number new client IDs in a stable order (by user, then ID), not
+			// in Go's random map order, so equal results get equal placeholders.
+			keys := make([]string, 0, len(x))
+			for k := range x {
+				keys = append(keys, k)
+			}
+			sort.Slice(keys, func(i, j int) bool {
+				ui, uj := fmt.Sprint(x[keys[i]].(map[string]any)["user"]), fmt.Sprint(x[keys[j]].(map[string]any)["user"])
+				if ui != uj {
+					return ui < uj
+				}
+				return keys[i] < keys[j]
+			})
+			renamed := make(map[string]any, len(x))
+			for _, k := range keys {
+				renamed[placeholder("client", k, seen)] = x[k]
+			}
+			x = renamed
+			v = x
+		}
 		for k, val := range x {
 			if volatileKeys[k] {
 				if _, isObj := val.(map[string]any); !isObj {
@@ -83,6 +106,82 @@ func normalizeValue(v any, seen map[string]map[string]int) any {
 		}
 	}
 	return v
+}
+
+// keyedByClient reports maps like a presence result, whose keys are client IDs
+// (each value is an object whose "client" field equals its key).
+func keyedByClient(m map[string]any) bool {
+	if len(m) == 0 {
+		return false
+	}
+	for k, val := range m {
+		obj, ok := val.(map[string]any)
+		if !ok || obj["client"] != k {
+			return false
+		}
+	}
+	return true
+}
+
+// shape replaces every scalar in a JSON document by its type name, keeping
+// object keys and array lengths: for responses full of process-specific values.
+func shape(b json.RawMessage) json.RawMessage {
+	var v any
+	if err := json.Unmarshal(b, &v); err != nil {
+		return b
+	}
+	var walk func(any) any
+	walk = func(v any) any {
+		switch x := v.(type) {
+		case map[string]any:
+			for k, val := range x {
+				x[k] = walk(val)
+			}
+			return x
+		case []any:
+			for i := range x {
+				x[i] = walk(x[i])
+			}
+			return x
+		case nil:
+			return "<null>"
+		}
+		return fmt.Sprintf("<%T>", v)
+	}
+	out, _ := marshal(walk(v))
+	return out
+}
+
+// omit removes the given object keys at any depth.
+func omit(b json.RawMessage, keys []string) json.RawMessage {
+	var v any
+	if err := json.Unmarshal(b, &v); err != nil {
+		return b
+	}
+	drop := map[string]bool{}
+	for _, k := range keys {
+		drop[k] = true
+	}
+	var walk func(any)
+	walk = func(v any) {
+		switch x := v.(type) {
+		case map[string]any:
+			for k, val := range x {
+				if drop[k] {
+					delete(x, k)
+					continue
+				}
+				walk(val)
+			}
+		case []any:
+			for _, e := range x {
+				walk(e)
+			}
+		}
+	}
+	walk(v)
+	out, _ := marshal(v)
+	return out
 }
 
 func placeholder(key, val string, seen map[string]map[string]int) string {

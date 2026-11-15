@@ -1,6 +1,6 @@
 # Implementation phase 1 — upstream import, licensing, names, compatibility-suite harness
 
-Status: **plan, awaiting user approval**. Nothing below has been executed.
+Status: **done** (2026-11-15). Exit criteria results are at the end of this document.
 Decisions: DEC-01…DEC-12 (2026-11-15). License: Apache-2.0 (DEC-10). Names: Cedrazeka (DEC-12). Nothing is blocking.
 
 ## Goal and exit criteria
@@ -156,7 +156,13 @@ Each deletion is listed in provenance.md §3. Read every file before deleting it
 - `rawclient.go` and `golden.go` are merged into `client.go` and `run.go`.
 - The client is gorilla/websocket instead of centrifuge-go, until behavior scenarios need the SDK.
 
-Part B: the remaining ★ scenarios (Protobuf, strict JSON, ping, auth, permissions, history, recovery, presence, all 21 API routes, CS-NAME-01).
+**Part B done (2026-11-15):** CS-PROTO-02/03/04, CS-AUTH-01/02, CS-SUB-01/02, CS-PUB-01, CS-HIST-01, CS-REC-01/02, CS-PRES-01, CS-API-02 (all 20 non-info routes valid and invalid, plus `info` by shape) and CS-NAME-01 (a third container, `sut-default`). Stable over 3 diff and 2 golden runs. Harness additions:
+- Protobuf codec (`centrifugal/protocol` v0.23.1);
+- `Next`, `RecvPing`, `Last`;
+- per-run channel suffix;
+- `KeysOnly` and `Omit`;
+- presence-key normalization;
+- RS256, ES256, EdDSA, alg=none and alg-confusion tokens (test-only keys in `harness/keys.go`).
 
 ### 1.9 CI
 `.github/workflows/test.yml`, adapted from upstream:
@@ -166,6 +172,20 @@ Part B: the remaining ★ scenarios (Protobuf, strict JSON, ping, auth, permissi
 - a `licenses` freshness check.
 
 No publishing jobs. Third-party actions are pinned by commit SHA.
+
+**Done (2026-11-15):** `test.yml` now has three jobs:
+- `checks`: gofmt, vet, `make lint`, `make vuln`, `make licenses-check`;
+- `test`: upstream unit and integration tests, unchanged;
+- `compat`: `make compat-up`, `compat`, `compat-golden`.
+
+Pinned actions:
+- checkout v7.0.1 `3d3c42e5…`;
+- setup-go v7.0.0 `b7ad1dad…`;
+- cache v6.1.0 `55cc8345…`.
+
+govulncheck reports GO-2026-5932 (`golang.org/x/crypto/openpgp`) only at module level: the code does not call it, so the exit code is 0.
+
+**Not yet verified:** the workflow has not run on GitHub. It runs on the next push.
 
 ### 1.10 Docs updated in phase 1
 - provenance.md §1 and §3;
@@ -208,3 +228,21 @@ make compat && make compat-golden
 | Struct-tag defaults (`default:"centrifugo"`) cannot depend on mode | apply the mode-dependent default after load, only when the value is unset; test both modes |
 | Compatibility-suite nondeterminism (timing, ordering) | determinism rules (spec §5); normalization only for listed fields |
 | Docker Hub unavailable in CI | golden mode fallback |
+
+## Exit criteria results (2026-11-15)
+
+| # | Criterion | Result |
+|---|---|---|
+| 1 | Pristine import equals upstream v6.10.3 | Yes, for all 565 upstream paths from `4edc28d` on. Import commit `66d1418` itself carries IDE-made `misc/snapshot/go.{mod,sum}` bumps, reverted in the next commit (provenance.md §3) |
+| 2 | Upstream unit tests: same pass/fail set as baseline | Yes. 549/549 identical after every step; last full run at step 1.5. Steps 1.6–1.9 changed no code linked into the binary |
+| 3 | Upstream integration tests: same set | Yes. 301/301 identical (isolated runner, step 1.5); green in CI on `7a95c35` |
+| 4 | ★ scenarios green, diff and golden, memory profile | Yes. 15 scenarios; locally 3 diff and 2 golden runs; CI run 43723583072 |
+| 5 | CS-NAME-01 | Yes |
+| 6 | Provenance §3 complete; NOTICE, THIRD_PARTY_LICENSES, upstream/BASE | Yes. 232 modified and 27 deleted upstream files are covered; every modified file that can hold a comment carries the change notice |
+| 7 | Quality gates | Yes. gofmt, go vet, golangci-lint (new issues vs import commit: 0; test/compat: 0), govulncheck (exit 0), buf (`api/proto/cedrazeka` builds), licenses-check |
+
+Carried over to later phases:
+- R/N/P engine profiles of the suite (phase 2).
+- Human-readable text rebranding: logs, metric help, config `doc` strings (phase 9).
+- gRPC reflection names (KD-26).
+- `misc/snapshot` already fails to build upstream.

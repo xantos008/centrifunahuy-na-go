@@ -1,0 +1,60 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {},
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "bad request",
+      "code": 3501
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "name": "�"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "bad request",
+      "code": 3501
+    },
+    {
+      "kind": "ws_send",
+      "body": "{\"id\":1,\"connect\":{}} trailing"
+    },
+    {
+      "kind": "ws_close",
+      "text": "bad request",
+      "code": 3501
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 1,
+        "no_such_command": {}
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "bad request",
+      "code": 3501
+    },
+    {
+      "kind": "ws_send",
+      "body": "{\"id\":"
+    },
+    {
+      "kind": "ws_close",
+      "text": "bad request",
+      "code": 3501
+    }
+  ]
+}

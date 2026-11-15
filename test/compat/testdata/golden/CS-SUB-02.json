@@ -1,0 +1,196 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "closed:tok-RUN",
+          "token": "<token:2>"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "closed:tok-RUN",
+          "token": "<token:3>"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 109,
+          "message": "token expired"
+        },
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:3>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "closed:tok-RUN",
+          "token": "<token:4>"
+        }
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "invalid token",
+      "code": 3500
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:4>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "closed:tok-RUN",
+          "token": "<token:5>"
+        }
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "invalid token",
+      "code": 3500
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:5>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "closed:tok-RUN",
+          "token": "<token:6>"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 103,
+          "message": "permission denied"
+        },
+        "id": 2
+      }
+    }
+  ]
+}

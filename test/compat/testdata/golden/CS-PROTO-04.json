@@ -1,0 +1,45 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "text": "ping",
+      "body": {}
+    },
+    {
+      "kind": "ws_send",
+      "text": "pong",
+      "body": {}
+    },
+    {
+      "kind": "ws_recv",
+      "text": "ping",
+      "body": {}
+    },
+    {
+      "kind": "ws_close",
+      "text": "no pong",
+      "code": 3012
+    }
+  ]
+}

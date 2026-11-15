@@ -18,6 +18,25 @@ The project is based on Centrifugo OSS v6.10.3 (Apache-2.0, decision DEC-01). PR
 - Licensing/provenance: `docs/legal/provenance.md`, `docs/legal/naming-and-trademarks.md`
 - Compatibility suite spec: `docs/testing/compatibility-suite.md`; phase 1 plan: `docs/plan/phase-1.md`
 
+## Build, run, test
+
+```
+make build                        # ./cedrazeka (module path = repo address; binary = cedrazeka)
+./cedrazeka -c config.json        # Cedrazeka names: CEDRAZEKA_* env, cedrazeka_* metrics
+./cedrazeka --compat=centrifugo   # Centrifugo names, see docs/operations/compat-mode.md
+make test                         # upstream unit tests (integration: docs/testing/baseline-upstream-tests.md)
+make compat-up compat compat-golden compat-down   # compatibility suite vs centrifugo v6.10.3
+make lint vuln licenses-check     # project-local tools (tools/go.mod → .bin/)
+```
+
+## Phase 1 outputs
+
+- Upstream base: `upstream/BASE`; provenance: `docs/legal/provenance.md`.
+- Names and compatibility mode: `internal/brand`, ADR-0022.
+- Compatibility suite: `test/compat` (spec: `docs/testing/compatibility-suite.md`).
+- CI: `.github/workflows/test.yml` (checks, upstream tests, compat).
+- Plan and results: `docs/plan/phase-1.md`.
+
 ## Origin and license
 
 Cedrazeka is based on [Centrifugo OSS](https://github.com/centrifugal/centrifugo) v6.10.3 by Centrifugal Labs LTD, licensed under the Apache License 2.0. The imported base is recorded in `upstream/BASE`. Every borrowed component and every change to upstream files is listed in `docs/legal/provenance.md`. Cedrazeka is not affiliated with or endorsed by Centrifugal Labs LTD.

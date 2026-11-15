@@ -33,6 +33,11 @@ func (t Target) WSURL() string {
 func Ref() Target { return Target{"ref", envOr("COMPAT_REF_URL", "http://127.0.0.1:18000")} }
 func SUT() Target { return Target{"sut", envOr("COMPAT_SUT_URL", "http://127.0.0.1:28000")} }
 
+// SUTDefault is our server in default (Cedrazeka names) mode, for CS-NAME-01.
+func SUTDefault() Target {
+	return Target{"sut-default", envOr("COMPAT_SUT_DEFAULT_URL", "http://127.0.0.1:28001")}
+}
+
 func envOr(k, def string) string {
 	if v := os.Getenv(k); v != "" {
 		return v

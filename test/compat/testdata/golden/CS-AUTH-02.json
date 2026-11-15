@@ -1,0 +1,93 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 109,
+          "message": "token expired"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "invalid token",
+      "code": 3500
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:3>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "invalid token",
+      "code": 3500
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:4>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "invalid token",
+      "code": 3500
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:5>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "invalid token",
+      "code": 3500
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:6>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "bad request",
+      "code": 3501
+    }
+  ]
+}

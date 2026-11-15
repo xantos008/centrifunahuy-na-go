@@ -1,0 +1,88 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:3>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:3>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:4>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:4>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    }
+  ]
+}

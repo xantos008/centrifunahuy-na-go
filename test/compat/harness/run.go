@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -71,7 +72,7 @@ func runOn(t *testing.T, tg Target, sc Scenario) (Transcript, bool) {
 	ok := t.Run(tg.Name, func(t *testing.T) {
 		s := &Session{T: t, Target: tg}
 		sc(s)
-		n, err := Normalize(s.Transcript())
+		n, err := Normalize(withoutRunID(s.Transcript()))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -103,4 +104,17 @@ func saveGolden(name string, tr Transcript) error {
 		return err
 	}
 	return os.WriteFile(goldenPath(name), buf.Bytes(), 0o644) //nolint:gosec // a repository file
+}
+
+// withoutRunID replaces the per-process run ID with "RUN".
+func withoutRunID(tr Transcript) Transcript {
+	out := Transcript{Events: make([]Event, len(tr.Events))}
+	for i, e := range tr.Events {
+		e.Text = strings.ReplaceAll(e.Text, runID, "RUN")
+		if len(e.Body) > 0 {
+			e.Body = json.RawMessage(strings.ReplaceAll(string(e.Body), runID, "RUN"))
+		}
+		out.Events[i] = e
+	}
+	return out
 }
