@@ -70,3 +70,11 @@ If any deferred MCP requires `npx`/`uvx` it would populate user-level caches (`~
 - DEC-08: GitHub MCP and Context7 are not installed. Everything stays project-local: `tools/go.mod` → `.bin/`, `.claude/skills/`, and a future project `.mcp.json` only.
 - `github.com/google/go-licenses/v2`: **not adopted** (step 1.6). It was replaced by the in-repo stdlib-only generator `scripts/thirdpartylicenses.go`. No new tool installed.
 - Side effect, recorded for transparency: verifying centrifuge at the pinned pseudo-version (`go mod download`) put the module into the standard Go module cache (`$GOMODCACHE`), the same cache the dev tools use. This is a download cache, not an install.
+
+## Test container images (phase 2, pinned by digest)
+
+Pulled into the local Docker image store; used only by test compose files, never part of a Cedrazeka artifact.
+
+| Image | Digest | License | Used by | Since |
+|---|---|---|---|---|
+| `redis:8.10.3-alpine` | `sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3` | Redis 8: RSALv2 / SSPLv1 / AGPLv3 (tri-license; RSAL and SSPL are not OSI open source). Condition C1: using it only for tests does not make its license irrelevant; Redis is never shipped | `test/compat/docker-compose.yml` (`redis-ref`, `redis-sut`) | 2.2 |

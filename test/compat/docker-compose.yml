@@ -8,29 +8,66 @@
 # Each side's backends join only that side's network under the same hostname
 # (redis, nats, postgres), so one config file works for both and a server can
 # never reach the other side's backend. Backends never share volumes.
+# harness.CheckIsolation (CS-ISO-01) verifies this before any scenario runs.
+#
+# Redis 8 is tri-licensed RSALv2 / SSPLv1 / AGPLv3 (condition C1): the image is
+# used only to run these tests and is never part of a Cedrazeka artifact.
 name: cedrazeka-compat
 networks:
   ref-net: {}
   sut-net: {}
+
+x-ref: &ref
+  image: centrifugo/centrifugo:v6.10.3@sha256:33fdbbce7d195dde316cbde17bc1d2a17b9e345de82799d1ec3c2bb8916e3803
+  command: ["centrifugo", "-c", "/etc/compat/config.json"]
+  volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro"]
+  networks: [ref-net]
+  depends_on: {redis-ref: {condition: service_healthy, required: false}}
+
+# The linux binary from .build/ runs in a plain alpine image: no image build,
+# so no network access is needed inside Docker.
+x-sut: &sut
+  image: alpine:3.24
+  command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/config.json"]
+  volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
+  networks: [sut-net]
+  depends_on: {redis-sut: {condition: service_healthy, required: false}}
+
+# Redis without persistence; the default user is disabled, servers log in
+# with the ACL user from configs/<p>/config.json (test-only credentials).
+x-redis: &redis
+  image: redis:8.10.3-alpine@sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3
+  command: ["redis-server", "--save", "", "--appendonly", "no", "--user", "default", "off",
+            "--user", "compat", "on", ">compat-test-redis-password", "~*", "&*", "+@all"]
+  healthcheck:
+    test: ["CMD", "redis-cli", "--no-auth-warning", "--user", "compat", "--pass", "compat-test-redis-password", "ping"]
+    interval: 1s
+    retries: 30
+  profiles: [r]
+
 services:
   ref:
-    image: centrifugo/centrifugo:v6.10.3@sha256:33fdbbce7d195dde316cbde17bc1d2a17b9e345de82799d1ec3c2bb8916e3803
-    command: ["centrifugo", "-c", "/etc/compat/config.json"]
-    volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro"]
-    networks: [ref-net]
+    <<: *ref
     ports: ["127.0.0.1:18000:8000"]
+  ref-b:
+    <<: *ref
+    ports: ["127.0.0.1:18100:8000"]
+    profiles: [r]
   sut:
-    # The linux binary from .build/ runs in a plain alpine image: no image build,
-    # so no network access is needed inside Docker.
-    image: alpine:3.24
-    command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/config.json"]
-    volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
-    networks: [sut-net]
+    <<: *sut
     ports: ["127.0.0.1:28000:8000"]
+  sut-b:
+    <<: *sut
+    ports: ["127.0.0.1:28100:8000"]
+    profiles: [r]
   sut-default:
     # Same binary in default mode (Cedrazeka names), for CS-NAME-01/02.
-    image: alpine:3.24
+    <<: *sut
     command: ["/opt/cedrazeka/cedrazeka", "-c", "/etc/compat/config.json"]
-    volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
-    networks: [sut-net]
     ports: ["127.0.0.1:28001:8000"]
+  redis-ref:
+    <<: *redis
+    networks: {ref-net: {aliases: [redis]}}
+  redis-sut:
+    <<: *redis
+    networks: {sut-net: {aliases: [redis]}}

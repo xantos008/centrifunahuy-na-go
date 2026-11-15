@@ -146,6 +146,13 @@ This document with the D2-* decisions and conditions C1–C6; links to it from t
 - Tags on CS-PUB-01, CS-HIST-01, CS-REC-01/02, CS-PRES-01; golden recorded from ref.
 - Check: `diff -r golden/m golden/r` reviewed and explained in the commit message.
 
+**Done (2026-11-16).**
+- Redis `redis:8.10.3-alpine@sha256:7958cfbb…35c3` (same digest as `8-alpine` on that day), no persistence, `default` user off, ACL user `compat` with a test-only password; services `redis-ref` / `redis-sut`, alias `redis` on their own network only. Node B: `ref-b` (18100), `sut-b` (28100). Servers wait for their side's Redis healthcheck (`depends_on … required: false`, so profile `m` starts without it).
+- `configs/r/config.json` = `configs/m` + `engine` (type `redis`, `presence_ttl` 5s) + `client.presence_update_interval` 2s.
+- CS-ISO-01 in `harness/isolation.go`, called from `TestMain`; negative runs: attaching `sut` to `ref-net`, and pointing `sut-net`'s `redis` alias at `redis-ref`, both abort the profile with a CS-ISO-01 error. Probes exist for Redis only; NATS and PostgreSQL probes come with steps 2.5 and 2.6.
+- Golden recorded from ref with `COMPAT_RECORD=CS-PUB-01,CS-HIST-01,CS-REC-01,CS-REC-02,CS-PRES-01`: all five files are byte-identical to `golden/m` (the engine does not show in these transcripts).
+- Checks: `make compat-all` (m r) 3× green; golangci-lint on test/compat 0 issues. No server code changed.
+
 ### 2.3 New single-node scenarios
 CS-HIST-02, CS-HIST-04, CS-REC-03, CS-REC-04, CS-REC-05, CS-PUB-03, CS-PUB-04, CS-PUB-05, CS-ENG-CFG on `m` and `r`; variants `r-opt`, `r-lists`.
 

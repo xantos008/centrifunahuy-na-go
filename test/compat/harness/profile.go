@@ -12,10 +12,12 @@ import (
 // targets were started with (`make compat-up PROFILE=…`); default "m".
 var profiles = map[string]profileSpec{
 	"m": {nodes: 1},
+	"r": {nodes: 2, backends: []string{"redis"}},
 }
 
 type profileSpec struct {
-	nodes int // server nodes per side
+	nodes    int      // server nodes per side
+	backends []string // backend hostnames, one service per side ("redis" → redis-ref, redis-sut)
 }
 
 // Profile is the current engine profile.
@@ -97,31 +99,36 @@ func serviceFor(base, target string) string {
 // The action is recorded as a note.
 func (s *Session) Compose(action, base string, args ...string) string {
 	s.T.Helper()
-	svc := serviceFor(base, s.Target.Name)
-	cmdArgs := append(append(composeArgs(action), args...), svc)
-	out, err := exec.Command("docker", cmdArgs...).CombinedOutput() //nolint:gosec // fixed binary, args from scenario code
+	out, err := compose(append(append([]string{action}, args...), serviceFor(base, s.Target.Name))...)
 	if err != nil {
-		s.T.Fatalf("%s: docker %s: %v\n%s", s.Target.Name, strings.Join(cmdArgs, " "), err, out)
+		s.T.Fatalf("%s: %v", s.Target.Name, err)
 	}
 	s.Note(action + " " + base)
-	return string(out)
+	return out
 }
 
 // Exec runs a command inside this side's service, e.g.
 // s.Exec("redis", "redis-cli", "PING"). It is not recorded.
 func (s *Session) Exec(base string, cmd ...string) string {
 	s.T.Helper()
-	svc := serviceFor(base, s.Target.Name)
-	cmdArgs := append(append(composeArgs("exec", "-T"), svc), cmd...)
-	out, err := exec.Command("docker", cmdArgs...).CombinedOutput() //nolint:gosec // fixed binary, args from scenario code
+	out, err := compose(append([]string{"exec", "-T", serviceFor(base, s.Target.Name)}, cmd...)...)
 	if err != nil {
-		s.T.Fatalf("%s: docker %s: %v\n%s", s.Target.Name, strings.Join(cmdArgs, " "), err, out)
+		s.T.Fatalf("%s: %v", s.Target.Name, err)
 	}
-	return string(out)
+	return out
 }
 
-// composeArgs addresses test/compat/docker-compose.yml from the scenarios
-// package directory (go test runs there) with the current profile.
-func composeArgs(cmd ...string) []string {
-	return append([]string{"compose", "-f", envOr("COMPAT_COMPOSE_FILE", "../docker-compose.yml"), "--profile", Profile()}, cmd...)
+// compose runs `docker compose <args…>` on test/compat/docker-compose.yml
+// (addressed from the scenarios package directory, where go test runs) with
+// the current profile.
+func compose(args ...string) (string, error) {
+	return docker(append([]string{"compose", "-f", envOr("COMPAT_COMPOSE_FILE", "../docker-compose.yml"), "--profile", Profile()}, args...)...)
+}
+
+func docker(args ...string) (string, error) {
+	out, err := exec.Command("docker", args...).CombinedOutput() //nolint:gosec // fixed binary, args from harness and scenario code
+	if err != nil {
+		return "", fmt.Errorf("docker %s: %w\n%s", strings.Join(args, " "), err, out)
+	}
+	return string(out), nil
 }

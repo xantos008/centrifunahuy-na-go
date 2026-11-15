@@ -25,12 +25,15 @@ A diff fails CI unless the scenario is mapped to an **accepted** entry in [known
 test/compat/
 ├── go.mod                     module …/test/compat; requires gorilla/websocket v1.5.3 (more deps only when a scenario needs them)
 ├── docker-compose.yml         ref (image@digest) and sut (our linux binary from .build/, mounted into alpine:3.24: no image build,
-│                              no network inside Docker); backends are added with the phase-2 engine profiles
+│                              no network inside Docker); per profile: node B (ref-b, sut-b) and one backend set per
+│                              side (redis-ref / redis-sut …) on separate networks ref-net / sut-net, Compose `profiles:`
 ├── configs/<profile>/         one config per engine profile (m, r, …), identical for ref and sut (sut adds --compat=centrifugo)
 ├── harness/
 │   ├── target.go              Target{Name, BaseURL}; COMPAT_REF_URL / COMPAT_SUT_URL (default 127.0.0.1:18000 / :28000); WaitReady
 │   ├── client.go              Session; raw WS client (exact JSON frames, batches, pings answered, close codes); HTTP API calls
 │   ├── transcript.go          Transcript, Event, Normalize, Diff (line diff of canonical JSON, no HTML escaping)
+│   ├── profile.go             profiles (nodes, backends), Profiles(t, …) filter, node lists, side-bound Session.Compose/Exec
+│   ├── isolation.go           CS-ISO-01 (C2), run by TestMain before any scenario of a profile with backends
 │   ├── run.go                 Run(t, name, scenario) per COMPAT_MODE = diff | golden | record; golden load/save
 │   └── token.go               HS256 test tokens (RS/ES/EdDSA added with CS-AUTH-01)
 ├── scenarios/                 one file per area (below), plain Go test functions
@@ -75,6 +78,8 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 ## 4. Scenario catalogue (phase 1 delivers the ★ subset; the rest grows with each phase)
 
 **Status 2026-11-15:** all ★ scenarios are implemented and green in diff mode (ref vs sut) and golden mode on the memory profile, plus CS-PUB-01, CS-HIST-01 (memory only; the R/P profiles come in phase 2). Test-config specifics: `ping_interval` 2s / `pong_timeout` 1s (CS-PROTO-04), and `allow_publish_for_client` in `pub:` so publisher and subscriber are separate sockets. CS-PROTO-03 records only the first reaction per malformed frame.
+
+**Status 2026-11-16 (phase 2, step 2.2):** profile `r` (Redis 8 standalone, two nodes per target) is green in diff and golden mode for CS-PUB-01, CS-HIST-01, CS-REC-01/02, CS-PRES-01; `golden/r` is byte-identical to `golden/m` for these five.
 
 **Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
 
@@ -146,6 +151,7 @@ Two sut nodes against each of R, N, P versus two ref nodes: cross-node fan-out, 
 - Fixed test keys and secrets live in `harness/token.go` (test-only values, not secrets).
 - Each scenario uses unique channel names (`cs-<id>-<rand>`) and normalizes the random suffix, so scenarios can run in parallel against one target.
 - Backends are flushed between engine profiles, not between scenarios.
+- **CS-ISO-01 (isolation, phase-2 condition C2)** runs in `TestMain` for every profile with backends, before any scenario; a failure aborts the profile. It checks that every server container is attached only to its side's network, that each backend hostname (`redis`, …) resolves inside every server container to that side's backend container, that the two sides' backends share no mount, and that a probe key written through one side's Redis is absent on the other. Verified to fail (2026-11-16) when `sut` is also attached to `ref-net` and when the `redis` alias on `sut-net` points to `redis-ref`.
 
 ## 6. Exit criteria per implementation phase
 Each phase in the [feature matrix](../compatibility/feature-matrix.md#implementation-order) names the CS-* groups that must be green on all applicable engine profiles. A matrix row moves to `verified` only when its scenarios are green in `make compat` (diff mode).

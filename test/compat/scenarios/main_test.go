@@ -33,5 +33,9 @@ func TestMain(m *testing.M) {
 			os.Exit(1)
 		}
 	}
+	if err := harness.CheckIsolation(); err != nil {
+		fmt.Fprintln(os.Stderr, "compat:", err)
+		os.Exit(1)
+	}
 	os.Exit(m.Run())
 }
