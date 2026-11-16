@@ -241,13 +241,40 @@ PG broker + PG controller. Transactional publishing (KD-11): an application tran
   - position always tracked (offset/epoch in every push, an empty stream has no epoch);
   - `skip_history` has no effect;
   - pushes carry no `version` field;
-  - the HIST-02 position survived meta TTL + 1.5 s;
+  - the HIST-02 position survived meta TTL + 1.5 s. Corrected in step 2.7: this depended on the timing of the 1-minute cleanup, see there;
   - JSONB normalizes payloads and fossil delta is not sent;
   - CS-HIST-01 and CS-REC-05 are identical.
 - **Checks:** `make compat-all` (all 11 profiles) 3× green; harness unit tests; golangci-lint on test/compat 0 issues. No server code changed.
 
 ### 2.7 Multi-node
 CS-ENG-01..05 and CS-PRES-02 on the profiles in the table.
+
+**Done (2026-11-16).**
+- Harness:
+  - `Session.OnB(fn)` runs calls and dials inside `fn` against node B of the session's own side (C2). Connections keep their node.
+  - `Session.AwaitNodes(n, timeout)` polls `/api/info` and records the node count it reached.
+  - `Session.ReplaceB(config)` stops B and starts a one-off copy of B, on the same port, with `configs/<config>`. Its test cleanup removes the copy and starts B again even after a failure, so later scenarios still find two nodes.
+- Scenarios in `scenarios/multinode_test.go`. Each first waits for 2 nodes on A and on B. After a stop or kill, B is started again and the scenario waits for 2 nodes on both.
+- **Test defects found while reading the first recordings, fixed before recording:**
+  1. In v6, a subscriber gets join/leave only if it asks with `join_leave: true`.
+  2. The subscriber's own join arrives first. Without reading it, the later reads were shifted by one and the leave was never checked. The transcript was deterministic all the same, which is why the recordings were read and not only compared.
+  3. In CS-ENG-03b, an open connection that was not read during the 5 s waits was closed with `3012 no pong` (ping 2 s, pong timeout 1 s). The waits now come before the client connects.
+- Golden:
+  - `r`: 6 files.
+  - `rs`, `rsh`: CS-ENG-01/02. `rc`: CS-ENG-01/02/05. `n`: CS-ENG-01..04. All byte-identical to `r`.
+  - `p`: CS-ENG-01..05 and CS-ENG-03b. Differences from `r`, identical on ref and sut:
+    - CS-ENG-01: offset/epoch in pushes (position always tracked).
+    - CS-ENG-02: presence per node, each node sees only its own client.
+    - CS-ENG-05: the empty stream's subscribe reply has no epoch; recovery on B still gives `recovered: true` with the three publications.
+- **Answered (black box, ref v6.10.3):**
+  - OQ-ENG-03: no startup error; no node discovery; delivery across nodes works.
+  - OQ-ENG-05, multi-node part.
+  - INFRA-CONFLICT-15: presence entries of a killed node expire within TTL + interval.
+  - See open-questions.md.
+- **Side observation:** `CENTRIFUGO_CONTROLLER_ENABLED=false` also drops the PG broker from the file config. Ref and sut behave identically; recorded in OQ-ENG-03.
+- **Flaky test found by the control run, fixed in config (test, not server):** the first `make compat-all` failed CS-HIST-02 on `p` in golden mode. Diff mode had passed: ref and sut agreed in that run. The PG broker removes expired meta in a cleanup pass every `broker.postgres.cleanup_interval` (default 1m). Whether that pass fell inside the 6.5 s wait was chance, so the step 2.6 golden had caught a "position survived" run. `configs/p`, `p-notify` and `p-noctl` now set `cleanup_interval: "1s"`; both servers accept the key without a warning. CS-HIST-02 on `p` then passed 5× in diff mode with a reset position, and it was re-recorded (`COMPAT_RECORD=CS-HIST-02`). It equals `golden/r` except one epoch placeholder: a history read on PG does not create the new position, so the next publish gets another epoch. All other `p` goldens are unchanged.
+- `configs/p-noctl` = `p` without `controller`. It is not a profile and is used only by CS-ENG-03b.
+- **Checks:** `make compat-all` (all 11 profiles) 3× green; harness unit tests; golangci-lint on test/compat 0 issues. No server code changed.
 
 ### 2.8 Failure
 CS-ENG-06 (backend stop/start) and CS-ENG-07 (Sentinel failover).

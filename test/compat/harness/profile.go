@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -121,6 +122,89 @@ func (s *Session) AwaitDelivery() {
 		time.Sleep(500 * time.Millisecond)
 		s.Note("await outbox delivery")
 	}
+}
+
+// OnB runs fn with this session pointed at node B of its side: connections
+// dialed and API calls made inside fn go to node B (connections keep their
+// node afterwards). Recorded as notes "node b" / "node a".
+func (s *Session) OnB(fn func()) {
+	s.T.Helper()
+	ns := RefNodes()
+	if side(s.Target.Name) == "sut" {
+		ns = SUTNodes()
+	}
+	if len(ns) < 2 {
+		s.T.Fatalf("profile %q has one node", Profile())
+	}
+	a := s.Target
+	s.Target = ns[1]
+	s.Note("node b")
+	defer func() { s.Target = a; s.Note("node a") }()
+	fn()
+}
+
+// ReplaceB stops node B of this side and starts a one-off copy of it, on the
+// same port, with configs/<config> instead of the profile's config. restore
+// removes the copy and starts node B again. Recorded as notes.
+func (s *Session) ReplaceB(config string) (restore func()) {
+	s.T.Helper()
+	s.Compose("stop", "node-b")
+	dir, err := filepath.Abs(filepath.Join(filepath.Dir(envOr("COMPAT_COMPOSE_FILE", "../docker-compose.yml")), "configs", config))
+	if err != nil {
+		s.T.Fatal(err)
+	}
+	out, err := compose("run", "-d", "--rm", "--no-deps", "--service-ports", "-v", dir+":/etc/compat:ro", serviceFor("node-b", s.Target.Name))
+	if err != nil {
+		s.T.Fatalf("%s: %v", s.Target.Name, err)
+	}
+	id := strings.TrimSpace(out[strings.LastIndex(strings.TrimSpace(out), "\n")+1:])
+	// On failure the profile must stay usable for later scenarios.
+	s.T.Cleanup(func() {
+		_, _ = docker("rm", "-f", id)
+		_, _ = compose("start", serviceFor("node-b", s.Target.Name))
+	})
+	s.Note("run node-b with configs/" + config)
+	s.OnB(func() {
+		if err := WaitReady(s.Target, 30*time.Second); err != nil {
+			s.T.Fatal(err)
+		}
+	})
+	return func() {
+		s.T.Helper()
+		if _, err := docker("rm", "-f", id); err != nil {
+			s.T.Fatalf("%s: %v", s.Target.Name, err)
+		}
+		s.Note("remove node-b copy")
+	}
+}
+
+// infoNodes is the number of nodes /api/info on the session's current node
+// lists.
+func (s *Session) infoNodes() int {
+	s.T.Helper()
+	_, body := s.call(APIRequest{Path: "/api/info", Body: "{}"})
+	var r struct {
+		Result struct {
+			Nodes []json.RawMessage `json:"nodes"`
+		} `json:"result"`
+	}
+	if err := json.Unmarshal(body, &r); err != nil {
+		s.T.Fatalf("%s: info: %v: %s", s.Target.Name, err, body)
+	}
+	return len(r.Result.Nodes)
+}
+
+// AwaitNodes waits until /api/info on the current node lists n nodes and
+// records "info: <n> nodes", or the count seen when the timeout passed.
+func (s *Session) AwaitNodes(n int, timeout time.Duration) {
+	s.T.Helper()
+	deadline := time.Now().Add(timeout)
+	got := s.infoNodes()
+	for got != n && time.Now().Before(deadline) {
+		time.Sleep(200 * time.Millisecond)
+		got = s.infoNodes()
+	}
+	s.Note(fmt.Sprintf("info: %d nodes", got))
 }
 
 // side is "ref" or "sut"; sut and sut-default share the sut side.

@@ -96,6 +96,8 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 
 `sut-default` does not run on `p*`: the PG table prefix is `cf` in both modes, so it would join the sut cluster through the controller. Where a scenario publishes and then subscribes, it calls `s.AwaitDelivery()`. On `p*` this waits 500 ms for the outbox and records a note; elsewhere it does nothing.
 
+**Status 2026-11-16 (phase 2, step 2.7):** the multi-node scenarios CS-ENG-01..05, CS-ENG-03b and CS-PRES-02 are green in diff and golden mode on their profiles. For `rs`, `rc`, `rsh` and `n`, their golden files are byte-identical to `golden/r`. For `p`, CS-ENG-03 and CS-ENG-04 are identical to `golden/r`. CS-ENG-01 and CS-ENG-05 differ only by the always-tracked position. In CS-ENG-02, presence is per node.
+
 Configs: `configs/r` is `configs/m` plus the engine section; `rs`, `rc`, `rsh` differ from `r` only in `engine.redis.address`; `r-opt` and `r-lists` are `r` plus one option each. Regenerate them with `jq` when `m` changes (see the step 2.3 notes in the plan). Note: `version` is a volatile key, so publication versions in CS-PUB-05 appear as placeholders. Equal versions keep equal placeholders, which is all the scenario needs.
 
 **Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
@@ -144,7 +146,7 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 
 ### CS-PRES: presence (OSS-PRES-*)
 - ★ CS-PRES-01: `presence` and `presence_stats` via client and API; join/leave pushes. M R
-- CS-PRES-02: presence TTL expiry after an abrupt disconnect (presence is eventually consistent; bounded wait). R
+- CS-PRES-02: presence TTL expiry after a node crash (`docker kill` of B): B's client leaves A's `presence_stats` within `presence_ttl` + `presence_update_interval` + 3 s. Bounded poll, last answer recorded. R (`r`)
 
 ### CS-API: server API (OSS-API-01..04)
 - ★ CS-API-01: auth: `X-API-Key`, `?api_key=`, `Authorization: apikey`; bad key → 401 with empty body; non-POST → 405; bad JSON → 400; unknown path → 404. M
@@ -156,7 +158,13 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 HTTP-stream, SSE with emulation, uni WS / SSE / HTTP-stream / gRPC: CS-PROTO-01 run over each.
 
 ### CS-ENG: multi-node (phase 2)
-Two sut nodes against each of R, N, P versus two ref nodes: cross-node fan-out, presence, `info` node list, user-targeted disconnect.
+Two sut nodes against two ref nodes. Each scenario first waits until `info` on both nodes lists two nodes. `Session.OnB` points calls and new connections at node B.
+- CS-ENG-01: cross-node fan-out. The subscriber is on A; on B, a client publish, an API publish, and a second subscriber whose join and leave A receives. R (`r`, `rs`, `rc`, `rsh`) N P
+- CS-ENG-02: `presence` and `presence_stats` from the client and the API, on both nodes. On P they are per node (memory presence). R (`r`, `rs`, `rc`, `rsh`) N P
+- CS-ENG-03: `info` lists both nodes; after `docker compose stop` of B, A lists one node within 20 s; B is started again. R N P
+- CS-ENG-03b: B replaced by a one-off copy with `configs/p-noctl` (PG broker without controller, OQ-ENG-03). Neither node lists the other, and an API publish on B still reaches A. P
+- CS-ENG-04: `subscribe`, `unsubscribe`, `refresh` and `disconnect` by user, called on A, for a user connected to B. R N P
+- CS-ENG-05: position on A, publications via A's API, then `history` and recovery on B. R (`r`, `rc`) P
 
 ### CS-NAME: names (sut-only, ADR-0022)
 - ★ CS-NAME-01: default mode reads `CEDRAZEKA_*` env and exposes `cedrazeka_*` metrics; compatibility mode reads `CENTRIFUGO_*` and exposes `centrifugo_*`; the gRPC API answers on both service names in compatibility mode.

@@ -37,9 +37,18 @@ Observed black-box against Centrifugo v6.10.3 (phase-2 step 2.6; PostgreSQL 18.7
 
 - **Asynchronous delivery.** Publications reach subscribers through an outbox worker: by polling, or by `LISTEN/NOTIFY` with `use_notify`. A client that subscribes right after a publish can receive that publication as a push. In 50 publish-then-subscribe rounds with 3 publications each, ref pushed 149 of 150 and Cedrazeka 145.
 - **Position is always tracked**, including namespaces without history. Publications carry offset/epoch, and `skip_history` does not keep a publication out of history. The subscribe reply on a stream that has no publications yet has no epoch.
-- **Meta TTL.** History reads do not refresh it (docs), and the position was still there 6.5 s after `history_meta_ttl` 5s expired. Removal happens in the periodic cleanup, not at the TTL.
+- **Meta TTL.** History reads do not refresh it (docs). An expired position is removed by the periodic cleanup (`broker.postgres.cleanup_interval`, default 1m), not at the TTL itself, so it can outlive `history_meta_ttl` by up to that interval. The test configs set 1s; with that, the position resets after the TTL as on Redis. A history read of the reset stream does not create a new position: the next publish starts yet another epoch.
 - **Payloads go through JSONB.** The bytes are normalized: `{"text":"x"}` comes back as `{"text": "x"}`. Fossil delta is not applied, so subscribers get full payloads. Use `binary_data` for payloads that must stay byte-exact.
 - **Version suppression and idempotency work.** Pushes carry no `version` field.
 - **Transactional publishing.** The `cf_stream_*` functions have identical signatures on both servers, and commit/rollback behaves as documented (KD-11, CS-PUB-07).
+
+## Multi-node
+
+Observed black-box against Centrifugo v6.10.3 (phase-2 step 2.7), two nodes sharing one backend. Ref and Cedrazeka behave the same:
+
+- **Redis** (standalone, Sentinel, Cluster, sharding) and **NATS + Redis presence**: publications, join/leave, presence, server API calls by user, and history/recovery all work across nodes. A node stopped gracefully (`docker compose stop`) left the other's `info` list within a second in CS-ENG-03. A killed node's clients leave presence within `presence_ttl` + `client.presence_update_interval`; no leave push is sent for them.
+- **PostgreSQL broker:**
+  - Multi-node needs `controller` (type `postgres`). Without it the server starts and publications still cross nodes, but nodes do not discover each other: `info` lists only the node asked.
+  - Presence uses the default memory manager, so it is per node: each node reports only its own clients. Join/leave pushes do cross nodes.
 
 Engine configuration and failure behavior are documented in [phase 2](../plan/phase-2.md) as the profiles are verified.

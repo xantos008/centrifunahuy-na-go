@@ -73,8 +73,8 @@
       "status": 200,
       "body": {
         "result": {
-          "epoch": "<epoch:1>",
-          "offset": 2,
+          "epoch": "<epoch:2>",
+          "offset": 0,
           "publications": []
         }
       }
@@ -85,8 +85,8 @@
       "status": 200,
       "body": {
         "result": {
-          "epoch": "<epoch:1>",
-          "offset": 3
+          "epoch": "<epoch:3>",
+          "offset": 1
         }
       }
     }

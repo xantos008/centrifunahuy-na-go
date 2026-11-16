@@ -137,7 +137,8 @@
     "type": "postgres",
     "postgres": {
       "dsn": "postgres://compat:compat-test-pg-password@postgres:5432/compat?sslmode=disable",
-      "use_notify": true
+      "use_notify": true,
+      "cleanup_interval": "1s"
     }
   },
   "controller": {
