@@ -98,6 +98,8 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 
 **Status 2026-11-16 (phase 2, step 2.7):** the multi-node scenarios CS-ENG-01..05, CS-ENG-03b and CS-PRES-02 are green in diff and golden mode on their profiles. For `rs`, `rc`, `rsh` and `n`, their golden files are byte-identical to `golden/r`. For `p`, CS-ENG-03 and CS-ENG-04 are identical to `golden/r`. CS-ENG-01 and CS-ENG-05 differ only by the always-tracked position. In CS-ENG-02, presence is per node.
 
+**Status 2026-11-16 (phase 2, step 2.8):** CS-ENG-06 on `r`, `n`, `p` and CS-ENG-07 on `rs` are green in diff and golden mode. While the backend is down, publish fails on all three. Subscribe fails only on Redis; NATS and PG accept it.
+
 Configs: `configs/r` is `configs/m` plus the engine section; `rs`, `rc`, `rsh` differ from `r` only in `engine.redis.address`; `r-opt` and `r-lists` are `r` plus one option each. Regenerate them with `jq` when `m` changes (see the step 2.3 notes in the plan). Note: `version` is a volatile key, so publication versions in CS-PUB-05 appear as placeholders. Equal versions keep equal placeholders, which is all the scenario needs.
 
 **Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
@@ -165,6 +167,8 @@ Two sut nodes against two ref nodes. Each scenario first waits until `info` on b
 - CS-ENG-03b: B replaced by a one-off copy with `configs/p-noctl` (PG broker without controller, OQ-ENG-03). Neither node lists the other, and an API publish on B still reaches A. P
 - CS-ENG-04: `subscribe`, `unsubscribe`, `refresh` and `disconnect` by user, called on A, for a user connected to B. R N P
 - CS-ENG-05: position on A, publications via A's API, then `history` and recovery on B. R (`r`, `rc`) P
+- CS-ENG-06: the broker backend is stopped; the API publish error and one subscribe attempt are recorded. After the start, publish and subscribe work again within 30 s, and a fresh channel delivers. R (`r`) N P
+- CS-ENG-07: `SENTINEL FAILOVER mymaster`. Once a new master is elected, publishing works again within 30 s, and history holds the publications made before the failover. Then delivery must work for 5 s without a miss (unrecorded probes, ~20/s) before one delivered publication is recorded. R (`rs`)
 
 ### CS-NAME: names (sut-only, ADR-0022)
 - ★ CS-NAME-01: default mode reads `CEDRAZEKA_*` env and exposes `cedrazeka_*` metrics; compatibility mode reads `CENTRIFUGO_*` and exposes `centrifugo_*`; the gRPC API answers on both service names in compatibility mode.

@@ -115,8 +115,18 @@ func probe(b string) error {
 		return probePostgres()
 	}
 	cli := func(side string, args ...string) (string, error) {
-		out, err := compose(append([]string{"exec", "-T", b + "-" + side, "redis-cli", "-c", "--no-auth-warning",
-			"--user", "compat", "--pass", "compat-test-redis-password"}, args...)...)
+		pre := []string{"exec", "-T", b + "-" + side, "redis-cli"}
+		if b == "sentinel" {
+			// The current master, which changes with a failover (CS-ENG-07).
+			out, err := compose("exec", "-T", b+"-"+side, "redis-cli", "-p", "26379", "sentinel", "get-master-addr-by-name", "mymaster")
+			addr := strings.Fields(out)
+			if err != nil || len(addr) != 2 {
+				return "", fmt.Errorf("CS-ISO-01: sentinel-%s master: %v %q", side, err, out)
+			}
+			pre = append(pre, "-h", addr[0], "-p", addr[1])
+		}
+		out, err := compose(append(append(pre, "-c", "--no-auth-warning",
+			"--user", "compat", "--pass", "compat-test-redis-password"), args...)...)
 		return strings.TrimSpace(out), err
 	}
 	for _, pair := range [][2]string{{"ref", "sut"}, {"sut", "ref"}} {

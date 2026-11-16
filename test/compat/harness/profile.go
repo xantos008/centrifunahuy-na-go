@@ -19,7 +19,7 @@ var profiles = map[string]profileSpec{
 	"r":        {nodes: 2, backends: []string{"redis"}, probe: []string{"redis"}},
 	"r-opt":    {nodes: 1, backends: []string{"redis"}, probe: []string{"redis"}},
 	"r-lists":  {nodes: 1, backends: []string{"redis"}, probe: []string{"redis"}},
-	"rs":       {nodes: 2, backends: []string{"redis", "replica1", "replica2", "sentinel"}, probe: []string{"redis"}},
+	"rs":       {nodes: 2, backends: []string{"redis", "replica1", "replica2", "sentinel"}, probe: []string{"sentinel"}},
 	"rc":       {nodes: 2, backends: []string{"rc1", "rc2", "rc3"}, probe: []string{"rc1"}},
 	"rsh":      {nodes: 2, backends: []string{"redis", "redis2"}, probe: []string{"redis", "redis2"}},
 	"n":        {nodes: 2, backends: []string{"nats", "redis"}, probe: []string{"nats", "redis"}},
@@ -31,7 +31,7 @@ var profiles = map[string]profileSpec{
 type profileSpec struct {
 	nodes    int      // server nodes per side
 	backends []string // backend hostnames, one service per side ("redis" → redis-ref, redis-sut)
-	probe    []string // CS-ISO-01 probe entry points: nats, or writable Redis nodes (cluster: any node)
+	probe    []string // CS-ISO-01 probe entry points: nats, postgres, sentinel (writes via the current master), or writable Redis nodes (cluster: any node)
 	// noSUTDefault: sut-default does not run (PG: same table prefix in both
 	// modes, it would join the sut cluster).
 	noSUTDefault bool

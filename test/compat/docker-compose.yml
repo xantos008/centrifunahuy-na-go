@@ -131,12 +131,14 @@ x-nats: &nats
     retries: 30
   profiles: [n, n-raw]
 
-# PostgreSQL (PostgreSQL License), test-only user; data on tmpfs, so no
-# volume exists that the two sides could share.
+# PostgreSQL (PostgreSQL License), test-only user. Data lives in the image's
+# anonymous volume, one per container, so the sides share nothing and the
+# schema survives `stop`/`start` (CS-ENG-06); `compat-down` (`down -v`)
+# removes it. Not tmpfs: a stopped tmpfs container loses the schema, which a
+# real PostgreSQL restart does not.
 x-postgres: &postgres
   image: postgres:18.7-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
   environment: {POSTGRES_USER: compat, POSTGRES_PASSWORD: compat-test-pg-password, POSTGRES_DB: compat}
-  tmpfs: [/var/lib/postgresql]
   healthcheck:
     test: ["CMD", "pg_isready", "-U", "compat", "-d", "compat"]
     interval: 1s

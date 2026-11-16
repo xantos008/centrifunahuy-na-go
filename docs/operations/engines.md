@@ -51,4 +51,16 @@ Observed black-box against Centrifugo v6.10.3 (phase-2 step 2.7), two nodes shar
   - Multi-node needs `controller` (type `postgres`). Without it the server starts and publications still cross nodes, but nodes do not discover each other: `info` lists only the node asked.
   - Presence uses the default memory manager, so it is per node: each node reports only its own clients. Join/leave pushes do cross nodes.
 
+## Backend outage
+
+Observed black-box against Centrifugo v6.10.3 (phase-2 step 2.8). Ref and Cedrazeka behave the same:
+
+| Broker backend down | API publish | New client subscribe | After the backend is back |
+|---|---|---|---|
+| Redis | `100 internal server error`, `temporary: true` | connection closed, `3004 internal server error` | works again within seconds |
+| NATS | same | succeeds (the client library buffers it during reconnect) | works again |
+| PostgreSQL | same | succeeds (local subscription, delivery from the outbox) | works again; the schema must still exist, since servers create it only at startup |
+
+Sentinel failover: after a new master is elected, publishing works again within seconds, and history written before the failover is on the new master (asynchronous replication; nothing was lost in the test). Live delivery is not clean at once: from about 3.5 s to 17.5 s after the failover, about one publication per second did not reach its subscriber, on ref and Cedrazeka alike. Redis PUB/SUB is at-most-once while servers reconnect. Clients that must not miss publications should use history recovery.
+
 Engine configuration and failure behavior are documented in [phase 2](../plan/phase-2.md) as the profiles are verified.

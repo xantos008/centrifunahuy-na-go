@@ -221,7 +221,7 @@ NATS + Redis presence; CS-HIST-03; raw mode (publish to a raw subject with `nats
 PG broker + PG controller. Transactional publishing (KD-11): an application transaction calls the documented SQL surface through `psql`; commit → clients receive, rollback → nothing. The exact functions and tables come from the docs (`docs/server/engines.md` §PostgreSQL broker) and are checked against both servers. KD-11 becomes `accepted` when green.
 
 **Done (2026-11-16).**
-- PostgreSQL `postgres:18.7-alpine` (PostgreSQL License, pinned by digest). Services `postgres-ref`/`postgres-sut` with the alias `postgres`, a test-only user, data on tmpfs (no volume to share), healthcheck `pg_isready`.
+- PostgreSQL `postgres:18.7-alpine` (PostgreSQL License, pinned by digest). Services `postgres-ref`/`postgres-sut` with the alias `postgres`, a test-only user, healthcheck `pg_isready`. Data was on tmpfs in step 2.6; step 2.8 moved it to a per-container anonymous volume (see there).
 - `configs/p` = `r` without `engine`, plus `broker` postgres and `controller` postgres, both with `use_notify: false`. Presence is memory (no presence manager). `configs/p-notify` = `p` with `use_notify: true`; `pg_stat_activity` shows 2 LISTEN connections per side on `p-notify` and none on `p`.
 - `sut-default` is not started on `p*`. The PG `table_prefix` is `cf` in both modes, so it would join the sut cluster through the controller as a third node. CS-ISO-01 skips it there (`noSUTDefault`).
 - Harness:
@@ -278,6 +278,23 @@ CS-ENG-01..05 and CS-PRES-02 on the profiles in the table.
 
 ### 2.8 Failure
 CS-ENG-06 (backend stop/start) and CS-ENG-07 (Sentinel failover).
+
+**Done (2026-11-16).** Scenarios are in `scenarios/failure_test.go`. Backend actions use `Session.Compose`/`Exec` on the session's own side (C2), so ref and sut go through the same sequence.
+- **CS-ENG-06** (`r`, `n`, `p`): the broker backend (`redis`, `nats`, `postgres`) is stopped. The API publish is polled until it fails and only the last answer is recorded. Then one subscribe attempt is recorded. The backend is started; publish and subscribe are polled until they work (deadline 30 s). Finally a subscriber on a fresh channel receives an API publication. Observed, identical on ref and sut:
+  - Publish while down: `100 internal server error`, `temporary: true`, on all three.
+  - Subscribe while down: on `r` the connection is closed with `3004 internal server error`. On `n` it succeeds, because nats.go buffers subscriptions while it reconnects. On `p` it succeeds, because the PG broker subscribes locally; delivery is from the outbox.
+  - After the start, everything works again within the deadline. Goldens: `n` differs from `r` only in the subscribe answer and the service name; `p` differs in the subscribe answer, the service name and offset/epoch.
+- **CS-ENG-07** (`rs`): two publications, then `SENTINEL FAILOVER mymaster`. The test waits until the sentinel reports another master. Publishing works again (polled, 30 s), and history on the new master holds all three publications with the same epoch. The test then waits until delivery to a new subscriber has worked for 5 s without a miss (unrecorded probes at ~20/s, deadline 60 s), and records one delivered publication. The old master stays a replica until `compat-down`.
+- **Infrastructure and test defects found, fixed before recording:**
+  1. PostgreSQL data was on tmpfs. `docker stop` empties a tmpfs, so the restarted database had no schema. The servers create the schema only at startup, so neither recovered (`relation "cf_stream" does not exist` on ref). A real PostgreSQL restart keeps its data. Data now lives in the image's anonymous volume, one per container: the sides still share nothing (CS-ISO-01 checks mounts), and `compat-down` (`down -v`) removes it.
+  2. Waiting for a subscribe *failure* timed out on `n`, where subscribes do not fail (see above). It is now one recorded attempt after the publish error.
+  3. **Lost publications after a Sentinel failover (ref and sut alike).** The first control run failed CS-ENG-01 and CS-PUB-01 on `rs`, which run right after CS-ENG-07. CS-ENG-07 had checked publish and history, but not delivery. A throwaway probe (not committed) sent subscribe + API publish to fresh channels at ~20/s for 90 s after the failover. On both sides, from ~3.5 s to ~17.5 s after the failover, exactly one delivery in about every 1.07 s was lost: 14 on ref and 14 on sut, then none for 70 s. Waiting until the sentinel reported the failover finished did not shorten the window. Both logs show `pub/sub connection error EOF` at the failover; Redis PUB/SUB is at-most-once. The behavior is the same on both servers, so it is not a difference; the cause inside the shared library code was not investigated. CS-ENG-07 now waits for 5 s of loss-free delivery. 3 s was not enough: such a window could fit between the election and the first loss at ~3.5 s, and in 1 of 3 runs it did.
+     Probe pitfalls on the way, both in throwaway code:
+     - a gorilla/websocket connection is unusable after a read deadline expires, which first looked like "no delivery for 90 s";
+     - an unthrottled probe (~500 connections/s) produced losses of its own and exhausted the host's ephemeral ports.
+  4. The next control run failed CS-ISO-01 in the golden pass on `rs`, which reuses the stack after the diff pass. After the failover, `redis` is a replica, so the probe's `SET` there was refused. The `rs` probe now asks the side's sentinel for the current master and writes there (probe entry `sentinel`). Three failovers in a row on one stack (CS-ENG-07, diff, golden) then passed.
+  5. On `p`, the publish that first succeeds after the restart can still be in the outbox and reach a new subscriber of the same channel as a push. The final check therefore uses a fresh channel.
+- **Checks:** `make compat-all` (all 11 profiles) 3× green; harness unit tests; golangci-lint on test/compat 0 issues. No server code changed.
 
 ### 2.9 Names
 CS-NAME-02 (sut-default on `r` and `n`).
