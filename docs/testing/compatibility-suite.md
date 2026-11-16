@@ -23,7 +23,7 @@ A diff fails CI unless the scenario is mapped to an **accepted** entry in [known
 
 ```
 test/compat/
-├── go.mod                     module …/test/compat; requires gorilla/websocket v1.5.3 (more deps only when a scenario needs them)
+├── go.mod                     module …/test/compat; requires gorilla/websocket v1.5.3, nats.go v1.55.0 (more deps only when a scenario needs them)
 ├── docker-compose.yml         ref (image@digest) and sut (our linux binary from .build/, mounted into alpine:3.24: no image build,
 │                              no network inside Docker); per profile: node B (ref-b, sut-b) and one backend set per
 │                              side (redis-ref / redis-sut …) on separate networks ref-net / sut-net, Compose `profiles:`
@@ -88,6 +88,8 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 
 **Status 2026-11-16 (phase 2, step 2.4):** Redis topologies `rs` (Sentinel), `rc` (Cluster, 3 masters) and `rsh` (2 shards), two nodes per target, are green in diff and golden mode for their tagged scenarios. Their golden files are byte-identical to `golden/r`.
 
+**Status 2026-11-16 (phase 2, step 2.5):** NATS profiles `n` (NATS broker + Redis presence manager, two nodes per target) and `n-raw` (raw mode + wildcards, one node) are green in diff and golden mode. On `n` these are: CS-PUB-01, CS-PUB-04, CS-PUB-05, CS-PRES-01 and the new CS-HIST-03. On `n-raw` this is the new CS-PUB-06.
+
 Configs: `configs/r` is `configs/m` plus the engine section; `rs`, `rc`, `rsh` differ from `r` only in `engine.redis.address`; `r-opt` and `r-lists` are `r` plus one option each. Regenerate them with `jq` when `m` changes (see the step 2.3 notes in the plan). Note: `version` is a volatile key, so publication versions in CS-PUB-05 appear as placeholders. Equal versions keep equal placeholders, which is all the scenario needs.
 
 **Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
@@ -119,11 +121,12 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 ### CS-PUB: publication (OSS-API-01, OSS-SUB)
 - ★ CS-PUB-01: client publish allowed or denied by namespace; server API publish with `tags`, `idempotency_key`, `skip_history`. M R N P
 - CS-PUB-02: `broadcast` to many channels; batch API, ordered and `parallel`. M R
+- CS-PUB-06: NATS raw mode (`channel_replacements` `:`→`.`) and `allow_wildcards`. A raw NATS message reaches channel subscribers unchanged; API and client publications reach the raw subject without wrapping; a wildcard channel receives matching subjects. N (`n-raw`)
 
 ### CS-HIST: history (OSS-HIST-*)
 - ★ CS-HIST-01: `history` with `limit` unset (position only), `limit`, `since`, `reverse`; `history_size`/`history_ttl` trimming; max limit 300. M R P
 - CS-HIST-02: `history_remove` keeps the top position; `history_meta_ttl`. M R P
-- CS-HIST-03: history on a NATS-backed namespace is rejected at config load (capability). N
+- CS-HIST-03: history-based features on a NATS broker. Observed on ref: the config loads and startup succeeds. At runtime, API and client `history`, `history_remove`, subscribe with `recoverable`/`recover`, cache recovery, auto cache recovery, forced positioning and fossil delta each give `108 not available`. A plain subscribe and a publish succeed, and publish results carry no offset/epoch. N
 
 ### CS-REC: recovery and positioning (OSS-SUB-08/09, OSS-HIST)
 - ★ CS-REC-01: reconnect with `recover`, `epoch`, `offset` within the window → `recovered=true`, exact missed publications, no duplicates. M R P

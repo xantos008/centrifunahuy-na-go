@@ -45,7 +45,7 @@ local-deps:
 # Golden files are re-recorded only for the scenarios named in COMPAT_RECORD.
 COMPAT_GOARCH ?= $(shell go env GOARCH)
 PROFILE ?= m
-COMPAT_PROFILES ?= m r r-opt r-lists rs rc rsh
+COMPAT_PROFILES ?= m r r-opt r-lists rs rc rsh n n-raw
 COMPAT_ENV = COMPAT_PROFILE=$(PROFILE)
 COMPAT_COMPOSE = cd test/compat && $(COMPAT_ENV) docker compose --profile $(PROFILE)
 

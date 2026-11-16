@@ -78,3 +78,4 @@ Pulled into the local Docker image store; used only by test compose files, never
 | Image | Digest | License | Used by | Since |
 |---|---|---|---|---|
 | `redis:8.10.3-alpine` | `sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3` | Redis 8: RSALv2 / SSPLv1 / AGPLv3 (tri-license; RSAL and SSPL are not OSI open source). Condition C1: using it only for tests does not make its license irrelevant; Redis is never shipped | `test/compat/docker-compose.yml` (`redis-ref`, `redis-sut`) | 2.2 |
+| `nats:2.15.3-alpine` | `sha256:558394a23dd3c36f2d3a64b51865fd09908010e80a542cea5e75c2af543ed62a` | NATS server: Apache-2.0. Current stable release on 2026-11-16 (same digest as `2-alpine`) | `test/compat/docker-compose.yml` (`nats-ref`, `nats-sut`) | 2.5 |

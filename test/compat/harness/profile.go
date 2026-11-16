@@ -20,12 +20,14 @@ var profiles = map[string]profileSpec{
 	"rs":      {nodes: 2, backends: []string{"redis", "replica1", "replica2", "sentinel"}, probe: []string{"redis"}},
 	"rc":      {nodes: 2, backends: []string{"rc1", "rc2", "rc3"}, probe: []string{"rc1"}},
 	"rsh":     {nodes: 2, backends: []string{"redis", "redis2"}, probe: []string{"redis", "redis2"}},
+	"n":       {nodes: 2, backends: []string{"nats", "redis"}, probe: []string{"nats", "redis"}},
+	"n-raw":   {nodes: 1, backends: []string{"nats", "redis"}, probe: []string{"nats", "redis"}},
 }
 
 type profileSpec struct {
 	nodes    int      // server nodes per side
 	backends []string // backend hostnames, one service per side ("redis" → redis-ref, redis-sut)
-	probe    []string // writable Redis entry points for the CS-ISO-01 probe (cluster: any node)
+	probe    []string // CS-ISO-01 probe entry points: nats, or writable Redis nodes (cluster: any node)
 }
 
 // Profile is the current engine profile.
@@ -89,10 +91,7 @@ func CheckRecordList() error {
 // can only address its own side (condition C2): every scenario runs the same
 // code on ref and on sut, so backend actions are symmetric by construction.
 func serviceFor(base, target string) string {
-	side := "ref"
-	if strings.HasPrefix(target, "sut") { // sut and sut-default share the sut side
-		side = "sut"
-	}
+	side := side(target)
 	switch base {
 	case "node":
 		return side
@@ -100,6 +99,14 @@ func serviceFor(base, target string) string {
 		return side + "-b"
 	}
 	return base + "-" + side
+}
+
+// side is "ref" or "sut"; sut and sut-default share the sut side.
+func side(target string) string {
+	if strings.HasPrefix(target, "sut") {
+		return "sut"
+	}
+	return "ref"
 }
 
 // Compose runs `docker compose <action> [args…] <service>` on this session's

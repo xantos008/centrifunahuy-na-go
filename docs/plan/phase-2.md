@@ -204,6 +204,19 @@ Sentinel and Cluster containers announcing container addresses; sharding with tw
 ### 2.5 NATS (`n`, `n-raw`)
 NATS + Redis presence; CS-HIST-03; raw mode (publish to a raw subject with `nats.go`, receive on a channel) and wildcard subscriptions; CS-PUB-04/05 on `n`.
 
+**Done (2026-11-16).**
+- NATS `nats:2.15.3-alpine` (Apache-2.0, pinned by digest). Started with a test-only user, monitoring port for the healthcheck, no JetStream. Services `nats-ref`/`nats-sut` have the alias `nats` on their own network. Loopback client ports are 14222 (ref) and 24222 (sut).
+- `configs/n` = `r` without `engine`, plus `broker` nats and `presence_manager` redis (`presence_ttl` 5s). `configs/n-raw` = `n` plus `allow_wildcards` and `raw_mode` with `channel_replacements` `{":": "."}`.
+- Harness: profiles `n` (2 nodes) and `n-raw` (1 node), backends nats + redis. The CS-ISO-01 NATS probe subscribes on both sides and publishes through one; only that side may receive. `Session.NATSPublish`/`NATSSubscribe` use the session's own side (C2) and record notes. The test module gains nats.go v1.55.0, at the versions already pinned in the root `go.mod` (provenance PRV-14).
+- Negative checks: `sut-b` on `ref-net` fails CS-ISO-01 (from step 2.4); pointing the sut NATS URL at ref's port makes the probe fail ("probe via nats-ref reached nats-sut").
+- CS-HIST-03 (new): the catalogue said history on NATS is "rejected at config load". Ref shows otherwise: the server starts, and every history-based operation answers `108 not available` at runtime. The catalogue now follows ref.
+- CS-PUB-06 (new, `n-raw`): raw message → channel push; API and client publish → raw subject unchanged; wildcard channel `wild-….*`. The push's `pub.channel` holds the NATS subject.
+- Golden `n` vs `r`, every difference is explained by "NATS has no history":
+  - CS-PRES-01 and CS-PUB-04 are byte-identical;
+  - CS-PUB-01: publish results without offset/epoch, history `108`;
+  - CS-PUB-05: no version suppression, and a repeated `idempotency_key` is delivered again (both servers).
+- **Checks:** `make compat-all` (all 9 profiles) 3× green; harness unit tests; golangci-lint on test/compat 0 issues. No server code changed.
+
 ### 2.6 PostgreSQL (`p`, `p-notify`)
 PG broker + PG controller. Transactional publishing (KD-11): an application transaction calls the documented SQL surface through `psql`; commit → clients receive, rollback → nothing. The exact functions and tables come from the docs (`docs/server/engines.md` §PostgreSQL broker) and are checked against both servers. KD-11 becomes `accepted` when green.
 

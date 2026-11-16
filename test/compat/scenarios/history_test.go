@@ -109,3 +109,29 @@ func TestCS_HIST_04(t *testing.T) {
 		}
 	})
 }
+
+// CS-HIST-03: history-based features on a NATS broker, which has no history
+// (docs: at most once PUB/SUB). The outcome is observed on ref and compared:
+// API history and history_remove, client history, subscribe with recovery,
+// cache recovery, auto cache recovery, forced positioning and fossil delta.
+func TestCS_HIST_03(t *testing.T) {
+	h.Profiles(t, "n")
+	h.Run(t, "CS-HIST-03", func(s *h.Session) {
+		ch := s.Ch("hist:h3")
+		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"n":1}}`, ch)})
+		s.API(h.APIRequest{Path: "/api/history", Body: fmt.Sprintf(`{"channel":%q,"limit":10}`, ch)})
+		s.API(h.APIRequest{Path: "/api/history_remove", Body: fmt.Sprintf(`{"channel":%q}`, ch)})
+
+		ws := connect(s, h.HS256(h.Claims{Sub: "u1"}))
+		ws.Send(fmt.Sprintf(`{"id":2,"subscribe":{"channel":%q}}`, ch))
+		ws.Next()
+		ws.Send(fmt.Sprintf(`{"id":3,"history":{"channel":%q,"limit":10}}`, ch))
+		ws.Next()
+
+		recoverAfter(s, s.Ch("hist:h3r"), 2)
+		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q,"recoverable":true,"recover":true}`, s.Ch("cache:h3")))
+		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q}`, s.Ch("acache:h3")))
+		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q}`, s.Ch("pos:h3")))
+		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q,"delta":"fossil"}`, s.Ch("delta:h3")))
+	})
+}

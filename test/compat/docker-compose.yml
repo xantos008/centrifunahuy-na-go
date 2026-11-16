@@ -27,6 +27,7 @@ x-ref: &ref
     redis2-ref: {condition: service_healthy, required: false}
     sentinel-ref: {condition: service_healthy, required: false}
     rc-init-ref: {condition: service_completed_successfully, required: false}
+    nats-ref: {condition: service_healthy, required: false}
 
 # The linux binary from .build/ runs in a plain alpine image: no image build,
 # so no network access is needed inside Docker.
@@ -40,6 +41,7 @@ x-sut: &sut
     redis2-sut: {condition: service_healthy, required: false}
     sentinel-sut: {condition: service_healthy, required: false}
     rc-init-sut: {condition: service_completed_successfully, required: false}
+    nats-sut: {condition: service_healthy, required: false}
 
 # Redis without persistence; the default user is disabled, servers log in
 # with the ACL user from configs/<p>/config.json (test-only credentials).
@@ -58,7 +60,7 @@ x-redis: &redis
     test: ["CMD", "redis-cli", "--no-auth-warning", "--user", "compat", "--pass", "compat-test-redis-password", "ping"]
     interval: 1s
     retries: 30
-  profiles: [r, r-opt, r-lists, rs, rsh]
+  profiles: [r, r-opt, r-lists, rs, rsh, n, n-raw]
 
 x-replica: &replica
   <<: *redis
@@ -116,6 +118,17 @@ x-rc-init: &rc-init
       done
   profiles: [rc]
 
+# NATS (Apache-2.0) with a test-only user; no JetStream, no persistence.
+# The loopback client port lets scenarios publish to raw subjects (n-raw).
+x-nats: &nats
+  image: nats:2.15.3-alpine@sha256:558394a23dd3c36f2d3a64b51865fd09908010e80a542cea5e75c2af543ed62a
+  command: ["nats-server", "--user", "compat", "--pass", "compat-test-nats-password", "-m", "8222"]
+  healthcheck:
+    test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8222/healthz"]
+    interval: 1s
+    retries: 30
+  profiles: [n, n-raw]
+
 services:
   ref:
     <<: *ref
@@ -123,14 +136,14 @@ services:
   ref-b:
     <<: *ref
     ports: ["127.0.0.1:18100:8000"]
-    profiles: [r, rs, rc, rsh]
+    profiles: [r, rs, rc, rsh, n]
   sut:
     <<: *sut
     ports: ["127.0.0.1:28000:8000"]
   sut-b:
     <<: *sut
     ports: ["127.0.0.1:28100:8000"]
-    profiles: [r, rs, rc, rsh]
+    profiles: [r, rs, rc, rsh, n]
   sut-default:
     # Same binary in default mode (Cedrazeka names), for CS-NAME-01/02.
     <<: *sut
@@ -196,3 +209,12 @@ services:
     <<: *rc-init
     networks: [sut-net]
     depends_on: {rc1-sut: {condition: service_healthy}, rc2-sut: {condition: service_healthy}, rc3-sut: {condition: service_healthy}}
+
+  nats-ref:
+    <<: *nats
+    networks: {ref-net: {aliases: [nats]}}
+    ports: ["127.0.0.1:14222:4222"]
+  nats-sut:
+    <<: *nats
+    networks: {sut-net: {aliases: [nats]}}
+    ports: ["127.0.0.1:24222:4222"]

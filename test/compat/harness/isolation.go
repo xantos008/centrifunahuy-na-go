@@ -102,10 +102,13 @@ func inspect(svc string) (container, error) {
 	return cs[0], nil
 }
 
-// probe writes a marker through each side's Redis entry point b and expects
-// the other side not to see it (-c follows cluster redirects).
-// ponytail: Redis only; NATS and PostgreSQL probes come with their profiles (steps 2.5, 2.6).
+// probe writes a marker through each side's entry point b and expects the
+// other side not to see it (Redis: -c follows cluster redirects).
+// ponytail: Redis and NATS; the PostgreSQL probe comes with its profiles (step 2.6).
 func probe(b string) error {
+	if b == "nats" {
+		return probeNATS()
+	}
 	cli := func(side string, args ...string) (string, error) {
 		out, err := compose(append([]string{"exec", "-T", b + "-" + side, "redis-cli", "-c", "--no-auth-warning",
 			"--user", "compat", "--pass", "compat-test-redis-password"}, args...)...)

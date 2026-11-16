@@ -2,6 +2,7 @@ package scenarios
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	h "github.com/xantos008/centrifunahuy-na-go/test/compat/harness"
@@ -130,5 +131,37 @@ func TestCS_PUB_05(t *testing.T) {
 		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"marker":"end"}}`, ch)})
 		ws.RecvUntil(`"marker"`)
 		s.API(h.APIRequest{Path: "/api/history", Body: fmt.Sprintf(`{"channel":%q,"limit":20}`, ch)})
+	})
+}
+
+// CS-PUB-06: NATS raw mode with channel_replacements {":": "."} and
+// allow_wildcards. A raw NATS message reaches channel subscribers as is; API
+// and client publications go to the raw subject without wrapping; a wildcard
+// channel receives messages of matching subjects.
+func TestCS_PUB_06(t *testing.T) {
+	h.Profiles(t, "n-raw")
+	h.Run(t, "CS-PUB-06", func(s *h.Session) {
+		ch := s.Ch("pub:raw")
+		subj := strings.ReplaceAll(ch, ":", ".")
+		raw := s.NATSSubscribe(subj)
+		ws := subscribeOn(s, fmt.Sprintf(`{"channel":%q}`, ch))
+		s.NATSPublish(subj, []byte(`{"from":"nats"}`))
+		ws.Next()
+		raw()
+		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"from":"api"},"tags":{"k":"v"}}`, ch)})
+		ws.Next()
+		raw()
+		p := connect(s, h.HS256(h.Claims{Sub: "u2"})) // separate publisher: no reply/push ordering
+		p.Send(fmt.Sprintf(`{"id":2,"publish":{"channel":%q,"data":{"from":"client"}}}`, ch))
+		p.Next()
+		ws.Next()
+		raw()
+
+		wild := s.Ch("wild") + ".*"
+		w := subscribeOn(s, fmt.Sprintf(`{"channel":%q}`, wild))
+		s.NATSPublish(s.Ch("wild")+".a", []byte(`{"n":1}`))
+		w.Next()
+		s.API(h.APIRequest{Path: "/api/presence", Body: fmt.Sprintf(`{"channel":%q}`, wild)})
+		subscribeOn(s, fmt.Sprintf(`{"channel":%q}`, s.Ch("pub:wild")+".*")) // wildcard after replacement
 	})
 }
