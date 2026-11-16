@@ -14,14 +14,18 @@ import (
 // targets were started with (`make compat-up PROFILE=…`); default "m".
 var profiles = map[string]profileSpec{
 	"m":       {nodes: 1},
-	"r":       {nodes: 2, backends: []string{"redis"}},
-	"r-opt":   {nodes: 1, backends: []string{"redis"}},
-	"r-lists": {nodes: 1, backends: []string{"redis"}},
+	"r":       {nodes: 2, backends: []string{"redis"}, probe: []string{"redis"}},
+	"r-opt":   {nodes: 1, backends: []string{"redis"}, probe: []string{"redis"}},
+	"r-lists": {nodes: 1, backends: []string{"redis"}, probe: []string{"redis"}},
+	"rs":      {nodes: 2, backends: []string{"redis", "replica1", "replica2", "sentinel"}, probe: []string{"redis"}},
+	"rc":      {nodes: 2, backends: []string{"rc1", "rc2", "rc3"}, probe: []string{"rc1"}},
+	"rsh":     {nodes: 2, backends: []string{"redis", "redis2"}, probe: []string{"redis", "redis2"}},
 }
 
 type profileSpec struct {
 	nodes    int      // server nodes per side
 	backends []string // backend hostnames, one service per side ("redis" → redis-ref, redis-sut)
+	probe    []string // writable Redis entry points for the CS-ISO-01 probe (cluster: any node)
 }
 
 // Profile is the current engine profile.

@@ -56,3 +56,16 @@ func TestProfileNodes(t *testing.T) {
 		t.Errorf("two-node profile: %d ref nodes, want 2", n)
 	}
 }
+
+func TestProfileProbes(t *testing.T) {
+	for name, p := range profiles {
+		if len(p.backends) > 0 && len(p.probe) == 0 {
+			t.Errorf("%s: backends without a CS-ISO-01 probe", name)
+		}
+		for _, b := range p.probe {
+			if !slices.Contains(p.backends, b) {
+				t.Errorf("%s: probe %q is not a backend", name, b)
+			}
+		}
+	}
+}

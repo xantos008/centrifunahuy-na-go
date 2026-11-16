@@ -189,6 +189,18 @@ CS-HIST-02, CS-HIST-04, CS-REC-03, CS-REC-04, CS-REC-05, CS-PUB-03, CS-PUB-04, C
 ### 2.4 Redis topologies (`rs`, `rc`, `rsh`)
 Sentinel and Cluster containers announcing container addresses; sharding with two Redis. The phase-2 single-node scenarios run on them per the tables.
 
+**Done (2026-11-16).**
+- Topologies, one set per side, same image as `r`, every node only on its side's network:
+  - `rs`: master `redis`, replicas `replica1`/`replica2` (`--replicaof redis 6379`), one `sentinel` (quorum 1, `resolve-hostnames yes`, `down-after-milliseconds` 2000 for step 2.8). Address `redis+sentinel://compat:…@sentinel:26379?sentinel_master_name=mymaster`; the URL credentials authenticate to the master, the sentinel has no password. The sentinel is healthy only once it has discovered both replicas.
+  - `rc`: three masters `rc1..rc3` with `cluster-enabled yes`; a one-shot `rc-init-<side>` resolves the nodes with `getent` on its own network, runs `redis-cli --cluster create`, and exits once all three report `cluster_state:ok`. Servers wait for it (`service_completed_successfully`). Address: plain `redis://compat:…@rc1:6379`.
+  - `rsh`: `redis` and `redis2`, `address` array of two.
+- Addresses: Sentinel and Cluster report addresses of the side's own network (e.g. ref 172.18.x, sut 172.20.x in one run), never 127.0.0.1. No `announce-ip` setting is needed because nothing runs on the host network.
+- Both servers log `engine_mode` `sentinel`, `cluster` and `sharded(2):standalone-x2`. On `rsh` both shards hold keys after the run (ref 3 + 5, sut 3 + 5).
+- CS-ISO-01: profiles list their writable probe entry points (`probe`; cluster: any node, `redis-cli -c`). Every backend hostname, including replicas and the sentinel, is checked for network, resolution and mounts. A new harness test requires a probe for every profile with backends. Negative check: `sut-b` attached to `ref-net` on `rs` fails CS-ISO-01.
+- Golden: `golden/rs` and `golden/rsh` (5 files each) and `golden/rc` (7 files: plus CS-HIST-02, CS-PUB-03) are byte-identical to `golden/r`.
+- OQ-ENG-02 answered from ref: a plain address of one cluster node is detected as Cluster.
+- **Checks:** `make compat-all` (m r r-opt r-lists rs rc rsh) 3× green; harness unit tests; golangci-lint on test/compat 0 issues. No server code changed.
+
 ### 2.5 NATS (`n`, `n-raw`)
 NATS + Redis presence; CS-HIST-03; raw mode (publish to a raw subject with `nats.go`, receive on a channel) and wildcard subscriptions; CS-PUB-04/05 on `n`.
 

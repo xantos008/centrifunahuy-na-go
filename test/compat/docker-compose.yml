@@ -22,7 +22,11 @@ x-ref: &ref
   command: ["centrifugo", "-c", "/etc/compat/config.json"]
   volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro"]
   networks: [ref-net]
-  depends_on: {redis-ref: {condition: service_healthy, required: false}}
+  depends_on:
+    redis-ref: {condition: service_healthy, required: false}
+    redis2-ref: {condition: service_healthy, required: false}
+    sentinel-ref: {condition: service_healthy, required: false}
+    rc-init-ref: {condition: service_completed_successfully, required: false}
 
 # The linux binary from .build/ runs in a plain alpine image: no image build,
 # so no network access is needed inside Docker.
@@ -31,19 +35,86 @@ x-sut: &sut
   command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/config.json"]
   volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
   networks: [sut-net]
-  depends_on: {redis-sut: {condition: service_healthy, required: false}}
+  depends_on:
+    redis-sut: {condition: service_healthy, required: false}
+    redis2-sut: {condition: service_healthy, required: false}
+    sentinel-sut: {condition: service_healthy, required: false}
+    rc-init-sut: {condition: service_completed_successfully, required: false}
 
 # Redis without persistence; the default user is disabled, servers log in
 # with the ACL user from configs/<p>/config.json (test-only credentials).
+# masteruser/masterauth let any node act as a replica (Sentinel failover).
+#
+# Topologies (step 2.4): every node joins only its side's network, so Cluster
+# and Sentinel announce that network's container addresses, never 127.0.0.1.
+# Hostnames: r, r-opt, r-lists: redis; rsh: redis, redis2; rs: redis (master),
+# replica1, replica2, sentinel; rc: rc1, rc2, rc3.
 x-redis: &redis
   image: redis:8.10.3-alpine@sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3
   command: ["redis-server", "--save", "", "--appendonly", "no", "--user", "default", "off",
-            "--user", "compat", "on", ">compat-test-redis-password", "~*", "&*", "+@all"]
+            "--user", "compat", "on", ">compat-test-redis-password", "~*", "&*", "+@all",
+            "--masteruser", "compat", "--masterauth", "compat-test-redis-password"]
   healthcheck:
     test: ["CMD", "redis-cli", "--no-auth-warning", "--user", "compat", "--pass", "compat-test-redis-password", "ping"]
     interval: 1s
     retries: 30
-  profiles: [r, r-opt, r-lists]
+  profiles: [r, r-opt, r-lists, rs, rsh]
+
+x-replica: &replica
+  <<: *redis
+  command: ["redis-server", "--save", "", "--appendonly", "no", "--user", "default", "off",
+            "--user", "compat", "on", ">compat-test-redis-password", "~*", "&*", "+@all",
+            "--masteruser", "compat", "--masterauth", "compat-test-redis-password",
+            "--replicaof", "redis", "6379"]
+  profiles: [rs]
+
+# One sentinel, quorum 1. It monitors the master by hostname; healthy once it
+# has discovered both replicas.
+x-sentinel: &sentinel
+  <<: *redis
+  command:
+    - sh
+    - -c
+    - |
+      cat > /tmp/sentinel.conf <<EOF
+      port 26379
+      sentinel resolve-hostnames yes
+      sentinel monitor mymaster redis 6379 1
+      sentinel auth-user mymaster compat
+      sentinel auth-pass mymaster compat-test-redis-password
+      sentinel down-after-milliseconds mymaster 2000
+      sentinel failover-timeout mymaster 10000
+      EOF
+      exec redis-sentinel /tmp/sentinel.conf
+  healthcheck:
+    test: ["CMD-SHELL", "redis-cli -p 26379 sentinel master mymaster | grep -A1 '^num-slaves$$' | tail -1 | grep -qx 2"]
+    interval: 1s
+    retries: 60
+  profiles: [rs]
+
+x-rc: &rc
+  <<: *redis
+  command: ["redis-server", "--save", "", "--appendonly", "no", "--user", "default", "off",
+            "--user", "compat", "on", ">compat-test-redis-password", "~*", "&*", "+@all",
+            "--cluster-enabled", "yes"]
+  profiles: [rc]
+
+# Creates the 3-master cluster from the nodes' addresses on this side's
+# network and exits once every node reports cluster_state:ok.
+x-rc-init: &rc-init
+  image: redis:8.10.3-alpine@sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3
+  command:
+    - sh
+    - -ec
+    - |
+      cli() { redis-cli --no-auth-warning --user compat --pass compat-test-redis-password "$$@"; }
+      ip() { getent hosts "$$1" | cut -d' ' -f1; }
+      cli -h rc1 cluster info | grep -q cluster_state:ok ||
+        cli --cluster create "$$(ip rc1):6379" "$$(ip rc2):6379" "$$(ip rc3):6379" --cluster-yes
+      for n in rc1 rc2 rc3; do
+        until cli -h "$$n" cluster info | grep -q cluster_state:ok; do sleep 0.2; done
+      done
+  profiles: [rc]
 
 services:
   ref:
@@ -52,22 +123,76 @@ services:
   ref-b:
     <<: *ref
     ports: ["127.0.0.1:18100:8000"]
-    profiles: [r]
+    profiles: [r, rs, rc, rsh]
   sut:
     <<: *sut
     ports: ["127.0.0.1:28000:8000"]
   sut-b:
     <<: *sut
     ports: ["127.0.0.1:28100:8000"]
-    profiles: [r]
+    profiles: [r, rs, rc, rsh]
   sut-default:
     # Same binary in default mode (Cedrazeka names), for CS-NAME-01/02.
     <<: *sut
     command: ["/opt/cedrazeka/cedrazeka", "-c", "/etc/compat/config.json"]
     ports: ["127.0.0.1:28001:8000"]
+
   redis-ref:
     <<: *redis
     networks: {ref-net: {aliases: [redis]}}
+  redis2-ref:
+    <<: *redis
+    networks: {ref-net: {aliases: [redis2]}}
+    profiles: [rsh]
+  replica1-ref:
+    <<: *replica
+    networks: {ref-net: {aliases: [replica1]}}
+  replica2-ref:
+    <<: *replica
+    networks: {ref-net: {aliases: [replica2]}}
+  sentinel-ref:
+    <<: *sentinel
+    networks: {ref-net: {aliases: [sentinel]}}
+  rc1-ref:
+    <<: *rc
+    networks: {ref-net: {aliases: [rc1]}}
+  rc2-ref:
+    <<: *rc
+    networks: {ref-net: {aliases: [rc2]}}
+  rc3-ref:
+    <<: *rc
+    networks: {ref-net: {aliases: [rc3]}}
+  rc-init-ref:
+    <<: *rc-init
+    networks: [ref-net]
+    depends_on: {rc1-ref: {condition: service_healthy}, rc2-ref: {condition: service_healthy}, rc3-ref: {condition: service_healthy}}
+
   redis-sut:
     <<: *redis
     networks: {sut-net: {aliases: [redis]}}
+  redis2-sut:
+    <<: *redis
+    networks: {sut-net: {aliases: [redis2]}}
+    profiles: [rsh]
+  replica1-sut:
+    <<: *replica
+    networks: {sut-net: {aliases: [replica1]}}
+  replica2-sut:
+    <<: *replica
+    networks: {sut-net: {aliases: [replica2]}}
+  sentinel-sut:
+    <<: *sentinel
+    networks: {sut-net: {aliases: [sentinel]}}
+  rc1-sut:
+    <<: *rc
+    networks: {sut-net: {aliases: [rc1]}}
+  rc2-sut:
+    <<: *rc
+    networks: {sut-net: {aliases: [rc2]}}
+  rc3-sut:
+    <<: *rc
+    networks: {sut-net: {aliases: [rc3]}}
+  rc-init-sut:
+    <<: *rc-init
+    networks: [sut-net]
+    depends_on: {rc1-sut: {condition: service_healthy}, rc2-sut: {condition: service_healthy}, rc3-sut: {condition: service_healthy}}

@@ -65,6 +65,8 @@ func CheckIsolation() error {
 				return fmt.Errorf("CS-ISO-01: %s-ref and %s-sut share mount %s", b, b, m.Source)
 			}
 		}
+	}
+	for _, b := range spec.probe {
 		if err := probe(b); err != nil {
 			return err
 		}
@@ -100,15 +102,12 @@ func inspect(svc string) (container, error) {
 	return cs[0], nil
 }
 
-// probe writes a marker through each side's backend and expects the other
-// side not to see it.
+// probe writes a marker through each side's Redis entry point b and expects
+// the other side not to see it (-c follows cluster redirects).
 // ponytail: Redis only; NATS and PostgreSQL probes come with their profiles (steps 2.5, 2.6).
 func probe(b string) error {
-	if b != "redis" {
-		return fmt.Errorf("CS-ISO-01: no probe for backend %q", b)
-	}
 	cli := func(side string, args ...string) (string, error) {
-		out, err := compose(append([]string{"exec", "-T", "redis-" + side, "redis-cli", "--no-auth-warning",
+		out, err := compose(append([]string{"exec", "-T", b + "-" + side, "redis-cli", "-c", "--no-auth-warning",
 			"--user", "compat", "--pass", "compat-test-redis-password"}, args...)...)
 		return strings.TrimSpace(out), err
 	}
@@ -126,7 +125,7 @@ func probe(b string) error {
 			return err
 		}
 		if own != "1" || other != "0" {
-			return fmt.Errorf("CS-ISO-01: key written via redis-%s exists %s there, %s via redis-%s (want 1, 0)", pair[0], own, other, pair[1])
+			return fmt.Errorf("CS-ISO-01: key written via %s-%s exists %s there, %s via %s-%s (want 1, 0)", b, pair[0], own, other, b, pair[1])
 		}
 		if _, err := cli(pair[0], "DEL", key); err != nil {
 			return err

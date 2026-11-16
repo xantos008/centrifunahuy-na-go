@@ -86,7 +86,9 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 - CS-REC-05 on `r`;
 - CS-ENG-CFG on `m`, plus the variants `r-opt` and `r-lists`.
 
-Configs: `configs/r` is `configs/m` plus the engine section; `r-opt` and `r-lists` are `r` plus one option each. Regenerate them with `jq` when `m` changes (see the step 2.3 notes in the plan). Note: `version` is a volatile key, so publication versions in CS-PUB-05 appear as placeholders. Equal versions keep equal placeholders, which is all the scenario needs.
+**Status 2026-11-16 (phase 2, step 2.4):** Redis topologies `rs` (Sentinel), `rc` (Cluster, 3 masters) and `rsh` (2 shards), two nodes per target, are green in diff and golden mode for their tagged scenarios. Their golden files are byte-identical to `golden/r`.
+
+Configs: `configs/r` is `configs/m` plus the engine section; `rs`, `rc`, `rsh` differ from `r` only in `engine.redis.address`; `r-opt` and `r-lists` are `r` plus one option each. Regenerate them with `jq` when `m` changes (see the step 2.3 notes in the plan). Note: `version` is a volatile key, so publication versions in CS-PUB-05 appear as placeholders. Equal versions keep equal placeholders, which is all the scenario needs.
 
 **Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
 
