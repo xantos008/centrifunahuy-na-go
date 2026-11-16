@@ -7,7 +7,7 @@ Cedrazeka connects to Redis, NATS and PostgreSQL as external services. None of t
 | Redis 8 | tri-license RSALv2 / SSPLv1 / AGPLv3. RSAL and SSPL are not OSI open-source licenses; AGPLv3 is. Using Redis only for tests does not make its license irrelevant (phase-2 condition C1) | test compose files only (`test/compat`, image pinned in `docs/ai/tooling-lock.md`) |
 | Valkey | BSD-3-Clause | planned: library integration job (phase-2 step 2.10) |
 | NATS server | Apache-2.0 | test compose files only: compat profiles `n`, `n-raw` (image pinned in `docs/ai/tooling-lock.md`) |
-| PostgreSQL | PostgreSQL License | planned: compat profiles `p`, `p-notify` (step 2.6) |
+| PostgreSQL | PostgreSQL License | test compose files only: compat profiles `p`, `p-notify` (image pinned in `docs/ai/tooling-lock.md`) |
 
 ## Redis topologies tested
 
@@ -30,5 +30,16 @@ Observed black-box against Centrifugo v6.10.3 (phase-2 step 2.5; NATS 2.15.3, Re
 - Publish results carry no `offset`/`epoch`. `version` suppression and `idempotency_key` deduplication do not apply: every publication is delivered.
 - Tags filters (`tf`) and presence via the Redis presence manager work as on Redis.
 - Raw mode: messages go to and from NATS subjects unchanged, after `channel_replacements`. Tags are not carried. A push's `pub.channel` holds the NATS subject (e.g. `pub.raw-x` for channel `pub:raw-x`). With `allow_wildcards`, a client can subscribe to e.g. `news.*`.
+
+## PostgreSQL broker: what changes for clients
+
+Observed black-box against Centrifugo v6.10.3 (phase-2 step 2.6; PostgreSQL 18.7, PG broker and PG controller, memory presence). Ref and Cedrazeka behave the same:
+
+- **Asynchronous delivery.** Publications reach subscribers through an outbox worker: by polling, or by `LISTEN/NOTIFY` with `use_notify`. A client that subscribes right after a publish can receive that publication as a push. In 50 publish-then-subscribe rounds with 3 publications each, ref pushed 149 of 150 and Cedrazeka 145.
+- **Position is always tracked**, including namespaces without history. Publications carry offset/epoch, and `skip_history` does not keep a publication out of history. The subscribe reply on a stream that has no publications yet has no epoch.
+- **Meta TTL.** History reads do not refresh it (docs), and the position was still there 6.5 s after `history_meta_ttl` 5s expired. Removal happens in the periodic cleanup, not at the TTL.
+- **Payloads go through JSONB.** The bytes are normalized: `{"text":"x"}` comes back as `{"text": "x"}`. Fossil delta is not applied, so subscribers get full payloads. Use `binary_data` for payloads that must stay byte-exact.
+- **Version suppression and idempotency work.** Pushes carry no `version` field.
+- **Transactional publishing.** The `cf_stream_*` functions have identical signatures on both servers, and commit/rollback behaves as documented (KD-11, CS-PUB-07).
 
 Engine configuration and failure behavior are documented in [phase 2](../plan/phase-2.md) as the profiles are verified.

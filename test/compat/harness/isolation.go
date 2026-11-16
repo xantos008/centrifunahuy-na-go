@@ -21,6 +21,9 @@ func CheckIsolation() error {
 		return nil
 	}
 	servers := map[string][]string{"ref": {"ref"}, "sut": {"sut", "sut-default"}}
+	if spec.noSUTDefault {
+		servers["sut"] = []string{"sut"}
+	}
 	if spec.nodes == 2 {
 		servers["ref"] = append(servers["ref"], "ref-b")
 		servers["sut"] = append(servers["sut"], "sut-b")
@@ -104,10 +107,12 @@ func inspect(svc string) (container, error) {
 
 // probe writes a marker through each side's entry point b and expects the
 // other side not to see it (Redis: -c follows cluster redirects).
-// ponytail: Redis and NATS; the PostgreSQL probe comes with its profiles (step 2.6).
 func probe(b string) error {
-	if b == "nats" {
+	switch b {
+	case "nats":
 		return probeNATS()
+	case "postgres":
+		return probePostgres()
 	}
 	cli := func(side string, args ...string) (string, error) {
 		out, err := compose(append([]string{"exec", "-T", b + "-" + side, "redis-cli", "-c", "--no-auth-warning",

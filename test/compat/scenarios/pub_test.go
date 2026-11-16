@@ -165,3 +165,43 @@ func TestCS_PUB_06(t *testing.T) {
 		subscribeOn(s, fmt.Sprintf(`{"channel":%q}`, s.Ch("pub:wild")+".*")) // wildcard after replacement
 	})
 }
+
+// CS-PUB-07: transactional publishing through the documented SQL surface of
+// the PostgreSQL broker (KD-11, docs engines.md §PostgreSQL broker). An
+// application transaction calls cf_stream_publish: commit delivers, rollback
+// never happened. Also idempotency, version suppression, the _strict
+// variant, top position, history removal and the function signatures.
+func TestCS_PUB_07(t *testing.T) {
+	h.Profiles(t, "p", "p-notify")
+	h.Run(t, "CS-PUB-07", func(s *h.Session) {
+		ch := s.Ch("hist:tx")
+		pub := func(fn, data, extra string) string {
+			return fmt.Sprintf(`SELECT out_channel_offset FROM %s(p_channel := '%s', p_data := '%s'%s)`, fn, ch, data, extra)
+		}
+		ws := subscribeOn(s, fmt.Sprintf(`{"channel":%q}`, ch))
+		s.SQL(`CREATE TABLE IF NOT EXISTS app_orders (id bigint)`)
+
+		s.SQL(`BEGIN`, `INSERT INTO app_orders VALUES (1)`, pub("cf_stream_publish", `{"n":1}`, ""), `COMMIT`)
+		ws.Next()
+		s.SQL(`BEGIN`, `INSERT INTO app_orders VALUES (2)`, pub("cf_stream_publish", `{"n":2}`, ""), `ROLLBACK`)
+		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"n":3}}`, ch)})
+		ws.Next() // n=3 directly after n=1: the rolled-back publication never arrives
+
+		withKey := `, p_idempotency_key := 'k1'`
+		s.SQL(`SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := '` + ch + `', p_data := '{"n":4}'` + withKey + `)`)
+		s.SQL(`SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := '` + ch + `', p_data := '{"n":4}'` + withKey + `)`)
+		s.SQL(`SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := '` + ch + `', p_data := '{"n":5}', p_version := 5, p_version_epoch := 'e')`)
+		s.SQL(`SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := '` + ch + `', p_data := '{"n":6}', p_version := 4, p_version_epoch := 'e')`)
+		s.SQL(pub("cf_stream_publish_strict", `{"n":7}`, `, p_version := 3, p_version_epoch := 'e'`))
+		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"marker":"end"}}`, ch)})
+		ws.RecvUntil(`"marker"`)
+
+		s.SQL(`SELECT out_top_offset FROM cf_stream_top_position('` + ch + `')`)
+		s.API(h.APIRequest{Path: "/api/history", Body: fmt.Sprintf(`{"channel":%q,"limit":10}`, ch)})
+		s.SQL(`SELECT cf_stream_remove_history('` + ch + `')`)
+		s.API(h.APIRequest{Path: "/api/history", Body: fmt.Sprintf(`{"channel":%q,"limit":10}`, ch)})
+
+		s.SQL(`SELECT string_agg(p.proname || '(' || pg_get_function_arguments(p.oid) || ') -> ' || pg_get_function_result(p.oid), E'\n' ORDER BY p.proname)
+			FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public' AND p.proname LIKE 'cf\_stream\_%'`)
+	})
+}

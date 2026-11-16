@@ -1,0 +1,151 @@
+{
+  "client": {
+    "token": {
+      "hmac_secret_key": "compat-test-hmac-secret-not-a-real-secret",
+      "rsa_public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAszmnLP+k8Vlhdje3Nqft\nai/yuCeefXLjKnt6HJ2Mc4nKmU+ySdebBbTOYtBbQc2MrKYyd360HGl3u4Vi/+h5\ns1Tt9qORGusj1jR1ijqrlhoHdO3SyzX9fMX2m/++H3DU4DMUrpAviV6EVz16/6VL\npMoCxopk6oDR23g8bSUlbuaXSG/9V2Ip6N4DtrbvF5ZQh42xbYjV8T+Ttl1/Uvsg\n4U3AXEqYZXupDGZYMylRYDDkYIz7DPESxDFF0tHIOv+Gc9IsOhx4J6R5k7ROC0h5\nh5wRGywC69BXjkagqU1z3Ol34KEhrK8x8GQizrWKrSgbNDlIDvK+FcLnTcTatuBP\nmQIDAQAB\n-----END PUBLIC KEY-----\n",
+      "ecdsa_public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfNPuOskD5+jyHxyPiMa8g1FeWoAk\nxeDUaK6DTsLjnb5KxGml/aKdrm5K551kDp4/kikPdwsjJl4bFT37CZLNQg==\n-----END PUBLIC KEY-----\n",
+      "ed25519_public_key": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAcbXOdarPyNUP/Zy6pdm7DOLEstRizWHR1YW3q0Ub+y4=\n-----END PUBLIC KEY-----\n"
+    },
+    "allowed_origins": [
+      "*"
+    ],
+    "ping_interval": "2s",
+    "pong_timeout": "1s",
+    "history_max_publication_limit": 8,
+    "recovery_max_publication_limit": 8,
+    "presence_update_interval": "2s"
+  },
+  "http_api": {
+    "key": "compat-test-api-key"
+  },
+  "health": {
+    "enabled": true
+  },
+  "channel": {
+    "without_namespace": {
+      "allow_subscribe_for_client": true,
+      "presence": true,
+      "join_leave": true,
+      "allow_presence_for_subscriber": true,
+      "allow_user_limited_channels": true
+    },
+    "namespaces": [
+      {
+        "name": "hist",
+        "history_size": 10,
+        "history_ttl": "300s",
+        "allow_subscribe_for_client": true,
+        "allow_history_for_subscriber": true,
+        "allow_recovery": true
+      },
+      {
+        "name": "pub",
+        "allow_subscribe_for_client": true,
+        "allow_publish_for_subscriber": true,
+        "allow_publish_for_client": true
+      },
+      {
+        "name": "closed"
+      },
+      {
+        "name": "hmeta",
+        "history_size": 10,
+        "history_ttl": "1s",
+        "history_meta_ttl": "5s",
+        "allow_subscribe_for_client": true,
+        "allow_history_for_subscriber": true
+      },
+      {
+        "name": "hlim",
+        "history_size": 20,
+        "history_ttl": "300s",
+        "history_max_publication_limit": 3,
+        "recovery_max_publication_limit": 2,
+        "allow_subscribe_for_client": true,
+        "allow_history_for_subscriber": true,
+        "allow_recovery": true
+      },
+      {
+        "name": "hnoperm",
+        "history_size": 10,
+        "history_ttl": "300s",
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "cache",
+        "history_size": 1,
+        "history_ttl": "300s",
+        "allow_recovery": true,
+        "force_recovery_mode": "cache",
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "acache",
+        "history_size": 1,
+        "history_ttl": "300s",
+        "force_recovery": true,
+        "force_recovery_mode": "cache",
+        "auto_cache_recover": true,
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "pos",
+        "history_size": 10,
+        "history_ttl": "300s",
+        "force_positioning": true,
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "delta",
+        "history_size": 1,
+        "history_ttl": "60s",
+        "force_positioning": true,
+        "allowed_delta_types": [
+          "fossil"
+        ],
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "deltap",
+        "history_size": 1,
+        "history_ttl": "60s",
+        "force_positioning": true,
+        "allowed_delta_types": [
+          "fossil"
+        ],
+        "delta_publish": true,
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "tags",
+        "allow_tags_filter": true,
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "ver",
+        "history_size": 10,
+        "history_ttl": "300s",
+        "allow_subscribe_for_client": true
+      }
+    ]
+  },
+  "prometheus": {
+    "enabled": true
+  },
+  "broker": {
+    "enabled": true,
+    "type": "postgres",
+    "postgres": {
+      "dsn": "postgres://compat:compat-test-pg-password@postgres:5432/compat?sslmode=disable",
+      "use_notify": false
+    }
+  },
+  "controller": {
+    "enabled": true,
+    "type": "postgres",
+    "postgres": {
+      "dsn": "postgres://compat:compat-test-pg-password@postgres:5432/compat?sslmode=disable",
+      "use_notify": false
+    }
+  }
+}

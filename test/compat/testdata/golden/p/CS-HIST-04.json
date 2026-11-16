@@ -1,0 +1,1437 @@
+{
+  "events": [
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 4
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 5
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 6
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 7
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 8
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 9
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 10
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "await outbox delivery"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hist:h4-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hist:h4-RUN",
+          "limit": 100
+        },
+        "id": 3
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "history": {
+          "epoch": "<epoch:1>",
+          "offset": 10,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "epoch": "<epoch:1>",
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "epoch": "<epoch:1>",
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "epoch": "<epoch:1>",
+              "offset": 3
+            },
+            {
+              "data": {
+                "n": 4
+              },
+              "epoch": "<epoch:1>",
+              "offset": 4
+            },
+            {
+              "data": {
+                "n": 5
+              },
+              "epoch": "<epoch:1>",
+              "offset": 5
+            },
+            {
+              "data": {
+                "n": 6
+              },
+              "epoch": "<epoch:1>",
+              "offset": 6
+            },
+            {
+              "data": {
+                "n": 7
+              },
+              "epoch": "<epoch:1>",
+              "offset": 7
+            },
+            {
+              "data": {
+                "n": 8
+              },
+              "epoch": "<epoch:1>",
+              "offset": 8
+            }
+          ]
+        },
+        "id": 3
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hist:h4-RUN",
+          "limit": 5
+        },
+        "id": 4
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "history": {
+          "epoch": "<epoch:1>",
+          "offset": 10,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "epoch": "<epoch:1>",
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "epoch": "<epoch:1>",
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "epoch": "<epoch:1>",
+              "offset": 3
+            },
+            {
+              "data": {
+                "n": 4
+              },
+              "epoch": "<epoch:1>",
+              "offset": 4
+            },
+            {
+              "data": {
+                "n": 5
+              },
+              "epoch": "<epoch:1>",
+              "offset": 5
+            }
+          ]
+        },
+        "id": 4
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hist:h4-RUN",
+          "limit": -1
+        },
+        "id": 5
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "history": {
+          "epoch": "<epoch:1>",
+          "offset": 10,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "epoch": "<epoch:1>",
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "epoch": "<epoch:1>",
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "epoch": "<epoch:1>",
+              "offset": 3
+            },
+            {
+              "data": {
+                "n": 4
+              },
+              "epoch": "<epoch:1>",
+              "offset": 4
+            },
+            {
+              "data": {
+                "n": 5
+              },
+              "epoch": "<epoch:1>",
+              "offset": 5
+            },
+            {
+              "data": {
+                "n": 6
+              },
+              "epoch": "<epoch:1>",
+              "offset": 6
+            },
+            {
+              "data": {
+                "n": 7
+              },
+              "epoch": "<epoch:1>",
+              "offset": 7
+            },
+            {
+              "data": {
+                "n": 8
+              },
+              "epoch": "<epoch:1>",
+              "offset": 8
+            }
+          ]
+        },
+        "id": 5
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hist:h4-RUN",
+          "limit": 0
+        },
+        "id": 6
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "history": {
+          "epoch": "<epoch:1>",
+          "offset": 10,
+          "publications": []
+        },
+        "id": 6
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:2>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:2>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:2>",
+          "offset": 3
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:2>",
+          "offset": 4
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "await outbox delivery"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hlim:h4-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hlim:h4-RUN",
+          "limit": 100
+        },
+        "id": 3
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "history": {
+          "epoch": "<epoch:2>",
+          "offset": 4,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "epoch": "<epoch:2>",
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "epoch": "<epoch:2>",
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "epoch": "<epoch:2>",
+              "offset": 3
+            }
+          ]
+        },
+        "id": 3
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hlim:h4-RUN",
+          "limit": 5
+        },
+        "id": 4
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "history": {
+          "epoch": "<epoch:2>",
+          "offset": 4,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "epoch": "<epoch:2>",
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "epoch": "<epoch:2>",
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "epoch": "<epoch:2>",
+              "offset": 3
+            }
+          ]
+        },
+        "id": 4
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hlim:h4-RUN",
+          "limit": -1
+        },
+        "id": 5
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "history": {
+          "epoch": "<epoch:2>",
+          "offset": 4,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "epoch": "<epoch:2>",
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "epoch": "<epoch:2>",
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "epoch": "<epoch:2>",
+              "offset": 3
+            }
+          ]
+        },
+        "id": 5
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hlim:h4-RUN",
+          "limit": 0
+        },
+        "id": 6
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "history": {
+          "epoch": "<epoch:2>",
+          "offset": 4,
+          "publications": []
+        },
+        "id": 6
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:3>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hist:h4-8-RUN",
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "positioned": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "client offline"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:3>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:3>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:3>",
+          "offset": 3
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:3>",
+          "offset": 4
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:3>",
+          "offset": 5
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:3>",
+          "offset": 6
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:3>",
+          "offset": 7
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:3>",
+          "offset": 8
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "await outbox delivery"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:4>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hist:h4-8-RUN",
+          "epoch": "<epoch:4>",
+          "offset": 0,
+          "recover": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "epoch": "<epoch:3>",
+          "positioned": true,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "epoch": "<epoch:3>",
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "epoch": "<epoch:3>",
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "epoch": "<epoch:3>",
+              "offset": 3
+            },
+            {
+              "data": {
+                "n": 4
+              },
+              "epoch": "<epoch:3>",
+              "offset": 4
+            },
+            {
+              "data": {
+                "n": 5
+              },
+              "epoch": "<epoch:3>",
+              "offset": 5
+            },
+            {
+              "data": {
+                "n": 6
+              },
+              "epoch": "<epoch:3>",
+              "offset": 6
+            },
+            {
+              "data": {
+                "n": 7
+              },
+              "epoch": "<epoch:3>",
+              "offset": 7
+            },
+            {
+              "data": {
+                "n": 8
+              },
+              "epoch": "<epoch:3>",
+              "offset": 8
+            }
+          ],
+          "recoverable": true,
+          "recovered": true,
+          "was_recovering": true
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:5>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hist:h4-9-RUN",
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "positioned": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "client offline"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:5>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:5>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:5>",
+          "offset": 3
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:5>",
+          "offset": 4
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:5>",
+          "offset": 5
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:5>",
+          "offset": 6
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:5>",
+          "offset": 7
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:5>",
+          "offset": 8
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:5>",
+          "offset": 9
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "await outbox delivery"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:6>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hist:h4-9-RUN",
+          "epoch": "<epoch:4>",
+          "offset": 0,
+          "recover": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "epoch": "<epoch:5>",
+          "offset": 9,
+          "positioned": true,
+          "recoverable": true,
+          "was_recovering": true
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:7>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hlim:h4-2-RUN",
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "positioned": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "client offline"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:6>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:6>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "await outbox delivery"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:8>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hlim:h4-2-RUN",
+          "epoch": "<epoch:4>",
+          "offset": 0,
+          "recover": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "epoch": "<epoch:6>",
+          "positioned": true,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "epoch": "<epoch:6>",
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "epoch": "<epoch:6>",
+              "offset": 2
+            }
+          ],
+          "recoverable": true,
+          "recovered": true,
+          "was_recovering": true
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:9>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hlim:h4-3-RUN",
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "positioned": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "client offline"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:7>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:7>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:7>",
+          "offset": 3
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "await outbox delivery"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:10>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hlim:h4-3-RUN",
+          "epoch": "<epoch:4>",
+          "offset": 0,
+          "recover": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "epoch": "<epoch:7>",
+          "offset": 3,
+          "positioned": true,
+          "recoverable": true,
+          "was_recovering": true
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:11>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hist:h4-RUN",
+          "limit": 10
+        },
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 103,
+          "message": "permission denied"
+        },
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "subscribe": {
+          "channel": "hnoperm:h4-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "hnoperm:h4-RUN",
+          "limit": 10
+        },
+        "id": 4
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 103,
+          "message": "permission denied"
+        },
+        "id": 4
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 5,
+        "subscribe": {
+          "channel": "pub:h4-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 5,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "history": {
+          "channel": "pub:h4-RUN",
+          "limit": 10
+        },
+        "id": 6
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 108,
+          "message": "not available"
+        },
+        "id": 6
+      }
+    }
+  ]
+}

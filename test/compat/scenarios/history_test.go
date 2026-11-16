@@ -81,6 +81,7 @@ func TestCS_HIST_04(t *testing.T) {
 			for i := 1; i <= n; i++ {
 				s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"n":%d}}`, ch, i)})
 			}
+			s.AwaitDelivery()
 			ws := connect(s, h.HS256(h.Claims{Sub: "u1"}))
 			ws.Send(fmt.Sprintf(`{"id":2,"subscribe":{"channel":%q}}`, ch))
 			ws.Next()

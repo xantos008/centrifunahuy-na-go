@@ -1,0 +1,237 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hist:tx-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "note",
+      "text": "sql CREATE TABLE IF NOT EXISTS app_orders (id bigint) -> "
+    },
+    {
+      "kind": "note",
+      "text": "sql BEGIN; INSERT INTO app_orders VALUES (1); SELECT out_channel_offset FROM cf_stream_publish(p_channel := 'hist:tx-RUN', p_data := '{\"n\":1}'); COMMIT -> 1"
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:tx-RUN",
+          "pub": {
+            "data": {
+              "n": 1
+            },
+            "epoch": "<epoch:1>",
+            "offset": 1
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "sql BEGIN; INSERT INTO app_orders VALUES (2); SELECT out_channel_offset FROM cf_stream_publish(p_channel := 'hist:tx-RUN', p_data := '{\"n\":2}'); ROLLBACK -> 2"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:tx-RUN",
+          "pub": {
+            "data": {
+              "n": 3
+            },
+            "epoch": "<epoch:1>",
+            "offset": 2
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "sql SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := 'hist:tx-RUN', p_data := '{\"n\":4}', p_idempotency_key := 'k1') -> 3|f|"
+    },
+    {
+      "kind": "note",
+      "text": "sql SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := 'hist:tx-RUN', p_data := '{\"n\":4}', p_idempotency_key := 'k1') -> 3|t|idempotency"
+    },
+    {
+      "kind": "note",
+      "text": "sql SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := 'hist:tx-RUN', p_data := '{\"n\":5}', p_version := 5, p_version_epoch := 'e') -> 4|f|"
+    },
+    {
+      "kind": "note",
+      "text": "sql SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := 'hist:tx-RUN', p_data := '{\"n\":6}', p_version := 4, p_version_epoch := 'e') -> 4|t|version"
+    },
+    {
+      "kind": "note",
+      "text": "sql SELECT out_channel_offset FROM cf_stream_publish_strict(p_channel := 'hist:tx-RUN', p_data := '{\"n\":7}', p_version := 3, p_version_epoch := 'e') -> ERROR: publish suppressed: version"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 5
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:tx-RUN",
+          "pub": {
+            "data": {
+              "n": 4
+            },
+            "epoch": "<epoch:1>",
+            "offset": 3
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:tx-RUN",
+          "pub": {
+            "data": {
+              "n": 5
+            },
+            "epoch": "<epoch:1>",
+            "offset": 4
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:tx-RUN",
+          "pub": {
+            "data": {
+              "marker": "end"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 5
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "sql SELECT out_top_offset FROM cf_stream_top_position('hist:tx-RUN') -> 5"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 5,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 4
+              },
+              "offset": 3
+            },
+            {
+              "data": {
+                "n": 5
+              },
+              "offset": 4
+            },
+            {
+              "data": {
+                "marker": "end"
+              },
+              "offset": 5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "sql SELECT cf_stream_remove_history('hist:tx-RUN') -> "
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 5,
+          "publications": []
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "sql SELECT string_agg(p.proname || '(' || pg_get_function_arguments(p.oid) || ') -> ' || pg_get_function_result(p.oid), E'\\n' ORDER BY p.proname)\n\t\t\tFROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public' AND p.proname LIKE 'cf\\_stream\\_%' -> cf_stream_publish(p_channel text, p_data jsonb, p_tags jsonb DEFAULT NULL::jsonb, p_history_ttl interval DEFAULT NULL::interval, p_history_size integer DEFAULT NULL::integer, p_meta_ttl interval DEFAULT NULL::interval, p_version bigint DEFAULT NULL::bigint, p_version_epoch text DEFAULT NULL::text, p_idempotency_key text DEFAULT NULL::text, p_idempotency_ttl interval DEFAULT NULL::interval, p_use_delta boolean DEFAULT false, p_client_id text DEFAULT NULL::text, p_user_id text DEFAULT NULL::text, p_conn_info jsonb DEFAULT NULL::jsonb, p_chan_info jsonb DEFAULT NULL::jsonb, p_num_shards integer DEFAULT NULL::integer) -> TABLE(out_result_id bigint, out_channel_offset bigint, out_epoch text, out_suppressed boolean, out_suppress_reason text)\ncf_stream_publish_join(p_channel text, p_client_id text, p_user_id text, p_conn_info jsonb DEFAULT NULL::jsonb, p_chan_info jsonb DEFAULT NULL::jsonb, p_num_shards integer DEFAULT NULL::integer) -> bigint\ncf_stream_publish_leave(p_channel text, p_client_id text, p_user_id text, p_conn_info jsonb DEFAULT NULL::jsonb, p_chan_info jsonb DEFAULT NULL::jsonb, p_num_shards integer DEFAULT NULL::integer) -> bigint\ncf_stream_publish_strict(p_channel text, p_data jsonb, p_tags jsonb DEFAULT NULL::jsonb, p_history_ttl interval DEFAULT NULL::interval, p_history_size integer DEFAULT NULL::integer, p_meta_ttl interval DEFAULT NULL::interval, p_version bigint DEFAULT NULL::bigint, p_version_epoch text DEFAULT NULL::text, p_idempotency_key text DEFAULT NULL::text, p_idempotency_ttl interval DEFAULT NULL::interval, p_use_delta boolean DEFAULT false, p_client_id text DEFAULT NULL::text, p_user_id text DEFAULT NULL::text, p_conn_info jsonb DEFAULT NULL::jsonb, p_chan_info jsonb DEFAULT NULL::jsonb, p_num_shards integer DEFAULT NULL::integer) -> TABLE(out_result_id bigint, out_channel_offset bigint, out_epoch text)\ncf_stream_remove_history(p_channel text, p_num_shards integer DEFAULT NULL::integer) -> void\ncf_stream_top_position(p_channel text) -> TABLE(out_top_offset bigint, out_epoch text)"
+    }
+  ]
+}

@@ -8,26 +8,35 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Engine profiles (docs/plan/phase-2.md). COMPAT_PROFILE selects the one the
 // targets were started with (`make compat-up PROFILE=…`); default "m".
 var profiles = map[string]profileSpec{
-	"m":       {nodes: 1},
-	"r":       {nodes: 2, backends: []string{"redis"}, probe: []string{"redis"}},
-	"r-opt":   {nodes: 1, backends: []string{"redis"}, probe: []string{"redis"}},
-	"r-lists": {nodes: 1, backends: []string{"redis"}, probe: []string{"redis"}},
-	"rs":      {nodes: 2, backends: []string{"redis", "replica1", "replica2", "sentinel"}, probe: []string{"redis"}},
-	"rc":      {nodes: 2, backends: []string{"rc1", "rc2", "rc3"}, probe: []string{"rc1"}},
-	"rsh":     {nodes: 2, backends: []string{"redis", "redis2"}, probe: []string{"redis", "redis2"}},
-	"n":       {nodes: 2, backends: []string{"nats", "redis"}, probe: []string{"nats", "redis"}},
-	"n-raw":   {nodes: 1, backends: []string{"nats", "redis"}, probe: []string{"nats", "redis"}},
+	"m":        {nodes: 1},
+	"r":        {nodes: 2, backends: []string{"redis"}, probe: []string{"redis"}},
+	"r-opt":    {nodes: 1, backends: []string{"redis"}, probe: []string{"redis"}},
+	"r-lists":  {nodes: 1, backends: []string{"redis"}, probe: []string{"redis"}},
+	"rs":       {nodes: 2, backends: []string{"redis", "replica1", "replica2", "sentinel"}, probe: []string{"redis"}},
+	"rc":       {nodes: 2, backends: []string{"rc1", "rc2", "rc3"}, probe: []string{"rc1"}},
+	"rsh":      {nodes: 2, backends: []string{"redis", "redis2"}, probe: []string{"redis", "redis2"}},
+	"n":        {nodes: 2, backends: []string{"nats", "redis"}, probe: []string{"nats", "redis"}},
+	"n-raw":    {nodes: 1, backends: []string{"nats", "redis"}, probe: []string{"nats", "redis"}},
+	"p":        {nodes: 2, backends: []string{"postgres"}, probe: []string{"postgres"}, noSUTDefault: true, outbox: true},
+	"p-notify": {nodes: 1, backends: []string{"postgres"}, probe: []string{"postgres"}, noSUTDefault: true, outbox: true},
 }
 
 type profileSpec struct {
 	nodes    int      // server nodes per side
 	backends []string // backend hostnames, one service per side ("redis" → redis-ref, redis-sut)
 	probe    []string // CS-ISO-01 probe entry points: nats, or writable Redis nodes (cluster: any node)
+	// noSUTDefault: sut-default does not run (PG: same table prefix in both
+	// modes, it would join the sut cluster).
+	noSUTDefault bool
+	// outbox: delivery is asynchronous (PG broker outbox worker), so a
+	// subscriber that arrives right after a publish may get it as a push.
+	outbox bool
 }
 
 // Profile is the current engine profile.
@@ -99,6 +108,19 @@ func serviceFor(base, target string) string {
 		return side + "-b"
 	}
 	return base + "-" + side
+}
+
+// AwaitDelivery lets an asynchronous broker deliver what was just published
+// before the scenario subscribes; otherwise a fresh subscriber may receive
+// those publications as pushes on ref and sut alike, at random. No-op (and
+// no note) on synchronous brokers.
+// ponytail: fixed 500 ms = 5x the default outbox poll interval; poll the
+// outbox position if it ever flakes.
+func (s *Session) AwaitDelivery() {
+	if profiles[Profile()].outbox {
+		time.Sleep(500 * time.Millisecond)
+		s.Note("await outbox delivery")
+	}
 }
 
 // side is "ref" or "sut"; sut and sut-default share the sut side.

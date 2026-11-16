@@ -220,6 +220,32 @@ NATS + Redis presence; CS-HIST-03; raw mode (publish to a raw subject with `nats
 ### 2.6 PostgreSQL (`p`, `p-notify`)
 PG broker + PG controller. Transactional publishing (KD-11): an application transaction calls the documented SQL surface through `psql`; commit → clients receive, rollback → nothing. The exact functions and tables come from the docs (`docs/server/engines.md` §PostgreSQL broker) and are checked against both servers. KD-11 becomes `accepted` when green.
 
+**Done (2026-11-16).**
+- PostgreSQL `postgres:18.7-alpine` (PostgreSQL License, pinned by digest). Services `postgres-ref`/`postgres-sut` with the alias `postgres`, a test-only user, data on tmpfs (no volume to share), healthcheck `pg_isready`.
+- `configs/p` = `r` without `engine`, plus `broker` postgres and `controller` postgres, both with `use_notify: false`. Presence is memory (no presence manager). `configs/p-notify` = `p` with `use_notify: true`; `pg_stat_activity` shows 2 LISTEN connections per side on `p-notify` and none on `p`.
+- `sut-default` is not started on `p*`. The PG `table_prefix` is `cf` in both modes, so it would join the sut cluster through the controller as a third node. CS-ISO-01 skips it there (`noSUTDefault`).
+- Harness:
+  - CS-ISO-01 PG probe: a table created on one side must not exist on the other. Negative check: pre-creating the table on sut fails it.
+  - `Session.SQL(stmts…)`: psql on the session's own side, all statements in one session; records statements and output, or the ERROR line. Notices are off.
+  - `Session.AwaitDelivery()`: see the race below.
+- **Race found and fixed (test, not server).** CS-HIST-04 once differed on `p`: a fresh subscriber got publications made just before it subscribed. A throwaway experiment (not committed): 50 rounds of "publish 3, subscribe at once". Ref pushed 149 of 150, sut 145. This is outbox behavior on both servers, not a difference. Scenarios that publish and then subscribe (`recoverAfter`, CS-HIST-04, CS-REC-04) now call `s.AwaitDelivery()`. On `p*` it waits 500 ms and records a note; elsewhere it is a no-op, so the `m`/`r` goldens did not change. `p` then passed 3× in a row.
+- CS-PUB-07 (new, KD-11 → accepted):
+  - commit delivers;
+  - rollback leaves nothing, and its offset is reused by the next publication;
+  - idempotency reports `t|idempotency`, version suppression reports `t|version`;
+  - `_strict` raises `publish suppressed: version`;
+  - top position and history removal behave as documented;
+  - the `cf_stream_*` signatures are recorded.
+  - The `p-notify` golden is byte-identical to `p`.
+- Golden `p` vs `r` (all identical on ref and sut, explained in `operations/engines.md` §PostgreSQL broker):
+  - position always tracked (offset/epoch in every push, an empty stream has no epoch);
+  - `skip_history` has no effect;
+  - pushes carry no `version` field;
+  - the HIST-02 position survived meta TTL + 1.5 s;
+  - JSONB normalizes payloads and fossil delta is not sent;
+  - CS-HIST-01 and CS-REC-05 are identical.
+- **Checks:** `make compat-all` (all 11 profiles) 3× green; harness unit tests; golangci-lint on test/compat 0 issues. No server code changed.
+
 ### 2.7 Multi-node
 CS-ENG-01..05 and CS-PRES-02 on the profiles in the table.
 

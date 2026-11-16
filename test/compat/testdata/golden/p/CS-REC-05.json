@@ -1,0 +1,8 @@
+{
+  "events": [
+    {
+      "kind": "note",
+      "text": "200 iterations x 3 publications: lost=0 duplicated=0 unrecovered=0"
+    }
+  ]
+}

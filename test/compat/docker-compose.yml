@@ -28,6 +28,7 @@ x-ref: &ref
     sentinel-ref: {condition: service_healthy, required: false}
     rc-init-ref: {condition: service_completed_successfully, required: false}
     nats-ref: {condition: service_healthy, required: false}
+    postgres-ref: {condition: service_healthy, required: false}
 
 # The linux binary from .build/ runs in a plain alpine image: no image build,
 # so no network access is needed inside Docker.
@@ -42,6 +43,7 @@ x-sut: &sut
     sentinel-sut: {condition: service_healthy, required: false}
     rc-init-sut: {condition: service_completed_successfully, required: false}
     nats-sut: {condition: service_healthy, required: false}
+    postgres-sut: {condition: service_healthy, required: false}
 
 # Redis without persistence; the default user is disabled, servers log in
 # with the ACL user from configs/<p>/config.json (test-only credentials).
@@ -129,6 +131,18 @@ x-nats: &nats
     retries: 30
   profiles: [n, n-raw]
 
+# PostgreSQL (PostgreSQL License), test-only user; data on tmpfs, so no
+# volume exists that the two sides could share.
+x-postgres: &postgres
+  image: postgres:18.7-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
+  environment: {POSTGRES_USER: compat, POSTGRES_PASSWORD: compat-test-pg-password, POSTGRES_DB: compat}
+  tmpfs: [/var/lib/postgresql]
+  healthcheck:
+    test: ["CMD", "pg_isready", "-U", "compat", "-d", "compat"]
+    interval: 1s
+    retries: 30
+  profiles: [p, p-notify]
+
 services:
   ref:
     <<: *ref
@@ -136,17 +150,20 @@ services:
   ref-b:
     <<: *ref
     ports: ["127.0.0.1:18100:8000"]
-    profiles: [r, rs, rc, rsh, n]
+    profiles: [r, rs, rc, rsh, n, p]
   sut:
     <<: *sut
     ports: ["127.0.0.1:28000:8000"]
   sut-b:
     <<: *sut
     ports: ["127.0.0.1:28100:8000"]
-    profiles: [r, rs, rc, rsh, n]
+    profiles: [r, rs, rc, rsh, n, p]
   sut-default:
     # Same binary in default mode (Cedrazeka names), for CS-NAME-01/02.
+    # Not on p*: the PG table prefix is cf in both modes, so it would join
+    # the sut cluster through the PG controller as a third node.
     <<: *sut
+    profiles: [m, r, r-opt, r-lists, rs, rc, rsh, n, n-raw]
     command: ["/opt/cedrazeka/cedrazeka", "-c", "/etc/compat/config.json"]
     ports: ["127.0.0.1:28001:8000"]
 
@@ -218,3 +235,10 @@ services:
     <<: *nats
     networks: {sut-net: {aliases: [nats]}}
     ports: ["127.0.0.1:24222:4222"]
+
+  postgres-ref:
+    <<: *postgres
+    networks: {ref-net: {aliases: [postgres]}}
+  postgres-sut:
+    <<: *postgres
+    networks: {sut-net: {aliases: [postgres]}}

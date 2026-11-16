@@ -25,7 +25,7 @@ Status values:
 | # | Item | Difference | Status |
 |---|---|---|---|
 | KD-10 | Redis / PostgreSQL / NATS data layout | Inherited from upstream at import (DEC-01), but **not a contract**: default prefixes differ (ADR-0022), and PRO modules add keys and control messages. **Mixed clusters with Centrifugo nodes are not supported** | accepted (DEC-05, ADR-0023) |
-| KD-11 | PostgreSQL transactional publishing | The exception to KD-10: the SQL surface apps call (`cf_stream_*` functions etc.) is a public contract and **will** match the docs | proposed |
+| KD-11 | PostgreSQL transactional publishing | The exception to KD-10: the SQL surface apps call (`cf_stream_*` functions etc.) is a public contract and matches the docs. Verified black-box in CS-PUB-07 (phase-2 step 2.6): identical function signatures and result columns, commit/rollback, idempotency, version suppression, `_strict`, top position, history removal | accepted (CS-PUB-07, 2026-11-16) |
 | KD-12 | ClickHouse schema | Our own versioned DDL. Upstream DDL is not public (PRO-OQ-10). Column semantics follow the documented export fields | proposed |
 | KD-13 | Push device ID format | Upstream format is not public (PRO-OQ-16). Ours is opaque and sortable | proposed |
 | KD-14 | Singleflight, shared position sync, rate-limit internals | We match the documented observable result, not the internal algorithm | accepted (CLAUDE.md) |

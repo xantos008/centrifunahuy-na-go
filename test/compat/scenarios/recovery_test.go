@@ -27,6 +27,7 @@ func recoverAfter(s *h.Session, ch string, n int) {
 	for i := 1; i <= n; i++ {
 		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"n":%d}}`, ch, i)})
 	}
+	s.AwaitDelivery()
 	ws = connect(s, h.HS256(h.Claims{Sub: "u1"}))
 	ws.Send(fmt.Sprintf(`{"id":2,"subscribe":{"channel":%q,"recoverable":true,"recover":true,"epoch":%q,"offset":%d}}`,
 		ch, reply.Subscribe.Epoch, reply.Subscribe.Offset))
@@ -91,14 +92,17 @@ func TestCS_REC_04(t *testing.T) {
 		cache, acache, pos := s.Ch("cache:r4"), s.Ch("acache:r4"), s.Ch("pos:r4")
 		pub(cache, 1)
 		pub(cache, 2)
+		s.AwaitDelivery()
 		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q,"recoverable":true,"recover":true}`, cache))                        // empty since: latest only
 		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q}`, cache))                                                          // no recovery requested
 		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q,"recoverable":true,"recover":true}`, s.Ch("cache:r4-empty")))       // nothing cached
 		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q,"recoverable":true,"recover":true,"offset":1,"epoch":"x"}`, cache)) // stale position
 		pub(acache, 1)
+		s.AwaitDelivery()
 		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q}`, acache)) // delivered without asking
 		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q}`, s.Ch("acache:r4-empty")))
 		pub(pos, 1)
+		s.AwaitDelivery()
 		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q}`, pos))                               // force_positioning
 		subscribeFresh(s, "u1", fmt.Sprintf(`{"channel":%q,"positioned":true}`, s.Ch("hist:r4"))) // not allowed in hist
 	})

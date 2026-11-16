@@ -90,6 +90,12 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 
 **Status 2026-11-16 (phase 2, step 2.5):** NATS profiles `n` (NATS broker + Redis presence manager, two nodes per target) and `n-raw` (raw mode + wildcards, one node) are green in diff and golden mode. On `n` these are: CS-PUB-01, CS-PUB-04, CS-PUB-05, CS-PRES-01 and the new CS-HIST-03. On `n-raw` this is the new CS-PUB-06.
 
+**Status 2026-11-16 (phase 2, step 2.6):** PostgreSQL profiles are green in diff and golden mode:
+- `p`: PG broker and PG controller without NOTIFY, memory presence, two nodes per target. Tagged scenarios: CS-HIST-01/02/04, CS-PUB-01/03/04/05, CS-REC-01/02/04/05 and the new CS-PUB-07.
+- `p-notify`: the same with `use_notify` on, one node. CS-PUB-07 only; its golden is byte-identical to `p`.
+
+`sut-default` does not run on `p*`: the PG table prefix is `cf` in both modes, so it would join the sut cluster through the controller. Where a scenario publishes and then subscribes, it calls `s.AwaitDelivery()`. On `p*` this waits 500 ms for the outbox and records a note; elsewhere it does nothing.
+
 Configs: `configs/r` is `configs/m` plus the engine section; `rs`, `rc`, `rsh` differ from `r` only in `engine.redis.address`; `r-opt` and `r-lists` are `r` plus one option each. Regenerate them with `jq` when `m` changes (see the step 2.3 notes in the plan). Note: `version` is a volatile key, so publication versions in CS-PUB-05 appear as placeholders. Equal versions keep equal placeholders, which is all the scenario needs.
 
 **Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
@@ -121,6 +127,7 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 ### CS-PUB: publication (OSS-API-01, OSS-SUB)
 - ★ CS-PUB-01: client publish allowed or denied by namespace; server API publish with `tags`, `idempotency_key`, `skip_history`. M R N P
 - CS-PUB-02: `broadcast` to many channels; batch API, ordered and `parallel`. M R
+- CS-PUB-07: transactional publishing through the documented SQL surface of the PostgreSQL broker (KD-11). `cf_stream_publish` inside an application transaction: COMMIT delivers, ROLLBACK leaves no trace (the offset is reused). Also `p_idempotency_key` and `p_version` suppression (`out_suppressed`, `out_suppress_reason`), `cf_stream_publish_strict` raising `publish suppressed: version`, `cf_stream_top_position`, `cf_stream_remove_history`, and the signatures of all `cf_stream_*` functions. P (`p`, `p-notify`)
 - CS-PUB-06: NATS raw mode (`channel_replacements` `:`→`.`) and `allow_wildcards`. A raw NATS message reaches channel subscribers unchanged; API and client publications reach the raw subject without wrapping; a wildcard channel receives matching subjects. N (`n-raw`)
 
 ### CS-HIST: history (OSS-HIST-*)
