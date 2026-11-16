@@ -299,6 +299,14 @@ CS-ENG-06 (backend stop/start) and CS-ENG-07 (Sentinel failover).
 ### 2.9 Names
 CS-NAME-02 (sut-default on `r` and `n`).
 
+**Done (2026-11-16).**
+- `scenarios/names_test.go` `TestCS_NAME_02`, sut-only like CS-NAME-01 (skipped in record mode, no golden file). `sut` and `sut-default` share the sut side's backends. Each subscribes a client to its own channel; then the test checks the backends directly:
+  - Redis presence key `<prefix>.presence.data.<ch>` exists for the mode's prefix and not for the other (both profiles);
+  - the broker subscription for the client channel uses only the mode's prefix: Redis `PUBSUB CHANNELS <prefix>.client.*` on `r`, NATS monitoring `/subsz?subs=1` subject `<prefix>.client.<ch>` on `n`.
+  - Default mode: `cedrazeka`; compatibility mode: `centrifugo`. PostgreSQL is not covered: `table_prefix` is `cf` in both modes.
+- Negative check: with `COMPAT_SUT_DEFAULT_URL` pointed at the compatibility-mode server, the test fails on both profiles (wrong presence key, wrong broker subscription).
+- **Checks:** see the commit; no server code changed.
+
 ### 2.10 Library integration tests and CI
 - Precondition (C5): report `docker system df` and free space; clean build cache only after the user confirms.
 - `test/library/compose.isolated.yml`: Redis 8 standalone, Cluster, Sentinel, Valkey 9 in one network namespace (no host ports, as `test/integration`). The test container copies the centrifuge module from the read-only module cache at the pinned version and runs `go test -race -tags integration ./...`.

@@ -100,6 +100,8 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 
 **Status 2026-11-16 (phase 2, step 2.8):** CS-ENG-06 on `r`, `n`, `p` and CS-ENG-07 on `rs` are green in diff and golden mode. While the backend is down, publish fails on all three. Subscribe fails only on Redis; NATS and PG accept it.
 
+**Status 2026-11-16 (phase 2, step 2.9):** CS-NAME-02 (sut-only) is green on `r` and `n`.
+
 Configs: `configs/r` is `configs/m` plus the engine section; `rs`, `rc`, `rsh` differ from `r` only in `engine.redis.address`; `r-opt` and `r-lists` are `r` plus one option each. Regenerate them with `jq` when `m` changes (see the step 2.3 notes in the plan). Note: `version` is a volatile key, so publication versions in CS-PUB-05 appear as placeholders. Equal versions keep equal placeholders, which is all the scenario needs.
 
 **Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
@@ -172,6 +174,7 @@ Two sut nodes against two ref nodes. Each scenario first waits until `info` on b
 
 ### CS-NAME: names (sut-only, ADR-0022)
 - ★ CS-NAME-01: default mode reads `CEDRAZEKA_*` env and exposes `cedrazeka_*` metrics; compatibility mode reads `CENTRIFUGO_*` and exposes `centrifugo_*`; the gRPC API answers on both service names in compatibility mode.
+- CS-NAME-02: on `r` and `n`, default mode prefixes Redis keys and channels and NATS subjects with `cedrazeka`, compatibility mode with `centrifugo`; checked in the shared sut backends (Redis presence key, Redis `PUBSUB CHANNELS`, NATS `/subsz`). PG `table_prefix` is `cf` in both modes.
 
 ### PRO and EXTENSION
 - PRO scenarios are sut-only. Expected transcripts are hand-written from the docs; each file cites the doc path and the docs commit.
