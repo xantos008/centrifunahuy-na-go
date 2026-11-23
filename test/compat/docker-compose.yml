@@ -6,7 +6,7 @@
 #
 # Isolation (phase-2 condition C2): ref and sut live on separate networks.
 # Each side's backends join only that side's network under the same hostname
-# (redis, nats, postgres), so one config file works for both and a server can
+# (redis, nats, postgres, proxyfixture), so one config file works for both and a server can
 # never reach the other side's backend. Backends never share volumes.
 # harness.CheckIsolation (CS-ISO-01) verifies this before any scenario runs.
 #
@@ -29,11 +29,12 @@ x-ref: &ref
     rc-init-ref: {condition: service_completed_successfully, required: false}
     nats-ref: {condition: service_healthy, required: false}
     postgres-ref: {condition: service_healthy, required: false}
+    proxyfixture-ref: {condition: service_healthy, required: false}
 
 # The linux binary from .build/ runs in a plain alpine image: no image build,
 # so no network access is needed inside Docker.
 x-sut: &sut
-  image: alpine:3.24
+  image: &compat-alpine alpine:3.24
   command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/config.json"]
   volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
   networks: [sut-net]
@@ -44,6 +45,17 @@ x-sut: &sut
     rc-init-sut: {condition: service_completed_successfully, required: false}
     nats-sut: {condition: service_healthy, required: false}
     postgres-sut: {condition: service_healthy, required: false}
+    proxyfixture-sut: {condition: service_healthy, required: false}
+
+x-proxyfixture: &proxyfixture
+  image: *compat-alpine
+  command: ["/opt/cedrazeka/proxyfixture"]
+  volumes: ["./.build:/opt/cedrazeka:ro"]
+  healthcheck:
+    test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
+    interval: 1s
+    retries: 30
+  profiles: [m, r, p]
 
 # Redis without persistence; the default user is disabled, servers log in
 # with the ACL user from configs/<p>/config.json (test-only credentials).
@@ -244,3 +256,10 @@ services:
   postgres-sut:
     <<: *postgres
     networks: {sut-net: {aliases: [postgres]}}
+
+  proxyfixture-ref:
+    <<: *proxyfixture
+    networks: {ref-net: {aliases: [proxyfixture]}}
+  proxyfixture-sut:
+    <<: *proxyfixture
+    networks: {sut-net: {aliases: [proxyfixture]}}

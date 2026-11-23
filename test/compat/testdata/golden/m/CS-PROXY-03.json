@@ -1,0 +1,184 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "proxywrite:delivery-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "publish": {
+          "channel": "proxywrite:delivery-RUN",
+          "data": "retain"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "proxywrite:delivery-RUN",
+          "pub": {
+            "data": {
+              "source": "proxy"
+            },
+            "epoch": "<epoch:1>",
+            "info": {
+              "client": "<client:2>",
+              "user": "proxy-user"
+            },
+            "offset": 1,
+            "tags": {
+              "delivery": "retain"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "publish": {
+          "channel": "proxywrite:delivery-RUN",
+          "data": "live"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "proxywrite:delivery-RUN",
+          "pub": {
+            "data": {
+              "source": "proxy"
+            },
+            "info": {
+              "client": "<client:2>",
+              "user": "proxy-user"
+            },
+            "tags": {
+              "delivery": "live"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "publish": {
+          "channel": "proxywrite:delivery-RUN",
+          "data": "reject"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 470,
+          "message": "fixture denied"
+        },
+        "id": 4
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 1,
+          "publications": [
+            {
+              "data": {
+                "source": "proxy"
+              },
+              "info": {
+                "client": "<client:2>",
+                "user": "proxy-user"
+              },
+              "offset": 1,
+              "tags": {
+                "delivery": "retain"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
