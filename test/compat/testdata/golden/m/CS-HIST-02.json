@@ -1,0 +1,94 @@
+{
+  "events": [
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 2,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "offset": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "wait 2.5s: history_ttl 1s passed, meta TTL 5s not"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 2,
+          "publications": []
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "wait 6.5s: meta TTL 5s passed since the last read"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:2>",
+          "offset": 0,
+          "publications": []
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:2>",
+          "offset": 1
+        }
+      }
+    }
+  ]
+}

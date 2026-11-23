@@ -1,0 +1,536 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "tags:p4-RUN",
+          "tf": {
+            "cmp": "eq",
+            "key": "k",
+            "val": "a"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "tags:p4-RUN",
+          "tf": {
+            "cmp": "in",
+            "key": "k",
+            "vals": [
+              "a",
+              "c"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:3>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "tags:p4-RUN",
+          "tf": {
+            "nodes": [
+              {
+                "cmp": "neq",
+                "key": "k",
+                "val": "a"
+              },
+              {
+                "cmp": "gte",
+                "key": "n",
+                "val": "2"
+              }
+            ],
+            "op": "and"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:4>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "tags:p4-RUN",
+          "tf": {
+            "nodes": [
+              {
+                "cmp": "eq",
+                "key": "k",
+                "val": "b"
+              },
+              {
+                "cmp": "lt",
+                "key": "n",
+                "val": "2"
+              }
+            ],
+            "op": "or"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:5>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "tags:p4-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "a"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 1,
+            "tags": {
+              "k": "a",
+              "n": "1"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "a"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 1,
+            "tags": {
+              "k": "a",
+              "n": "1"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "c"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 3,
+            "tags": {
+              "k": "c",
+              "n": "3"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "b"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 2,
+            "tags": {
+              "k": "b",
+              "n": "2"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "c"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 3,
+            "tags": {
+              "k": "c",
+              "n": "3"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "a"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 1,
+            "tags": {
+              "k": "a",
+              "n": "1"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "b"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 2,
+            "tags": {
+              "k": "b",
+              "n": "2"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "a"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 1,
+            "tags": {
+              "k": "a",
+              "n": "1"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "b"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 2,
+            "tags": {
+              "k": "b",
+              "n": "2"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "tags:p4-RUN",
+          "pub": {
+            "data": {
+              "k": "c"
+            },
+            "epoch": "<epoch:1>",
+            "offset": 3,
+            "tags": {
+              "k": "c",
+              "n": "3"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:6>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "tags:p4b-RUN",
+          "tf": {
+            "cmp": "in",
+            "key": "k",
+            "vals": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        },
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:7>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "pub:p4-RUN",
+          "tf": {
+            "cmp": "eq",
+            "key": "k",
+            "val": "a"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        },
+        "id": 2
+      }
+    }
+  ]
+}

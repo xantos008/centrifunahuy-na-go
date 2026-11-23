@@ -1,0 +1,217 @@
+{
+  "events": [
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3,
+          "publications": []
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "offset": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "offset": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3,
+          "publications": [
+            {
+              "data": {
+                "n": 2
+              },
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "offset": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3,
+          "publications": [
+            {
+              "data": {
+                "n": 3
+              },
+              "offset": 3
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "offset": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "offset": 2
+            },
+            {
+              "data": {
+                "n": 3
+              },
+              "offset": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 112,
+          "message": "unrecoverable position"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history_remove",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3,
+          "publications": []
+        }
+      }
+    }
+  ]
+}

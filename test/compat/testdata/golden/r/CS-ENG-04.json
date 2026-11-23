@@ -1,0 +1,131 @@
+{
+  "events": [
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "byuser-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/subscribe",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "byuser2-RUN",
+          "subscribe": {}
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/unsubscribe",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "byuser-RUN",
+          "unsubscribe": {
+            "code": 2000,
+            "reason": "server unsubscribe"
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/refresh",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "refresh": {}
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/disconnect",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "compat",
+      "code": 4500
+    }
+  ]
+}

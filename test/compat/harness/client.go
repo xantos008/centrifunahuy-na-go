@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -172,7 +173,13 @@ func (c *WS) SendCmd(cmds ...*protocol.Command) {
 // read fills buf with at least one message, answering pings when answerPings
 // is set. It returns a close error when the server closes the connection.
 func (c *WS) read(answerPings bool) error {
-	_ = c.conn.SetReadDeadline(time.Now().Add(Deadline))
+	return c.readBefore(answerPings, time.Now().Add(Deadline))
+}
+
+func (c *WS) readBefore(answerPings bool, deadline time.Time) error {
+	if err := c.conn.SetReadDeadline(deadline); err != nil {
+		return err
+	}
 	for {
 		_, data, err := c.conn.ReadMessage()
 		if err != nil {
@@ -180,13 +187,15 @@ func (c *WS) read(answerPings bool) error {
 		}
 		msgs, err := c.codec.messages(data)
 		if err != nil {
-			c.s.T.Fatalf("%s: decode: %v", c.s.Target.Name, err)
+			return fmt.Errorf("decode: %w", err)
 		}
 		added := false
 		for _, m := range msgs {
 			if answerPings && string(m) == "{}" {
 				t, b := c.codec.pong()
-				_ = c.conn.WriteMessage(t, b)
+				if err := c.conn.WriteMessage(t, b); err != nil {
+					return fmt.Errorf("pong: %w", err)
+				}
 				continue
 			}
 			c.buf = append(c.buf, m)
@@ -195,6 +204,41 @@ func (c *WS) read(answerPings bool) error {
 		if added {
 			return nil
 		}
+	}
+}
+
+// CaptureUntil reads pushes and answers pings while the scenario performs
+// backend work. Call the returned function before using this WS again. It
+// records the captured pushes at that point, after the backend actions.
+func (c *WS) CaptureUntil(marker string, timeout time.Duration) func() {
+	c.s.T.Helper()
+	type result struct {
+		count int
+		err   error
+	}
+	done := make(chan result, 1)
+	deadline := time.Now().Add(timeout)
+	go func() {
+		for i := 0; ; i++ {
+			if i == len(c.buf) {
+				if err := c.readBefore(true, deadline); err != nil {
+					done <- result{err: err}
+					return
+				}
+			}
+			if strings.Contains(string(c.buf[i]), marker) {
+				done <- result{count: i + 1}
+				return
+			}
+		}
+	}()
+	return func() {
+		c.s.T.Helper()
+		captured := <-done
+		if captured.err != nil {
+			c.s.T.Fatalf("%s: waiting for push %s: %v", c.s.Target.Name, marker, captured.err)
+		}
+		c.Recv(captured.count)
 	}
 }
 
@@ -211,6 +255,18 @@ func (c *WS) Recv(n int) {
 		c.last = m
 	}
 	c.buf = c.buf[n:]
+}
+
+// RecvUntil records messages until one contains marker (e.g. the data of a
+// final publication), so the number of messages before it may vary per engine.
+func (c *WS) RecvUntil(marker string) {
+	c.s.T.Helper()
+	for {
+		c.Recv(1)
+		if strings.Contains(string(c.last), marker) {
+			return
+		}
+	}
 }
 
 // Next records the next message or the close of the connection, whichever
@@ -290,11 +346,30 @@ type APIRequest struct {
 // API performs one HTTP call, records status and body, and returns the raw body.
 func (s *Session) API(r APIRequest) []byte {
 	s.T.Helper()
-	method := r.Method
-	if method == "" {
-		method = http.MethodPost
+	status, body := s.call(r)
+	s.record(r, status, body)
+	return body
+}
+
+// APIUntil repeats the call without recording until done(body) holds or
+// timeout passes, then records the last answer. It waits for a state that
+// takes time to appear (TTL expiry, a backend coming back), never as a sleep.
+func (s *Session) APIUntil(r APIRequest, timeout time.Duration, done func(body []byte) bool) []byte {
+	s.T.Helper()
+	deadline := time.Now().Add(timeout)
+	for {
+		status, body := s.call(r)
+		if done(body) || time.Now().After(deadline) {
+			s.record(r, status, body)
+			return body
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
-	req, err := http.NewRequest(method, s.Target.BaseURL+r.Path, strings.NewReader(r.Body))
+}
+
+func (s *Session) call(r APIRequest) (int, []byte) {
+	s.T.Helper()
+	req, err := http.NewRequest(r.method(), s.Target.BaseURL+r.Path, strings.NewReader(r.Body))
 	if err != nil {
 		s.T.Fatal(err)
 	}
@@ -306,13 +381,17 @@ func (s *Session) API(r APIRequest) []byte {
 	}
 	resp, err := (&http.Client{Timeout: Deadline}).Do(req)
 	if err != nil {
-		s.T.Fatalf("%s: %s %s: %v", s.Target.Name, method, r.Path, err)
+		s.T.Fatalf("%s: %s %s: %v", s.Target.Name, r.method(), r.Path, err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		s.T.Fatal(err)
 	}
+	return resp.StatusCode, body
+}
+
+func (s *Session) record(r APIRequest, status int, body []byte) {
 	rec := asJSON(body)
 	if len(r.Omit) > 0 && rec != nil {
 		rec = omit(rec, r.Omit)
@@ -320,8 +399,14 @@ func (s *Session) API(r APIRequest) []byte {
 	if r.KeysOnly && rec != nil {
 		rec = shape(rec)
 	}
-	s.tr.add(Event{Kind: "http", Text: method + " " + r.Path, Status: resp.StatusCode, Body: rec})
-	return body
+	s.tr.add(Event{Kind: "http", Text: r.method() + " " + r.Path, Status: status, Body: rec})
+}
+
+func (r APIRequest) method() string {
+	if r.Method == "" {
+		return http.MethodPost
+	}
+	return r.Method
 }
 
 // asJSON keeps JSON bodies as they are and wraps anything else as a JSON string.

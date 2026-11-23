@@ -1,0 +1,185 @@
+{
+  "events": [
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "crash-RUN",
+          "join_leave": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "crash-RUN",
+          "join": {
+            "info": {
+              "client": "<client:1>",
+              "user": "u1"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "crash-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "crash-RUN",
+          "join": {
+            "info": {
+              "client": "<client:2>",
+              "user": "u2"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence_stats",
+      "status": 200,
+      "body": {
+        "result": {
+          "num_clients": 2,
+          "num_users": 2
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "kill node-b"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence_stats",
+      "status": 200,
+      "body": {
+        "result": {
+          "num_clients": 1,
+          "num_users": 1
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "start node-b"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    }
+  ]
+}

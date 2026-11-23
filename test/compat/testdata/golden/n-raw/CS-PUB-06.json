@@ -1,0 +1,254 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "pub:raw-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "note",
+      "text": "nats publish pub.raw-RUN"
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "pub:raw-RUN",
+          "pub": {
+            "channel": "pub.raw-RUN",
+            "data": {
+              "from": "nats"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "nats recv pub.raw-RUN {\"from\":\"nats\"}"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "pub:raw-RUN",
+          "pub": {
+            "channel": "pub.raw-RUN",
+            "data": {
+              "from": "api"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "nats recv pub.raw-RUN {\"from\":\"api\"}"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "publish": {
+          "channel": "pub:raw-RUN",
+          "data": {
+            "from": "client"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "pub:raw-RUN",
+          "pub": {
+            "channel": "pub.raw-RUN",
+            "data": {
+              "from": "client"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "nats recv pub.raw-RUN {\"from\":\"client\"}"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:3>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "wild-RUN.*"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "note",
+      "text": "nats publish wild-RUN.a"
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "wild-RUN.*",
+          "pub": {
+            "channel": "wild-RUN.a",
+            "data": {
+              "n": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {
+            "<client:3>": {
+              "client": "<client:3>",
+              "user": "u1"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:4>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "pub:wild-RUN.*"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    }
+  ]
+}

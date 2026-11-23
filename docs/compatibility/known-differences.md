@@ -17,7 +17,7 @@ Status values:
 | KD-04 | Ephemeral client publications / schemas (PRO-29) | Page unlisted; no release note | accepted (DEC-06, ADR-0024) |
 | KD-05 | PRO licensing: license keys, sandbox limits, license-expiry metric | Not a product feature for us; must not be replicated | accepted |
 | KD-06 | Anonymous usage stats reporting (`usage_stats`) | Our product sends no telemetry. The inherited reporter (`internal/usage`) is never started (step 1.3); the config key is accepted and ignored | accepted |
-| KD-07 | Redis `history_use_lists` (deprecated upstream) | Deprecated; limitations differ between docs and code (INFRA-CONFLICT-04) | proposed: accept the key, fail validation with a clear message |
+| KD-07 | Redis `history_use_lists` (deprecated upstream) | Deprecated; limitations differ between docs and code (INFRA-CONFLICT-04) | inherited, deprecated, not recommended (D2-4; CS-HIST-01 on `r-lists` confirms forward order for `reverse: true`) |
 | KD-08 | Bidirectional gRPC client transport | Does not exist upstream; the user declined it | accepted (DEC-03, ADR-0021) |
 
 ## Same feature, different internals (not observable through public APIs)
@@ -25,7 +25,7 @@ Status values:
 | # | Item | Difference | Status |
 |---|---|---|---|
 | KD-10 | Redis / PostgreSQL / NATS data layout | Inherited from upstream at import (DEC-01), but **not a contract**: default prefixes differ (ADR-0022), and PRO modules add keys and control messages. **Mixed clusters with Centrifugo nodes are not supported** | accepted (DEC-05, ADR-0023) |
-| KD-11 | PostgreSQL transactional publishing | The exception to KD-10: the SQL surface apps call (`cf_stream_*` functions etc.) is a public contract and **will** match the docs | proposed |
+| KD-11 | PostgreSQL transactional publishing | The exception to KD-10: the SQL surface apps call (`cf_stream_*` functions etc.) is a public contract and matches the docs. Verified black-box in CS-PUB-07 (phase-2 step 2.6): identical function signatures and result columns, commit/rollback, idempotency, version suppression, `_strict`, top position, history removal | accepted (CS-PUB-07, 2026-11-16) |
 | KD-12 | ClickHouse schema | Our own versioned DDL. Upstream DDL is not public (PRO-OQ-10). Column semantics follow the documented export fields | proposed |
 | KD-13 | Push device ID format | Upstream format is not public (PRO-OQ-16). Ours is opaque and sortable | proposed |
 | KD-14 | Singleflight, shared position sync, rate-limit internals | We match the documented observable result, not the internal algorithm | accepted (CLAUDE.md) |

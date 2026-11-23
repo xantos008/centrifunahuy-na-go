@@ -1,0 +1,259 @@
+{
+  "events": [
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "xpresence-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "xpresence-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "presence": {
+          "channel": "xpresence-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "presence": {
+          "presence": {
+            "<client:1>": {
+              "client": "<client:1>",
+              "conn_info": {
+                "name": "a"
+              },
+              "user": "u1"
+            },
+            "<client:2>": {
+              "client": "<client:2>",
+              "conn_info": {
+                "name": "b"
+              },
+              "user": "u2"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {
+            "<client:1>": {
+              "client": "<client:1>",
+              "conn_info": {
+                "name": "a"
+              },
+              "user": "u1"
+            },
+            "<client:2>": {
+              "client": "<client:2>",
+              "conn_info": {
+                "name": "b"
+              },
+              "user": "u2"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence_stats",
+      "status": 200,
+      "body": {
+        "result": {
+          "num_clients": 2,
+          "num_users": 2
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "presence": {
+          "channel": "xpresence-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "presence": {
+          "presence": {
+            "<client:1>": {
+              "client": "<client:1>",
+              "conn_info": {
+                "name": "a"
+              },
+              "user": "u1"
+            },
+            "<client:2>": {
+              "client": "<client:2>",
+              "conn_info": {
+                "name": "b"
+              },
+              "user": "u2"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "presence_stats": {
+          "channel": "xpresence-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 4,
+        "presence_stats": {
+          "num_clients": 2,
+          "num_users": 2
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {
+            "<client:1>": {
+              "client": "<client:1>",
+              "conn_info": {
+                "name": "a"
+              },
+              "user": "u1"
+            },
+            "<client:2>": {
+              "client": "<client:2>",
+              "conn_info": {
+                "name": "b"
+              },
+              "user": "u2"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence_stats",
+      "status": 200,
+      "body": {
+        "result": {
+          "num_clients": 2,
+          "num_users": 2
+        }
+      }
+    }
+  ]
+}

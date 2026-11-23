@@ -13,6 +13,7 @@ import (
 // CS-PROTO-01: JSON connect, subscribe, server API publish, receive; then two
 // commands batched in one frame.
 func TestCS_PROTO_01(t *testing.T) {
+	h.Profiles(t, "m")
 	h.Run(t, "CS-PROTO-01", func(s *h.Session) {
 		ch := s.Ch("pub:proto01")
 		ws := s.Dial()
@@ -29,6 +30,7 @@ func TestCS_PROTO_01(t *testing.T) {
 
 // CS-PROTO-02: the same flow over the Protobuf protocol (varint-delimited frames).
 func TestCS_PROTO_02(t *testing.T) {
+	h.Profiles(t, "m")
 	h.Run(t, "CS-PROTO-02", func(s *h.Session) {
 		ch := s.Ch("pub:proto02")
 		ws := s.DialProtobuf()
@@ -49,6 +51,7 @@ func TestCS_PROTO_02(t *testing.T) {
 // CS-PROTO-03: strict JSON decoding (upstream since 6.10.0). Each malformed
 // frame goes on a fresh connection; the first server reaction is recorded.
 func TestCS_PROTO_03(t *testing.T) {
+	h.Profiles(t, "m")
 	invalidUTF8 := append([]byte(`{"id":1,"connect":{"name":"`), 0xff, '"', '}', '}')
 	cases := [][]byte{
 		[]byte(`{"id":1,"id":2,"connect":{}}`),   // duplicate key
@@ -69,6 +72,7 @@ func TestCS_PROTO_03(t *testing.T) {
 // CS-PROTO-04: ping/pong (the suite config sets ping_interval 2s, pong_timeout 1s).
 // The first ping is answered; the second is not, so the server disconnects.
 func TestCS_PROTO_04(t *testing.T) {
+	h.Profiles(t, "m")
 	h.Run(t, "CS-PROTO-04", func(s *h.Session) {
 		ws := s.Dial()
 		ws.Send(fmt.Sprintf(`{"id":1,"connect":{"token":%q}}`, h.HS256(h.Claims{Sub: "u1"})))

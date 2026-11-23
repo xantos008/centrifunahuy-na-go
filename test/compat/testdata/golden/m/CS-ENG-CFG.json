@@ -1,0 +1,34 @@
+{
+  "events": [
+    {
+      "kind": "exit",
+      "text": "CENTRIFUGO_ENGINE_TYPE=foo",
+      "code": 1,
+      "body": {
+        "error": "unknown engine type: foo",
+        "level": "fatal",
+        "message": "configure engines error"
+      }
+    },
+    {
+      "kind": "exit",
+      "text": "CENTRIFUGO_BROKER_ENABLED=true CENTRIFUGO_BROKER_TYPE=redisnats",
+      "code": 1,
+      "body": {
+        "error": "redisnats broker requires enable_unreleased_features on",
+        "level": "fatal",
+        "message": "configure engines error"
+      }
+    },
+    {
+      "kind": "exit",
+      "text": "CENTRIFUGO_ENGINE_TYPE=redis CENTRIFUGO_ENGINE_REDIS_SENTINEL_ADDRESS=127.0.0.1:26379",
+      "code": 1,
+      "body": {
+        "error": "error creating engine: error creating Redis shards: master name must be set when using Redis Sentinel",
+        "level": "fatal",
+        "message": "configure engines error"
+      }
+    }
+  ]
+}

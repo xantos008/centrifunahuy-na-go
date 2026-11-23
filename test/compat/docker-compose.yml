@@ -1,23 +1,246 @@
-# Compatibility suite targets (ADR-0028, docs/testing/compatibility-suite.md).
-# Both servers get the same config; ports are bound to loopback only.
-# `make compat-up` cross-compiles the linux cedrazeka binary into .build/ first.
+# Compatibility suite targets (ADR-0028, docs/testing/compatibility-suite.md,
+# docs/plan/phase-2.md). `make compat-up PROFILE=<p>` cross-compiles the linux
+# cedrazeka binary into .build/ and starts the services of engine profile <p>;
+# both servers get the same config from configs/<p>/. Ports are bound to
+# loopback only.
+#
+# Isolation (phase-2 condition C2): ref and sut live on separate networks.
+# Each side's backends join only that side's network under the same hostname
+# (redis, nats, postgres), so one config file works for both and a server can
+# never reach the other side's backend. Backends never share volumes.
+# harness.CheckIsolation (CS-ISO-01) verifies this before any scenario runs.
+#
+# Redis 8 is tri-licensed RSALv2 / SSPLv1 / AGPLv3 (condition C1): the image is
+# used only to run these tests and is never part of a Cedrazeka artifact.
 name: cedrazeka-compat
+networks:
+  ref-net: {}
+  sut-net: {}
+
+x-ref: &ref
+  image: centrifugo/centrifugo:v6.10.3@sha256:33fdbbce7d195dde316cbde17bc1d2a17b9e345de82799d1ec3c2bb8916e3803
+  command: ["centrifugo", "-c", "/etc/compat/config.json"]
+  volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro"]
+  networks: [ref-net]
+  depends_on:
+    redis-ref: {condition: service_healthy, required: false}
+    redis2-ref: {condition: service_healthy, required: false}
+    sentinel-ref: {condition: service_healthy, required: false}
+    rc-init-ref: {condition: service_completed_successfully, required: false}
+    nats-ref: {condition: service_healthy, required: false}
+    postgres-ref: {condition: service_healthy, required: false}
+
+# The linux binary from .build/ runs in a plain alpine image: no image build,
+# so no network access is needed inside Docker.
+x-sut: &sut
+  image: alpine:3.24
+  command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/config.json"]
+  volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
+  networks: [sut-net]
+  depends_on:
+    redis-sut: {condition: service_healthy, required: false}
+    redis2-sut: {condition: service_healthy, required: false}
+    sentinel-sut: {condition: service_healthy, required: false}
+    rc-init-sut: {condition: service_completed_successfully, required: false}
+    nats-sut: {condition: service_healthy, required: false}
+    postgres-sut: {condition: service_healthy, required: false}
+
+# Redis without persistence; the default user is disabled, servers log in
+# with the ACL user from configs/<p>/config.json (test-only credentials).
+# masteruser/masterauth let any node act as a replica (Sentinel failover).
+#
+# Topologies (step 2.4): every node joins only its side's network, so Cluster
+# and Sentinel announce that network's container addresses, never 127.0.0.1.
+# Hostnames: r, r-opt, r-lists: redis; rsh: redis, redis2; rs: redis (master),
+# replica1, replica2, sentinel; rc: rc1, rc2, rc3.
+x-redis: &redis
+  image: redis:8.10.3-alpine@sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3
+  command: ["redis-server", "--save", "", "--appendonly", "no", "--user", "default", "off",
+            "--user", "compat", "on", ">compat-test-redis-password", "~*", "&*", "+@all",
+            "--masteruser", "compat", "--masterauth", "compat-test-redis-password"]
+  healthcheck:
+    test: ["CMD", "redis-cli", "--no-auth-warning", "--user", "compat", "--pass", "compat-test-redis-password", "ping"]
+    interval: 1s
+    retries: 30
+  profiles: [r, r-opt, r-lists, rs, rsh, n, n-raw]
+
+x-replica: &replica
+  <<: *redis
+  command: ["redis-server", "--save", "", "--appendonly", "no", "--user", "default", "off",
+            "--user", "compat", "on", ">compat-test-redis-password", "~*", "&*", "+@all",
+            "--masteruser", "compat", "--masterauth", "compat-test-redis-password",
+            "--replicaof", "redis", "6379"]
+  profiles: [rs]
+
+# One sentinel, quorum 1. It monitors the master by hostname; healthy once it
+# has discovered both replicas.
+x-sentinel: &sentinel
+  <<: *redis
+  command:
+    - sh
+    - -c
+    - |
+      cat > /tmp/sentinel.conf <<EOF
+      port 26379
+      sentinel resolve-hostnames yes
+      sentinel monitor mymaster redis 6379 1
+      sentinel auth-user mymaster compat
+      sentinel auth-pass mymaster compat-test-redis-password
+      sentinel down-after-milliseconds mymaster 2000
+      sentinel failover-timeout mymaster 10000
+      EOF
+      exec redis-sentinel /tmp/sentinel.conf
+  healthcheck:
+    test: ["CMD-SHELL", "redis-cli -p 26379 sentinel master mymaster | grep -A1 '^num-slaves$$' | tail -1 | grep -qx 2"]
+    interval: 1s
+    retries: 60
+  profiles: [rs]
+
+x-rc: &rc
+  <<: *redis
+  command: ["redis-server", "--save", "", "--appendonly", "no", "--user", "default", "off",
+            "--user", "compat", "on", ">compat-test-redis-password", "~*", "&*", "+@all",
+            "--cluster-enabled", "yes"]
+  profiles: [rc]
+
+# Creates the 3-master cluster from the nodes' addresses on this side's
+# network and exits once every node reports cluster_state:ok.
+x-rc-init: &rc-init
+  image: redis:8.10.3-alpine@sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3
+  command:
+    - sh
+    - -ec
+    - |
+      cli() { redis-cli --no-auth-warning --user compat --pass compat-test-redis-password "$$@"; }
+      ip() { getent hosts "$$1" | cut -d' ' -f1; }
+      cli -h rc1 cluster info | grep -q cluster_state:ok ||
+        cli --cluster create "$$(ip rc1):6379" "$$(ip rc2):6379" "$$(ip rc3):6379" --cluster-yes
+      for n in rc1 rc2 rc3; do
+        until cli -h "$$n" cluster info | grep -q cluster_state:ok; do sleep 0.2; done
+      done
+  profiles: [rc]
+
+# NATS (Apache-2.0) with a test-only user; no JetStream, no persistence.
+# The loopback client port lets scenarios publish to raw subjects (n-raw).
+x-nats: &nats
+  image: nats:2.15.3-alpine@sha256:558394a23dd3c36f2d3a64b51865fd09908010e80a542cea5e75c2af543ed62a
+  command: ["nats-server", "--user", "compat", "--pass", "compat-test-nats-password", "-m", "8222"]
+  healthcheck:
+    test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8222/healthz"]
+    interval: 1s
+    retries: 30
+  profiles: [n, n-raw]
+
+# PostgreSQL (PostgreSQL License), test-only user. Data lives in the image's
+# anonymous volume, one per container, so the sides share nothing and the
+# schema survives `stop`/`start` (CS-ENG-06); `compat-down` (`down -v`)
+# removes it. Not tmpfs: a stopped tmpfs container loses the schema, which a
+# real PostgreSQL restart does not.
+x-postgres: &postgres
+  image: postgres:18.7-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
+  environment: {POSTGRES_USER: compat, POSTGRES_PASSWORD: compat-test-pg-password, POSTGRES_DB: compat}
+  healthcheck:
+    test: ["CMD", "pg_isready", "-U", "compat", "-d", "compat"]
+    interval: 1s
+    retries: 30
+  profiles: [p, p-notify]
+
 services:
   ref:
-    image: centrifugo/centrifugo:v6.10.3@sha256:33fdbbce7d195dde316cbde17bc1d2a17b9e345de82799d1ec3c2bb8916e3803
-    command: ["centrifugo", "-c", "/etc/compat/config.json"]
-    volumes: ["./configs/memory:/etc/compat:ro"]
+    <<: *ref
     ports: ["127.0.0.1:18000:8000"]
+  ref-b:
+    <<: *ref
+    ports: ["127.0.0.1:18100:8000"]
+    profiles: [r, rs, rc, rsh, n, p]
   sut:
-    # The linux binary from .build/ runs in a plain alpine image: no image build,
-    # so no network access is needed inside Docker.
-    image: alpine:3.24
-    command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/config.json"]
-    volumes: ["./configs/memory:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
+    <<: *sut
     ports: ["127.0.0.1:28000:8000"]
+  sut-b:
+    <<: *sut
+    ports: ["127.0.0.1:28100:8000"]
+    profiles: [r, rs, rc, rsh, n, p]
   sut-default:
-    # Same binary in default mode (Cedrazeka names), for CS-NAME-01.
-    image: alpine:3.24
+    # Same binary in default mode (Cedrazeka names), for CS-NAME-01/02.
+    # Not on p*: the PG table prefix is cf in both modes, so it would join
+    # the sut cluster through the PG controller as a third node.
+    <<: *sut
+    profiles: [m, r, r-opt, r-lists, rs, rc, rsh, n, n-raw]
     command: ["/opt/cedrazeka/cedrazeka", "-c", "/etc/compat/config.json"]
-    volumes: ["./configs/memory:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
     ports: ["127.0.0.1:28001:8000"]
+
+  redis-ref:
+    <<: *redis
+    networks: {ref-net: {aliases: [redis]}}
+  redis2-ref:
+    <<: *redis
+    networks: {ref-net: {aliases: [redis2]}}
+    profiles: [rsh]
+  replica1-ref:
+    <<: *replica
+    networks: {ref-net: {aliases: [replica1]}}
+  replica2-ref:
+    <<: *replica
+    networks: {ref-net: {aliases: [replica2]}}
+  sentinel-ref:
+    <<: *sentinel
+    networks: {ref-net: {aliases: [sentinel]}}
+  rc1-ref:
+    <<: *rc
+    networks: {ref-net: {aliases: [rc1]}}
+  rc2-ref:
+    <<: *rc
+    networks: {ref-net: {aliases: [rc2]}}
+  rc3-ref:
+    <<: *rc
+    networks: {ref-net: {aliases: [rc3]}}
+  rc-init-ref:
+    <<: *rc-init
+    networks: [ref-net]
+    depends_on: {rc1-ref: {condition: service_healthy}, rc2-ref: {condition: service_healthy}, rc3-ref: {condition: service_healthy}}
+
+  redis-sut:
+    <<: *redis
+    networks: {sut-net: {aliases: [redis]}}
+  redis2-sut:
+    <<: *redis
+    networks: {sut-net: {aliases: [redis2]}}
+    profiles: [rsh]
+  replica1-sut:
+    <<: *replica
+    networks: {sut-net: {aliases: [replica1]}}
+  replica2-sut:
+    <<: *replica
+    networks: {sut-net: {aliases: [replica2]}}
+  sentinel-sut:
+    <<: *sentinel
+    networks: {sut-net: {aliases: [sentinel]}}
+  rc1-sut:
+    <<: *rc
+    networks: {sut-net: {aliases: [rc1]}}
+  rc2-sut:
+    <<: *rc
+    networks: {sut-net: {aliases: [rc2]}}
+  rc3-sut:
+    <<: *rc
+    networks: {sut-net: {aliases: [rc3]}}
+  rc-init-sut:
+    <<: *rc-init
+    networks: [sut-net]
+    depends_on: {rc1-sut: {condition: service_healthy}, rc2-sut: {condition: service_healthy}, rc3-sut: {condition: service_healthy}}
+
+  nats-ref:
+    <<: *nats
+    networks: {ref-net: {aliases: [nats]}}
+    ports: ["127.0.0.1:14222:4222"]
+  nats-sut:
+    <<: *nats
+    networks: {sut-net: {aliases: [nats]}}
+    ports: ["127.0.0.1:24222:4222"]
+
+  postgres-ref:
+    <<: *postgres
+    networks: {ref-net: {aliases: [postgres]}}
+  postgres-sut:
+    <<: *postgres
+    networks: {sut-net: {aliases: [postgres]}}

@@ -12,20 +12,30 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	for _, err := range []error{harness.CheckProfile(), harness.CheckRecordList()} {
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "compat:", err)
+			os.Exit(1)
+		}
+	}
 	var need []harness.Target
 	switch harness.Mode() {
 	case "diff":
-		need = []harness.Target{harness.Ref(), harness.SUT()}
+		need = append(harness.RefNodes(), harness.SUTNodes()...)
 	case "golden":
-		need = []harness.Target{harness.SUT()}
+		need = harness.SUTNodes()
 	case "record":
-		need = []harness.Target{harness.Ref()}
+		need = harness.RefNodes()
 	}
 	for _, tg := range need {
 		if err := harness.WaitReady(tg, 30*time.Second); err != nil {
 			fmt.Fprintln(os.Stderr, "compat:", err, "- start the targets with `make compat-up`")
 			os.Exit(1)
 		}
+	}
+	if err := harness.CheckIsolation(); err != nil {
+		fmt.Fprintln(os.Stderr, "compat:", err)
+		os.Exit(1)
 	}
 	os.Exit(m.Run())
 }

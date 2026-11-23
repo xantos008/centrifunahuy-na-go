@@ -129,7 +129,7 @@ Findings:
   - PostgreSQL has no presence;
   - Redis covers every role.
   
-  Config validation must reject impossible combinations. Upstream does this; CS-HIST-03 checks it.
+  CS-HIST-03 verifies that NATS history requests return error 108 at runtime. The reference accepts the history configuration at startup.
 - **Per-channel selection** for PRO-21 needs no core change: `Config.GetBroker`, `GetPresenceManager` and `Map.GetMapBroker` already exist.
 - **Gap to watch:** the selection switch in `internal/app/engine.go` is a closed list. PRO-21 named engines will add a registry (`internal/pro/engines`) that builds named instances with the same constructors. No new interface is needed.
 
@@ -137,7 +137,7 @@ Conclusion: the architecture is not tied to one broker. Redis, NATS and PostgreS
 
 ## 8. Implementation order
 
-See [feature-matrix.md § Implementation order](../compatibility/feature-matrix.md#implementation-order) and the detailed [phase 1 plan](../plan/phase-1.md).
+See the [feature matrix implementation order](../compatibility/feature-matrix.md#implementation-order) and the detailed plans for [phase 1](../plan/phase-1.md), [phase 2](../plan/phase-2.md), and [phase 3](../plan/phase-3.md).
 
 ## 9. Risks (top)
 
