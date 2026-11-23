@@ -9,7 +9,7 @@ import (
 )
 
 func TestCS_PRES_03(t *testing.T) {
-	h.Profiles(t, "m")
+	h.Profiles(t, "m", "r", "p")
 	h.Run(t, "CS-PRES-03", func(s *h.Session) {
 		ch := s.Ch("presence-permissions")
 		ws := connect(s, h.HS256(h.Claims{Sub: "u1", Info: &h.Info{Name: "connection"}}))

@@ -21,6 +21,9 @@
   "health": {
     "enabled": true
   },
+  "uni_http_stream": {
+    "enabled": true
+  },
   "channel": {
     "without_namespace": {
       "allow_subscribe_for_client": true,
