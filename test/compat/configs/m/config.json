@@ -27,6 +27,9 @@
   "uni_sse": {
     "enabled": true
   },
+  "uni_websocket": {
+    "enabled": true
+  },
   "uni_http_stream": {
     "enabled": true
   },
