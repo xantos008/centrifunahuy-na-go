@@ -16,8 +16,42 @@
     "proxy": {
       "connect": {
         "enabled": true,
-        "endpoint": "http://proxyfixture:8080/connect"
+        "endpoint": "http://proxyfixture:8080/connect",
+        "emulated_headers": [
+          "x-compat-connect"
+        ],
+        "http": {
+          "status_to_code_transforms": [
+            {
+              "status_code": 429,
+              "to_error": {
+                "code": 471,
+                "message": "try later",
+                "temporary": true
+              }
+            },
+            {
+              "status_code": 403,
+              "to_disconnect": {
+                "code": 4472,
+                "reason": "access declined"
+              }
+            }
+          ]
+        }
       }
+    },
+    "connect_code_to_unidirectional_disconnect": {
+      "enabled": true,
+      "transforms": [
+        {
+          "code": 471,
+          "to": {
+            "code": 3471,
+            "reason": "retry later"
+          }
+        }
+      ]
     }
   },
   "http_api": {
@@ -31,13 +65,49 @@
     "enabled": true
   },
   "uni_sse": {
-    "enabled": true
+    "enabled": true,
+    "connect_code_to_http_response": {
+      "enabled": true,
+      "transforms": [
+        {
+          "code": 471,
+          "to": {
+            "status_code": 429,
+            "body": "retry this connection"
+          }
+        },
+        {
+          "code": 4472,
+          "to": {
+            "status_code": 403
+          }
+        }
+      ]
+    }
   },
   "uni_websocket": {
     "enabled": true
   },
   "uni_http_stream": {
-    "enabled": true
+    "enabled": true,
+    "connect_code_to_http_response": {
+      "enabled": true,
+      "transforms": [
+        {
+          "code": 471,
+          "to": {
+            "status_code": 429,
+            "body": "retry this connection"
+          }
+        },
+        {
+          "code": 4472,
+          "to": {
+            "status_code": 403
+          }
+        }
+      ]
+    }
   },
   "uni_grpc": {
     "enabled": true
@@ -202,6 +272,9 @@
     ]
   },
   "prometheus": {
+    "enabled": true
+  },
+  "init": {
     "enabled": true
   }
 }

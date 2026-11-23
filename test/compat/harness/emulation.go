@@ -7,14 +7,15 @@ import (
 	"github.com/centrifugal/protocol"
 )
 
-// RequireHTTPStatus records a request and requires its expected HTTP status.
-func (s *Session) RequireHTTPStatus(r APIRequest, want int) {
+// RequireHTTPStatus records the response, checks its status and returns the body.
+func (s *Session) RequireHTTPStatus(r APIRequest, want int) []byte {
 	s.T.Helper()
 	status, body := s.call(r)
 	s.record(r, status, body)
 	if status != want {
 		s.T.Fatalf("%s: %s %s: got HTTP %d, want %d", s.Target.Name, r.method(), r.Path, status, want)
 	}
+	return body
 }
 
 // OpenEmulation binds outgoing commands to the identifiers delivered in the

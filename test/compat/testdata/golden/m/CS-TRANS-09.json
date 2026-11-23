@@ -1,0 +1,28 @@
+{
+  "events": [
+    {
+      "kind": "note",
+      "text": "binary HTTP stream connected with a client, node and session"
+    },
+    {
+      "kind": "note",
+      "text": "binary subscribe accepted through emulation"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "note",
+      "text": "received binary publication 00ff8001"
+    },
+    {
+      "kind": "note",
+      "text": "binary unsubscribe accepted through emulation"
+    }
+  ]
+}

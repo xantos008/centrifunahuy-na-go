@@ -1,0 +1,97 @@
+{
+  "events": [
+    {
+      "kind": "http",
+      "text": "GET /connection/init",
+      "status": 200,
+      "body": {}
+    },
+    {
+      "kind": "ws_connect",
+      "text": "/connection/uni_websocket"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "headers": {
+          "x-compat-connect": "busy"
+        }
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "retry later",
+      "code": 3471
+    },
+    {
+      "kind": "http",
+      "text": "POST /connection/uni_sse",
+      "status": 429,
+      "body": "retry this connection"
+    },
+    {
+      "kind": "http",
+      "text": "POST /connection/uni_http_stream",
+      "status": 429,
+      "body": "retry this connection"
+    },
+    {
+      "kind": "ws_connect",
+      "text": "/connection/uni_websocket"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "headers": {
+          "x-compat-connect": "declined"
+        }
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "access declined",
+      "code": 4472
+    },
+    {
+      "kind": "http",
+      "text": "POST /connection/uni_sse",
+      "status": 403,
+      "body": "access declined"
+    },
+    {
+      "kind": "http",
+      "text": "POST /connection/uni_http_stream",
+      "status": 403,
+      "body": "access declined"
+    },
+    {
+      "kind": "ws_connect",
+      "text": "/connection/uni_websocket"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "headers": {
+          "x-compat-connect": "unavailable"
+        }
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "internal server error",
+      "code": 3004
+    },
+    {
+      "kind": "http",
+      "text": "POST /connection/uni_sse",
+      "status": 500,
+      "body": "Internal Server Error"
+    },
+    {
+      "kind": "http",
+      "text": "POST /connection/uni_http_stream",
+      "status": 500,
+      "body": "Internal Server Error"
+    }
+  ]
+}

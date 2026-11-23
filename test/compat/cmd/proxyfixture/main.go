@@ -121,6 +121,22 @@ func jsonHandler[Request, Response any](call func(context.Context, *Request) (*R
 	}
 }
 
+// connectHTTP selects an HTTP status only for the marked connect scenarios.
+func connectHTTP(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Header.Get("x-compat-connect") {
+		case "busy":
+			w.WriteHeader(http.StatusTooManyRequests)
+		case "declined":
+			w.WriteHeader(http.StatusForbidden)
+		case "unavailable":
+			w.WriteHeader(http.StatusServiceUnavailable)
+		default:
+			next(w, r)
+		}
+	}
+}
+
 func main() {
 	f := fixture{rpcTimeouts: &rpcTimeouts{}, retryLeases: &retryLeases{}}
 	listener, err := net.Listen("tcp", ":8081") //nolint:gosec // The peer runs in the same private test network. Compose publishes no fixture ports.
@@ -131,7 +147,7 @@ func main() {
 	p.RegisterCentrifugoProxyServer(server, f)
 	go func() { log.Fatal(server.Serve(listener)) }()
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /connect", jsonHandler(f.Connect))
+	mux.HandleFunc("POST /connect", connectHTTP(jsonHandler(f.Connect)))
 	mux.HandleFunc("POST /subscribe", jsonHandler(f.Subscribe))
 	mux.HandleFunc("POST /refresh", jsonHandler(f.Refresh))
 	mux.HandleFunc("POST /sub_refresh", jsonHandler(f.SubRefresh))
