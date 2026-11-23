@@ -20,6 +20,11 @@ func CheckIsolation() error {
 	if len(spec.backends) == 0 {
 		return nil
 	}
+	for _, node := range []Target{Ref(), SUT()} {
+		if err := checkComposeEndpoint(node, "isolation probes"); err != nil {
+			return err
+		}
+	}
 	servers := map[string][]string{"ref": {"ref"}, "sut": {"sut", "sut-default"}}
 	if spec.noSUTDefault {
 		servers["sut"] = []string{"sut"}
@@ -29,7 +34,7 @@ func CheckIsolation() error {
 		servers["sut"] = append(servers["sut"], "sut-b")
 	}
 	for side, svcs := range servers {
-		net := "cedrazeka-compat_" + side + "-net"
+		net := envOr("COMPOSE_PROJECT_NAME", "cedrazeka-compat") + "_" + side + "-net"
 		for _, svc := range svcs {
 			c, err := inspect(svc)
 			if err != nil {

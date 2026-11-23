@@ -226,12 +226,8 @@ func (s *Session) Compose(action, base string, args ...string) string {
 	if side(s.Target.Name) == "sut" {
 		node = SUT()
 	}
-	binding, err := compose("port", node.Name, "8000")
-	if err != nil {
-		s.T.Fatalf("checking Compose endpoint for %s: %v", node.Name, err)
-	}
-	if !matchesEndpoint(node.BaseURL, strings.TrimSpace(binding)) {
-		s.T.Fatalf("Compose publishes %s on %s but the test uses %s; check COMPAT_COMPOSE_FILE and COMPOSE_PROJECT_NAME before %s", node.Name, strings.TrimSpace(binding), node.BaseURL, action)
+	if err := checkComposeEndpoint(node, action); err != nil {
+		s.T.Fatal(err)
 	}
 	out, err := compose(append(append([]string{action}, args...), serviceFor(base, s.Target.Name))...)
 	if err != nil {
@@ -239,6 +235,17 @@ func (s *Session) Compose(action, base string, args ...string) string {
 	}
 	s.Note(action + " " + base)
 	return out
+}
+
+func checkComposeEndpoint(node Target, action string) error {
+	binding, err := compose("port", node.Name, "8000")
+	if err != nil {
+		return fmt.Errorf("checking Compose endpoint for %s: %w", node.Name, err)
+	}
+	if !matchesEndpoint(node.BaseURL, strings.TrimSpace(binding)) {
+		return fmt.Errorf("Compose publishes %s on %s but the test uses %s; check COMPAT_COMPOSE_FILE and COMPOSE_PROJECT_NAME before %s", node.Name, strings.TrimSpace(binding), node.BaseURL, action)
+	}
+	return nil
 }
 
 // Compose profiles publish to loopback. Compare both host and port so tests
