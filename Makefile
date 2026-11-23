@@ -52,6 +52,7 @@ COMPAT_COMPOSE = cd test/compat && $(COMPAT_ENV) docker compose --profile $(PROF
 compat-build:
 	mkdir -p test/compat/.build
 	GOOS=linux GOARCH=$(COMPAT_GOARCH) CGO_ENABLED=0 go build -o test/compat/.build/cedrazeka .
+	GOOS=linux GOARCH=$(COMPAT_GOARCH) CGO_ENABLED=0 go -C test/compat build -o .build/proxyfixture ./cmd/proxyfixture
 
 compat-up: compat-build
 	$(COMPAT_COMPOSE) up -d --wait

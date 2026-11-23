@@ -392,8 +392,16 @@ The 2026-11-23 push to `phase-2/engines` passed all 14 jobs in 9m 27s. Each comp
 | `p-notify` | 1m 51s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696230) |
 | Centrifuge library integration | 9m 19s | `make library-test` took 9m 07s and matched the recorded inventory of 1,526 passes and five skips. [Job](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696075) |
 
-## Remaining acceptance evidence
+## Acceptance evidence before proxy verification (2026-11-24)
 
 On `m`, `r` and `p`, CS-REC-06 covers automatic cache recovery for token-driven server-side subscriptions over WebSocket and unidirectional HTTP-stream. CS-PRES-03 checks error 103 from `presence` and `presence_stats` before subscription and checks both connection and subscription JWT metadata in the presence response. CS-REC-07 confirms close 3010 after a positioned server-side subscription loses its stream epoch on all three profiles. Of the 37 matrix rows in criterion 4, 32 are verified. The five open rows are OSS-HIST-05/11, OSS-PRES-04/06 and OSS-SUB-08. They still need the connect-proxy cache recovery override, a server scenario that reaches the configured recovery queue limit, connection JWT `b64info`, proxy-supplied presence metadata, and metadata on join/leave pushes. The `allow_presence_for_client` and `allow_presence_for_anonymous` flags also need dedicated scenarios. The pinned library suite covers the queue limit and overflow. The open-question register contains the reference observations for criterion 5. [Feature matrix](../compatibility/feature-matrix.md#phase-2-compatibility-evidence-2026-11-23) · [Open questions](../research/open-questions.md).
 
-Start the remaining proxy work with step 3.2. Use the same local callback fixture to return a server-side subscription with the cache override and distinct connection and channel metadata. Compare the latest cached publication, presence and join/leave pushes against v6.10.3. The permission flags and the recovery queue limit can be verified independently.
+## Remaining acceptance evidence
+
+On 2026-11-24, CS-PROXY-01 and CS-PROXY-02 passed in diff mode against Centrifugo OSS v6.10.3 and in golden mode on memory (`m`), Redis (`r`) and PostgreSQL (`p`). CS-PROXY-01 checks that the connect-proxy `subs[ch].cache_recover` override set to `false` returns no cached publications and set to `true` returns only the latest publication. Both values are checked on WebSocket and unidirectional HTTP-stream. CS-PROXY-01 and CS-PROXY-02 also cover connect- and subscribe-proxy metadata in presence responses.
+
+Of the 37 matrix rows in criterion 4, 34 are verified. Three remain partially covered and carry the `inherited` status. [Feature matrix](../compatibility/feature-matrix.md#phase-2-compatibility-evidence-2026-11-23).
+
+- OSS-HIST-11 needs a server scenario that reaches the configured recovery queue limit. The pinned library suite covers the limit and overflow.
+- OSS-PRES-04 needs coverage for connection JWT `b64info` and both metadata fields in join/leave pushes.
+- OSS-PRES-06 needs dedicated scenarios for `allow_presence_for_client` and `allow_presence_for_anonymous`.

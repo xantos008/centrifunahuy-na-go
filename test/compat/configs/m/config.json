@@ -12,7 +12,13 @@
     "ping_interval": "2s",
     "pong_timeout": "1s",
     "history_max_publication_limit": 8,
-    "recovery_max_publication_limit": 8
+    "recovery_max_publication_limit": 8,
+    "proxy": {
+      "connect": {
+        "enabled": true,
+        "endpoint": "http://proxyfixture:8080/connect"
+      }
+    }
   },
   "http_api": {
     "key": "compat-test-api-key"
@@ -40,6 +46,14 @@
     }
   },
   "channel": {
+    "proxy": {
+      "subscribe": {
+        "endpoint": "http://proxyfixture:8080/subscribe"
+      },
+      "publish": {
+        "endpoint": "http://proxyfixture:8080/publish"
+      }
+    },
     "without_namespace": {
       "allow_subscribe_for_client": true,
       "presence": true,
@@ -48,6 +62,18 @@
       "allow_user_limited_channels": true
     },
     "namespaces": [
+      {
+        "name": "proxied",
+        "subscribe_proxy_enabled": true,
+        "presence": true
+      },
+      {
+        "name": "pcache",
+        "history_size": 2,
+        "history_ttl": "300s",
+        "force_recovery_mode": "cache",
+        "presence": true
+      },
       {
         "name": "hist",
         "history_size": 10,
@@ -144,6 +170,13 @@
         "history_size": 10,
         "history_ttl": "300s",
         "allow_subscribe_for_client": true
+      },
+      {
+        "name": "proxywrite",
+        "publish_proxy_enabled": true,
+        "allow_subscribe_for_client": true,
+        "history_size": 4,
+        "history_ttl": "300s"
       }
     ]
   },

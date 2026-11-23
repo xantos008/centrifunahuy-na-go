@@ -32,3 +32,35 @@ func TestCS_RPC_01(t *testing.T) {
 		}
 	})
 }
+
+// Keep m on its original ping-only configuration. The named RPC backend
+// runs over gRPC on r and HTTP on p.
+func TestCS_RPC_02(t *testing.T) {
+	h.Profiles(t, "r", "p")
+	h.Run(t, "CS-RPC-02", func(s *h.Session) {
+		ws := connect(s, h.HS256(h.Claims{Sub: "proxy-user"}))
+		const data = `{"probe":true}`
+		for i, tc := range []struct {
+			method string
+			code   uint32
+			reason string
+		}{
+			{"probe:echo", 0, ""},
+			{"probe:deny", 470, "fixture denied"},
+			{"unknown", 108, "not available"},
+			{"unknown:method", 104, "method not found"},
+		} {
+			id := uint32(i + 2)
+			ws.Send(fmt.Sprintf(`{"id":%d,"rpc":{"method":%q,"data":%s}}`, id, tc.method, data))
+			ws.Recv(1)
+			var reply protocol.Reply
+			ws.Last(&reply)
+			if reply.Id != id || reply.Error.GetCode() != tc.code || reply.Error.GetMessage() != tc.reason {
+				s.T.Fatalf("%s: unexpected RPC result: %v", tc.method, &reply)
+			}
+			if tc.code == 0 && string(reply.GetRpc().GetData()) != data {
+				s.T.Fatalf("%s: expected echoed payload: %v", tc.method, &reply)
+			}
+		}
+	})
+}
