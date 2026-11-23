@@ -17,10 +17,11 @@ import (
 
 // Claims is the subset of connection/subscription JWT claims the scenarios use.
 type Claims struct {
-	Sub     string `json:"sub"`
-	Exp     int64  `json:"exp,omitempty"`
-	Channel string `json:"channel,omitempty"`
-	Info    *Info  `json:"info,omitempty"`
+	Sub      string   `json:"sub"`
+	Exp      int64    `json:"exp,omitempty"`
+	Channel  string   `json:"channel,omitempty"`
+	Channels []string `json:"channels,omitempty"`
+	Info     *Info    `json:"info,omitempty"`
 }
 
 // Info is connection info attached to presence and publications.

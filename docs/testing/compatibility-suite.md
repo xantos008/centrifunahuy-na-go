@@ -147,10 +147,12 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 - CS-REC-03: epoch change (history reset, backend restart for memory) → `recovered=false`. M R
 - CS-REC-04: `recovery_max_publication_limit`; cache recovery mode (latest publication). M R
 - CS-REC-05: concurrent publish during subscribe-with-recover (1000 iterations, loss/duplicate check). R P
+- CS-REC-06: a connection JWT creates a server-side subscription in a namespace with automatic cache recovery. The WebSocket and unidirectional HTTP-stream connect replies each contain only the latest publication. The clients send neither a recovery request nor a previous position. M
 
 ### CS-PRES: presence (OSS-PRES-*)
 - ★ CS-PRES-01: `presence` and `presence_stats` via client and API; join/leave pushes. M R
 - CS-PRES-02: presence TTL expiry after a node crash (`docker kill` of B): B's client leaves A's `presence_stats` within `presence_ttl` + `presence_update_interval` + 3 s. Bounded poll, last answer recorded. R (`r`)
+- CS-PRES-03: `presence` and `presence_stats` return error 103 before the client subscribes to a channel with subscriber-only presence. After subscribing, the presence reply carries `conn_info` from the connection JWT and `chan_info` from the subscription JWT. M
 
 ### CS-API: server API (OSS-API-01..04)
 - ★ CS-API-01: auth: `X-API-Key`, `?api_key=`, `Authorization: apikey`; bad key → 401 with empty body; non-POST → 405; bad JSON → 400; unknown path → 404. M
