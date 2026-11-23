@@ -163,14 +163,15 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 
 ### CS-RPC: client RPC (phase 3)
 
-- CS-RPC-01: configured RPC ping method returns an empty result. The default name and an unknown method return 104. Verified in diff and golden mode on `m`.
+- CS-RPC-01 runs on the ping-only `m` profile. The custom RPC ping method returns an empty result. The default name and an unknown method return error 104. Verified in diff and golden mode.
+- CS-RPC-02 exercises the RPC proxy over gRPC on `r` and HTTP on `p`. The `probe` namespace echoes the request data or returns application error 470. An unqualified unknown method returns 108 with proxying outside namespaces disabled. An unknown namespace returns 104. Verified in diff and golden mode on both profiles.
 
 ### CS-PROXY: application callbacks (phase 3)
 
-Each server calls a separate instance of `cmd/proxyfixture` on its private Compose network. Profiles `m` and `p` use HTTP JSON. Profile `r` uses the generated gRPC proxy service. The fixture has no published host ports.
+Each server calls a separate instance of `cmd/proxyfixture` on its private Compose network. Profiles `m` and `p` use HTTP JSON. Profile `r` uses the generated gRPC proxy service. The fixture has no published host ports. CS-PROXY-01..03 passed in diff and golden mode on all three profiles.
 
 - CS-PROXY-01 uses a tokenless connect callback to grant a server-side subscription. The namespace has automatic cache recovery disabled. Both WebSocket and unidirectional HTTP-stream connect with the callback override off and on. The scenario checks the latest publication at offset 2 and the connection/subscription info in presence.
-- CS-PROXY-02 uses a connection JWT, a proxied channel and a namespaced RPC. It checks subscribe and RPC reply data, presence info from the JWT and subscribe callback, and propagation of application error 470 on both methods.
+- CS-PROXY-02 uses a connection JWT and subscribes to a proxied channel. It checks reply data, connection info from the JWT and channel info from the subscribe callback in presence, and propagation of application error 470 when the callback rejects the subscription.
 - CS-PROXY-03 publishes through the client protocol. The callback rewrites the data, attaches a tag and sets `skip_history` on the second publication. A separate subscriber checks both deliveries. Memory and Redis retain only the first publication. The PostgreSQL stream broker retains both with consecutive offsets. A third request receives the callback's rejection.
 
 ### CS-TRANS: other transports (phase 3)

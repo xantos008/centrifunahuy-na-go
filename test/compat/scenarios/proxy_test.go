@@ -96,18 +96,9 @@ func TestCS_PROXY_02(t *testing.T) {
 			s.T.Fatalf("unexpected subscribe callback result: %v", subscribed)
 		}
 		proxyMember(s, channel, connected.GetConnect().GetClient(), `{"name":"jwt"}`, `{"source":"subscribe"}`)
-		echo := call(fmt.Sprintf(`{"id":3,"rpc":{"method":"probe:echo","data":%s}}`, data))
-		if echo.Id != 3 || string(echo.GetRpc().GetData()) != data {
-			s.T.Fatalf("unexpected RPC callback result: %v", echo)
-		}
-		for _, frame := range []string{
-			fmt.Sprintf(`{"id":4,"subscribe":{"channel":%q}}`, s.Ch("proxied:denied")),
-			`{"id":5,"rpc":{"method":"probe:deny"}}`,
-		} {
-			reply := call(frame)
-			if reply.Error.GetCode() != 470 || reply.Error.GetMessage() != "fixture denied" {
-				s.T.Fatalf("unexpected callback error: %v", reply)
-			}
+		reply := call(fmt.Sprintf(`{"id":3,"subscribe":{"channel":%q}}`, s.Ch("proxied:denied")))
+		if reply.Error.GetCode() != 470 || reply.Error.GetMessage() != "fixture denied" {
+			s.T.Fatalf("unexpected subscribe proxy error: %v", reply)
 		}
 	})
 }

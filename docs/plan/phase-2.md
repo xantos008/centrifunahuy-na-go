@@ -398,7 +398,7 @@ On `m`, `r` and `p`, CS-REC-06 covers automatic cache recovery for token-driven 
 
 ## Remaining acceptance evidence
 
-On 2026-11-24, CS-PROXY-01/02/03 passed in diff mode against Centrifugo OSS v6.10.3 and in golden mode on memory (`m`), Redis (`r`) and PostgreSQL (`p`). CS-PROXY-01 checks that the connect-proxy `subs[ch].cache_recover` override set to `false` returns no cached publications and set to `true` returns only the latest publication. Both values are checked on WebSocket and unidirectional HTTP-stream. CS-PROXY-01 and CS-PROXY-02 also cover connect- and subscribe-proxy metadata in presence responses.
+On 2026-11-24, CS-PROXY-01 and CS-PROXY-02 passed in diff mode against Centrifugo OSS v6.10.3 and in golden mode on memory (`m`), Redis (`r`) and PostgreSQL (`p`). CS-PROXY-01 checks that the connect-proxy `subs[ch].cache_recover` override set to `false` returns no cached publications and set to `true` returns only the latest publication. Both values are checked on WebSocket and unidirectional HTTP-stream. CS-PROXY-01 and CS-PROXY-02 also cover connect- and subscribe-proxy metadata in presence responses.
 
 Of the 37 matrix rows in criterion 4, 34 are verified. Three remain partially covered and carry the `inherited` status. [Feature matrix](../compatibility/feature-matrix.md#phase-2-compatibility-evidence-2026-11-23).
 

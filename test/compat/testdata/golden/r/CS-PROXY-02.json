@@ -69,29 +69,6 @@
       "kind": "ws_send",
       "body": {
         "id": 3,
-        "rpc": {
-          "data": {
-            "probe": true
-          },
-          "method": "probe:echo"
-        }
-      }
-    },
-    {
-      "kind": "ws_recv",
-      "body": {
-        "id": 3,
-        "rpc": {
-          "data": {
-            "probe": true
-          }
-        }
-      }
-    },
-    {
-      "kind": "ws_send",
-      "body": {
-        "id": 4,
         "subscribe": {
           "channel": "proxied:denied-RUN"
         }
@@ -104,26 +81,7 @@
           "code": 470,
           "message": "fixture denied"
         },
-        "id": 4
-      }
-    },
-    {
-      "kind": "ws_send",
-      "body": {
-        "id": 5,
-        "rpc": {
-          "method": "probe:deny"
-        }
-      }
-    },
-    {
-      "kind": "ws_recv",
-      "body": {
-        "error": {
-          "code": 470,
-          "message": "fixture denied"
-        },
-        "id": 5
+        "id": 3
       }
     }
   ]

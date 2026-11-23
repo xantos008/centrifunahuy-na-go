@@ -18,11 +18,12 @@ The exit state is a stable OSS core with completed compatibility evidence for th
 
 ## Progress
 
-- 3.2 started with CS-RPC-01. A custom ping method returns an empty RPC result. The default name and an unknown method return 104. The scenario matched Centrifugo OSS v6.10.3 in diff mode and passed against the recorded transcript on `m`.
+- 3.2 started with CS-RPC-01. On the ping-only `m` profile, the custom ping method returns an empty RPC result. The default name and an unknown method return 104. The scenario matched Centrifugo OSS v6.10.3 in diff mode and passed against the recorded transcript on `m`.
 - 3.1 started with CS-TRANS-01. The unidirectional SSE and HTTP-stream POST endpoints send a connect push with the requested subscription, then deliver an API publication. Both passed in diff and golden mode on `m`.
 - 3.1 now includes the keyed server gRPC API in CS-API-03. It compares requests and replies for all 21 OSS methods, a missing API key and the 19 PRO-only methods against the pinned reference on `m`. CORE-OQ-04 is resolved. TLS, reflection and transport error mode still need separate coverage.
 - CS-TRANS-02 covers both unidirectional WebSocket connection forms on memory. A client connects with its request in the first frame or in `cf_connect`, receives a publication on its server-side subscription and observes a disconnect push followed by a WebSocket close frame with the same code and reason.
-- 3.2 now covers the connect, subscribe, publish and RPC callbacks. CS-PROXY-01..03 passed against v6.10.3 and against their recorded transcripts over HTTP on memory and PostgreSQL, and over gRPC on Redis. The tests cover the connect cache override, presence metadata, an approved and a rejected operation, and publication rewriting, tags and history. PostgreSQL retained both delivered publications when the callback set `skip_history` on the second. Memory and Redis retained only the first.
+- CS-PROXY-01..03 passed in diff and golden mode on `m`, `r` and `p`. They exercise connect, subscribe and publish callbacks over HTTP on memory and PostgreSQL and over gRPC on Redis. The tests cover the connect cache override, presence metadata, subscribe approval and rejection, and publication rewriting, tags and history. PostgreSQL retained both delivered publications when the callback set `skip_history` on the second. Memory and Redis retained only the first.
+- CS-RPC-02 passed in diff and golden mode on `r` and `p`. It exercises namespaced RPC callbacks over gRPC on Redis and HTTP on PostgreSQL. It checks echoed data and application error 470. With the RPC proxy enabled for `probe` only, an unknown unqualified method returns 108 and an unknown namespace returns 104.
 
 ## Remaining work
 

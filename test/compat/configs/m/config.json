@@ -40,15 +40,6 @@
     "enabled": true
   },
   "rpc": {
-    "proxy": {
-      "endpoint": "http://proxyfixture:8080/rpc"
-    },
-    "namespaces": [
-      {
-        "name": "probe",
-        "proxy_enabled": true
-      }
-    ],
     "ping": {
       "enabled": true,
       "method": "compat-ping"
