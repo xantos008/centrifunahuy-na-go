@@ -115,6 +115,8 @@ func (f fixture) RPC(ctx context.Context, r *p.RPCRequest) (*p.RPCResponse, erro
 		return &p.RPCResponse{Error: denied()}, nil
 	}
 	switch r.Method {
+	case "marker:read":
+		return markerRPC(ctx)
 	case "probe:echo":
 		return &p.RPCResponse{Result: &p.RPCResult{Data: r.Data}}, nil
 	case "probe:timeout":

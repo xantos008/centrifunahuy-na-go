@@ -63,6 +63,21 @@
           "x-compat-route": "alternate_rpc"
         }
       }
+    },
+    {
+      "name": "callback_marker",
+      "endpoint": "http://proxyfixture:8080/marker/rpc",
+      "http_headers": [
+        "x-compat-marker"
+      ],
+      "emulated_headers": [
+        "x-compat-marker"
+      ],
+      "http": {
+        "static_headers": {
+          "x-compat-marker": "static"
+        }
+      }
     }
   ],
   "rpc": {
@@ -79,6 +94,11 @@
         "name": "named",
         "proxy_enabled": true,
         "proxy_name": "alternate_rpc"
+      },
+      {
+        "name": "marker",
+        "proxy_enabled": true,
+        "proxy_name": "callback_marker"
       }
     ]
   },

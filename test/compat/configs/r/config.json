@@ -66,6 +66,21 @@
           "x-compat-route": "alternate_rpc"
         }
       }
+    },
+    {
+      "name": "callback_marker",
+      "endpoint": "grpc://proxyfixture:8081",
+      "http_headers": [
+        "x-compat-marker"
+      ],
+      "emulated_headers": [
+        "x-compat-marker"
+      ],
+      "grpc": {
+        "static_metadata": {
+          "x-compat-marker": "static"
+        }
+      }
     }
   ],
   "rpc": {
@@ -82,6 +97,11 @@
         "name": "named",
         "proxy_enabled": true,
         "proxy_name": "alternate_rpc"
+      },
+      {
+        "name": "marker",
+        "proxy_enabled": true,
+        "proxy_name": "callback_marker"
       }
     ]
   },

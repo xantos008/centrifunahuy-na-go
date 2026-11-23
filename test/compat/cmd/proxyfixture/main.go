@@ -139,6 +139,7 @@ func main() {
 	mux.HandleFunc("POST /map_publish", jsonHandler(f.MapPublish))
 	mux.HandleFunc("POST /map_remove", jsonHandler(f.MapRemove))
 	mux.HandleFunc("POST /rpc", jsonHandler(f.RPC))
+	mux.HandleFunc("POST /marker/rpc", markerHTTP(jsonHandler(f.RPC)))
 	mux.HandleFunc("POST /named/subscribe", namedHTTP("alternate_sub", jsonHandler(f.Subscribe)))
 	mux.HandleFunc("POST /named/publish", namedHTTP("alternate_pub", jsonHandler(f.Publish)))
 	mux.HandleFunc("POST /named/rpc", namedHTTP("alternate_rpc", jsonHandler(f.RPC)))
