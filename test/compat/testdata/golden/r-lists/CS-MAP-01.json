@@ -1,0 +1,348 @@
+{
+  "events": [
+    {
+      "kind": "http",
+      "text": "POST /api/map_publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "board:map01-RUN",
+          "phase": 2,
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "epoch": "<epoch:1>",
+          "offset": 1,
+          "recoverable": true,
+          "state": [
+            {
+              "data": {
+                "v": 1
+              },
+              "key": "a",
+              "offset": 1
+            }
+          ],
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "board:map01-RUN",
+          "pub": {
+            "data": {
+              "v": 2
+            },
+            "key": "b",
+            "offset": 2
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 3
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "board:map01-RUN",
+          "pub": {
+            "data": {
+              "v": 3
+            },
+            "key": "b",
+            "offset": 3
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_remove",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 4
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "board:map01-RUN",
+          "pub": {
+            "key": "b",
+            "offset": 4,
+            "removed": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 5
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 6
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "board:map01-RUN",
+          "epoch": "<epoch:1>",
+          "limit": 1,
+          "offset": 4,
+          "phase": 1,
+          "recover": true,
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "epoch": "<epoch:1>",
+          "offset": 5,
+          "phase": 1,
+          "publications": [
+            {
+              "data": {
+                "v": 5
+              },
+              "key": "a",
+              "offset": 5
+            }
+          ],
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "subscribe": {
+          "channel": "board:map01-RUN",
+          "epoch": "<epoch:1>",
+          "limit": 1,
+          "offset": 5,
+          "phase": 1,
+          "recover": true,
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "subscribe": {
+          "epoch": "<epoch:1>",
+          "offset": 6,
+          "publications": [
+            {
+              "data": {
+                "v": 6
+              },
+              "key": "a",
+              "offset": 6
+            }
+          ],
+          "recoverable": true,
+          "recovered": true,
+          "type": 1,
+          "was_recovering": true
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 7
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "board:map01-RUN",
+          "pub": {
+            "data": {
+              "v": 7
+            },
+            "key": "a",
+            "offset": 7
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:3>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "board:map01-RUN",
+          "phase": 2,
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "epoch": "<epoch:1>",
+          "offset": 7,
+          "recoverable": true,
+          "state": [
+            {
+              "data": {
+                "v": 7
+              },
+              "key": "a",
+              "offset": 7
+            }
+          ],
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/map_clear",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    }
+  ]
+}
