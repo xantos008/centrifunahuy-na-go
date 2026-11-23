@@ -12,4 +12,6 @@ Delegate routine implementation following an established pattern, test execution
 
 ## Local Git and handoff
 
-Local branches, commits and merges are authorized. The user handles pushes and remote pull requests. Give each proposed or completed commit a descriptive subject, a body explaining behavior and verification, and the exact paths included. Provide a PR title, target and source branches, summary and test results when a change is ready to publish.
+Local branches, commits and merges are authorized. Integrate each verified stage into local `main` and start the next phase branch from the updated `main`. Check branch ancestry before merging or branching. Track phase acceptance criteria separately from local merge status.
+
+The user handles pushes and remote pull requests. If a later phase branch already descends from an earlier phase branch, preserve its commits and specify the order in which the PRs should reach remote `main`. Give each proposed or completed commit a descriptive subject, a body explaining behavior and verification, and the exact paths included. Provide a PR title, target and source branches, summary and test results when a change is ready to publish.
