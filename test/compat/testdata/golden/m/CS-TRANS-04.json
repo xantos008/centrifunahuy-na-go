@@ -1,0 +1,228 @@
+{
+  "events": [
+    {
+      "kind": "stream_connect",
+      "text": "GET /connection/sse",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "stream_status",
+      "text": "text/event-stream; charset=utf-8",
+      "status": 200
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "node": "<node:1>",
+          "ping": 2,
+          "pong": true,
+          "session": "<session:1>",
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "emulation_send",
+      "body": {
+        "data": "{\"id\":2,\"subscribe\":{\"channel\":\"pub:emulate-sse-RUN\"}}",
+        "node": "<node:1>",
+        "session": "<session:1>"
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /emulation",
+      "status": 204
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "push": {
+          "channel": "pub:emulate-sse-RUN",
+          "pub": {
+            "data": {
+              "sequence": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "emulation_send",
+      "body": {
+        "data": "{\"id\":3,\"unsubscribe\":{\"channel\":\"pub:emulate-sse-RUN\"}}",
+        "node": "<node:1>",
+        "session": "<session:1>"
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /emulation",
+      "status": 204
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "id": 3,
+        "unsubscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/disconnect",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "push": {
+          "disconnect": {
+            "code": 4001,
+            "reason": "test complete"
+          }
+        }
+      }
+    },
+    {
+      "kind": "stream_eof"
+    },
+    {
+      "kind": "stream_connect",
+      "text": "POST /connection/http_stream",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "stream_status",
+      "text": "text/plain; charset=utf-8",
+      "status": 200
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "node": "<node:1>",
+          "ping": 2,
+          "pong": true,
+          "session": "<session:2>",
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "emulation_send",
+      "body": {
+        "data": "{\"id\":2,\"subscribe\":{\"channel\":\"pub:emulate-http_stream-RUN\"}}",
+        "node": "<node:1>",
+        "session": "<session:2>"
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /emulation",
+      "status": 204
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "push": {
+          "channel": "pub:emulate-http_stream-RUN",
+          "pub": {
+            "data": {
+              "sequence": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "emulation_send",
+      "body": {
+        "data": "{\"id\":3,\"unsubscribe\":{\"channel\":\"pub:emulate-http_stream-RUN\"}}",
+        "node": "<node:1>",
+        "session": "<session:2>"
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /emulation",
+      "status": 204
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "id": 3,
+        "unsubscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/disconnect",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "stream_reply",
+      "body": {
+        "push": {
+          "disconnect": {
+            "code": 4001,
+            "reason": "test complete"
+          }
+        }
+      }
+    },
+    {
+      "kind": "stream_eof"
+    }
+  ]
+}

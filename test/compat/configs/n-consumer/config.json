@@ -1,0 +1,22 @@
+{
+  "health": {"enabled": true},
+  "http_api": {"key": "compat-test-api-key"},
+  "broker": {
+    "enabled": true,
+    "type": "nats",
+    "nats": {"url": "nats://compat:compat-test-nats-password@nats:4222"}
+  },
+  "consumers": [
+    {
+      "name": "dispatch",
+      "enabled": true,
+      "type": "nats_jetstream",
+      "nats_jetstream": {
+        "url": "nats://compat:compat-test-nats-password@nats:4222",
+        "stream_name": "COMPAT_COMMANDS",
+        "durable_consumer_name": "compat_dispatch",
+        "use_existing_consumer": true
+      }
+    }
+  ]
+}

@@ -45,7 +45,7 @@ local-deps:
 # Golden files are re-recorded only for the scenarios named in COMPAT_RECORD.
 COMPAT_GOARCH ?= $(shell go env GOARCH)
 PROFILE ?= m
-COMPAT_PROFILES ?= m r r-opt r-lists rs rc rsh n n-raw p p-notify
+COMPAT_PROFILES ?= m r r-opt r-lists rs rc rsh n n-raw p p-notify cloud kafka
 COMPAT_ENV = COMPAT_PROFILE=$(PROFILE)
 COMPAT_COMPOSE = cd test/compat && $(COMPAT_ENV) docker compose --profile $(PROFILE)
 
@@ -55,10 +55,25 @@ compat-build:
 	GOOS=linux GOARCH=$(COMPAT_GOARCH) CGO_ENABLED=0 go -C test/compat build -o .build/proxyfixture ./cmd/proxyfixture
 
 compat-up: compat-build
+ifeq ($(PROFILE),cloud)
+	$(COMPAT_COMPOSE) up -d --wait pubsub-ref pubsub-sut
+	go -C test/compat run ./cmd/pubsubsetup
+endif
+ifeq ($(PROFILE),p-notify)
+	$(COMPAT_COMPOSE) up -d --wait postgres-ref postgres-sut
+	$(COMPAT_COMPOSE) exec -T postgres-ref psql -X -v ON_ERROR_STOP=1 -U compat -d compat < testdata/postgres/consumer-outbox.sql
+	$(COMPAT_COMPOSE) exec -T postgres-sut psql -X -v ON_ERROR_STOP=1 -U compat -d compat < testdata/postgres/consumer-outbox.sql
+endif
+ifeq ($(PROFILE),rsh)
+	sh test/compat/configs/rsh/tls.sh
+endif
 	$(COMPAT_COMPOSE) up -d --wait
 
 compat-down:
 	$(COMPAT_COMPOSE) down -v
+ifeq ($(PROFILE),rsh)
+	$(RM) test/compat/configs/rsh/tls/ca.crt test/compat/configs/rsh/tls/server.crt test/compat/configs/rsh/tls/server.key
+endif
 
 compat:
 	cd test/compat && $(COMPAT_ENV) COMPAT_MODE=diff go test -count=1 ./...

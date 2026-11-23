@@ -1,0 +1,108 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hist:outbox-consumer-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "note",
+      "text": "sql BEGIN; INSERT INTO compat_consumer_outbox (method,payload) VALUES ('publish','{\"channel\":\"hist:outbox-consumer-RUN\",\"data\":{\"n\":99}}'); ROLLBACK -> "
+    },
+    {
+      "kind": "note",
+      "text": "sql BEGIN; INSERT INTO compat_consumer_outbox (method,payload) VALUES ('publish','{\"channel\":\"hist:outbox-consumer-RUN\",\"data\":{\"n\":1}}'); INSERT INTO compat_consumer_outbox (method,payload) VALUES ('unknown','{\"channel\":\"hist:outbox-consumer-RUN\",\"data\":{\"n\":77}}'); INSERT INTO compat_consumer_outbox (method,payload) VALUES ('publish','{\"channel\":\"hist:outbox-consumer-RUN\",\"data\":{\"n\":2}}'); COMMIT -> "
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:outbox-consumer-RUN",
+          "pub": {
+            "data": {
+              "n": 1
+            },
+            "epoch": "<epoch:1>",
+            "offset": 1
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:outbox-consumer-RUN",
+          "pub": {
+            "data": {
+              "n": 2
+            },
+            "epoch": "<epoch:1>",
+            "offset": 2
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "outbox rows acknowledged"
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 2,
+          "publications": [
+            {
+              "data": {
+                "n": 1
+              },
+              "offset": 1
+            },
+            {
+              "data": {
+                "n": 2
+              },
+              "offset": 2
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

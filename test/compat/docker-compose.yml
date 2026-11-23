@@ -17,10 +17,16 @@ networks:
   ref-net: {}
   sut-net: {}
 
+# Only the cloud profile supplies local emulator settings for the server SDKs.
+x-provider-env: &provider-env
+  - path: ./configs/${COMPAT_PROFILE:-m}/provider.env
+    required: false
+
 x-ref: &ref
   image: centrifugo/centrifugo:v6.10.3@sha256:33fdbbce7d195dde316cbde17bc1d2a17b9e345de82799d1ec3c2bb8916e3803
   command: ["centrifugo", "-c", "/etc/compat/config.json"]
   volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro"]
+  env_file: *provider-env
   networks: [ref-net]
   depends_on:
     redis-ref: {condition: service_healthy, required: false}
@@ -30,6 +36,9 @@ x-ref: &ref
     nats-ref: {condition: service_healthy, required: false}
     postgres-ref: {condition: service_healthy, required: false}
     proxyfixture-ref: {condition: service_healthy, required: false}
+    localstack-ref: {condition: service_healthy, required: false}
+    kafka-ref: {condition: service_healthy, required: false}
+    pubsub-ref: {condition: service_healthy, required: false}
 
 # The linux binary from .build/ runs in a plain alpine image: no image build,
 # so no network access is needed inside Docker.
@@ -37,6 +46,7 @@ x-sut: &sut
   image: &compat-alpine alpine:3.24
   command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/config.json"]
   volumes: ["./configs/${COMPAT_PROFILE:-m}:/etc/compat:ro", "./.build:/opt/cedrazeka:ro"]
+  env_file: *provider-env
   networks: [sut-net]
   depends_on:
     redis-sut: {condition: service_healthy, required: false}
@@ -46,6 +56,9 @@ x-sut: &sut
     nats-sut: {condition: service_healthy, required: false}
     postgres-sut: {condition: service_healthy, required: false}
     proxyfixture-sut: {condition: service_healthy, required: false}
+    localstack-sut: {condition: service_healthy, required: false}
+    kafka-sut: {condition: service_healthy, required: false}
+    pubsub-sut: {condition: service_healthy, required: false}
 
 x-proxyfixture: &proxyfixture
   image: *compat-alpine
@@ -132,11 +145,11 @@ x-rc-init: &rc-init
       done
   profiles: [rc]
 
-# NATS (Apache-2.0) with a test-only user; no JetStream, no persistence.
-# The loopback client port lets scenarios publish to raw subjects (n-raw).
+# NATS (Apache-2.0) with a test-only user. The loopback client port also
+# lets scenarios provision an in-memory JetStream stream on their own side.
 x-nats: &nats
   image: nats:2.15.3-alpine@sha256:558394a23dd3c36f2d3a64b51865fd09908010e80a542cea5e75c2af543ed62a
-  command: ["nats-server", "--user", "compat", "--pass", "compat-test-nats-password", "-m", "8222"]
+  command: ["nats-server", "--user", "compat", "--pass", "compat-test-nats-password", "-m", "8222", "-js"]
   healthcheck:
     test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8222/healthz"]
     interval: 1s
@@ -157,17 +170,137 @@ x-postgres: &postgres
     retries: 30
   profiles: [p, p-notify]
 
+x-google-pubsub: &google-pubsub
+  image: gcr.io/google.com/cloudsdktool/google-cloud-cli:572.0.0-emulators@sha256:727bf8869594d039959bddce6727aae1ea0fd464f3e5b31df55ab6fbb8e687c5
+  command: ["gcloud", "beta", "emulators", "pubsub", "start", "--host-port=0.0.0.0:8085"]
+  environment: {JAVA_TOOL_OPTIONS: "-XX:ActiveProcessorCount=2 -Xmx256m"}
+  healthcheck:
+    test: ["CMD", "python3", "-c", "import socket; socket.create_connection(('127.0.0.1',8085),2).close()"]
+    interval: 2s
+    retries: 45
+  profiles: [cloud]
+
+x-localstack: &localstack
+  image: localstack/localstack:4.14@sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a
+  environment:
+    SERVICES: sqs,sns
+    DEFAULT_REGION: us-east-1
+    LOCALSTACK_HOST: localstack:4566
+    SQS_ENDPOINT_STRATEGY: "off"
+  healthcheck:
+    test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4566/_localstack/health"]
+    interval: 2s
+    retries: 60
+  profiles: [cloud]
+
+x-kafka: &kafka
+  image: confluentinc/cp-kafka:8.0.0@sha256:9cdc8119cb39c45f0efa6da8e2220058020c7433e3ba3a3ce11a8006a18cb336
+  environment:
+    CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    KAFKA_NODE_ID: 1
+    KAFKA_PROCESS_ROLES: broker,controller
+    KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://127.0.0.1:9093
+    KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+    KAFKA_CONTROLLER_QUORUM_VOTERS: 1@127.0.0.1:9093
+    KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+    KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+    KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: 1
+    KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    KAFKA_HEAP_OPTS: -Xms128m -Xmx256m
+    KAFKA_OPTS: -XX:ActiveProcessorCount=2
+  healthcheck:
+    test: ["CMD", "bash", "-ec", "exec 3<>/dev/tcp/127.0.0.1/29092; test -f /tmp/compat-broker-ready || { kafka-broker-api-versions --bootstrap-server kafka:29092 >/dev/null && touch /tmp/compat-broker-ready; }"]
+    interval: 2s
+    timeout: 15s
+    retries: 60
+  profiles: [kafka]
+
 services:
+  kafka-ref:
+    <<: *kafka
+    networks: {ref-net: {aliases: [kafka]}}
+  kafka-sut:
+    <<: *kafka
+    networks: {sut-net: {aliases: [kafka]}}
+  pubsub-ref:
+    <<: *google-pubsub
+    networks: {ref-net: {aliases: [pubsub]}}
+    ports: ["127.0.0.1:18085:8085"]
+  pubsub-sut:
+    <<: *google-pubsub
+    networks: {sut-net: {aliases: [pubsub]}}
+    ports: ["127.0.0.1:28085:8085"]
+  localstack-ref:
+    <<: *localstack
+    networks: {ref-net: {aliases: [localstack]}}
+  localstack-sut:
+    <<: *localstack
+    networks: {sut-net: {aliases: [localstack]}}
+  h2c-ref:
+    <<: *ref
+    profiles: [m]
+    depends_on: {}
+    environment: {GODEBUG: "http2xconnect=1"}
+    command: ["centrifugo", "-c", "/etc/compat/h2c.json"]
+    ports: ["127.0.0.1:18082:8000"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8001/health"]
+      interval: 1s
+      retries: 30
+  h2c-sut:
+    <<: *sut
+    profiles: [m]
+    depends_on: {}
+    environment: {GODEBUG: "http2xconnect=1"}
+    command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/h2c.json"]
+    ports: ["127.0.0.1:28082:8000"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8001/health"]
+      interval: 1s
+      retries: 30
+  wt-ref:
+    <<: *ref
+    profiles: [rsh]
+    depends_on: {}
+    command: ["centrifugo", "-c", "/etc/compat/webtransport.json"]
+    ports: ["127.0.0.1:18443:8000/udp"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8001/health"]
+      interval: 1s
+      retries: 30
+  wt-sut:
+    <<: *sut
+    profiles: [rsh]
+    depends_on: {}
+    command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/webtransport.json"]
+    ports: ["127.0.0.1:28443:8000/udp"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8001/health"]
+      interval: 1s
+      retries: 30
+  wt-sut-default:
+    <<: *sut
+    profiles: [rsh]
+    depends_on: {}
+    command: ["/opt/cedrazeka/cedrazeka", "-c", "/etc/compat/webtransport.json"]
+    ports: ["127.0.0.1:28444:8000/udp"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8001/health"]
+      interval: 1s
+      retries: 30
   ref:
     <<: *ref
-    ports: ["127.0.0.1:18000:8000", "127.0.0.1:18010:10000"]
+    ports: ["127.0.0.1:18000:8000", "127.0.0.1:18010:10000", "127.0.0.1:18011:11000"]
   ref-b:
     <<: *ref
     ports: ["127.0.0.1:18100:8000"]
     profiles: [r, rs, rc, rsh, n, p]
   sut:
     <<: *sut
-    ports: ["127.0.0.1:28000:8000", "127.0.0.1:28010:10000"]
+    ports: ["127.0.0.1:28000:8000", "127.0.0.1:28010:10000", "127.0.0.1:28011:11000"]
   sut-b:
     <<: *sut
     ports: ["127.0.0.1:28100:8000"]
@@ -179,6 +312,8 @@ services:
     <<: *sut
     profiles: [m, r, r-opt, r-lists, rs, rc, rsh, n, n-raw]
     command: ["/opt/cedrazeka/cedrazeka", "-c", "/etc/compat/config.json"]
+    # The branding probe must not claim messages intended for the compared node.
+    environment: {CEDRAZEKA_CONSUMERS: "[]"}
     ports: ["127.0.0.1:28001:8000"]
 
   redis-ref:

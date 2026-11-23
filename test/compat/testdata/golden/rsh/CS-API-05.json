@@ -1,0 +1,20 @@
+{
+  "events": [
+    {
+      "kind": "note",
+      "text": "Publish OK over verified TLS with ALPN h2"
+    },
+    {
+      "kind": "note",
+      "text": "reflection unary centrifugal.centrifugo.api.CentrifugoApi.Publish(.centrifugal.centrifugo.api.PublishRequest) returns .centrifugal.centrifugo.api.PublishResponse"
+    },
+    {
+      "kind": "note",
+      "text": "Publish transport metadata=false status=InvalidArgument error=107 bad request temporary=false"
+    },
+    {
+      "kind": "note",
+      "text": "Publish transport metadata=true status=InvalidArgument error=107 bad request temporary=false"
+    }
+  ]
+}

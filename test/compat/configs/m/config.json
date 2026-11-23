@@ -39,6 +39,15 @@
   "uni_http_stream": {
     "enabled": true
   },
+  "uni_grpc": {
+    "enabled": true
+  },
+  "sse": {
+    "enabled": true
+  },
+  "http_stream": {
+    "enabled": true
+  },
   "rpc": {
     "ping": {
       "enabled": true,
@@ -177,6 +186,18 @@
         "allow_subscribe_for_client": true,
         "history_size": 4,
         "history_ttl": "300s"
+      },
+      {
+        "name": "board",
+        "subscription_type": "map",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "recoverable",
+          "key_ttl": "300s",
+          "stream_size": 16,
+          "stream_ttl": "300s",
+          "min_page_size": 1
+        }
       }
     ]
   },

@@ -1,0 +1,36 @@
+{
+  "client": {
+    "token": {"hmac_secret_key": "compat-test-hmac-secret-not-a-real-secret"},
+    "allowed_origins": ["*"]
+  },
+  "http_api": {"key": "compat-test-api-key"},
+  "health": {"enabled": true},
+  "channel": {
+    "namespaces": [
+      {"name": "hist", "history_size": 16, "history_ttl": "300s", "allow_subscribe_for_client": true}
+    ]
+  },
+  "consumers": [
+    {
+      "name": "kafka_commands",
+      "type": "kafka",
+      "enabled": true,
+      "kafka": {
+        "brokers": ["kafka:29092"],
+        "topics": ["compat-commands"],
+        "consumer_group": "compat-commands-group"
+      }
+    },
+    {
+      "name": "kafka_publications",
+      "type": "kafka",
+      "enabled": true,
+      "kafka": {
+        "brokers": ["kafka:29092"],
+        "topics": ["compat-publications"],
+        "consumer_group": "compat-publications-group",
+        "publication_data_mode": {"enabled": true}
+      }
+    }
+  ]
+}

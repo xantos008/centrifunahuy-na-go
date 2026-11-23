@@ -1,6 +1,7 @@
 package scenarios
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -12,7 +13,7 @@ import (
 // CS-MAP-01 follows a recoverable map from its initial state through live
 // writes, a disconnected interval, two stream pages and a fresh state read.
 func TestCS_MAP_01(t *testing.T) {
-	h.Profiles(t, "r-lists")
+	h.Profiles(t, "m", "r-lists", "p-notify")
 	h.Run(t, "CS-MAP-01", func(s *h.Session) {
 		channel := s.Ch("board:map01")
 		token := h.HS256(h.Claims{Sub: "map-reader"})
@@ -58,9 +59,15 @@ func TestCS_MAP_01(t *testing.T) {
 		}
 		checkPub := func(pub *protocol.Publication, key, data string, offset uint64) {
 			s.T.Helper()
-			if pub.GetKey() != key || pub.Offset != offset || pub.Removed != (data == "") ||
-				(data != "" && string(pub.Data) != data) {
+			if pub.GetKey() != key || pub.Offset != offset || pub.Removed != (data == "") {
 				s.T.Fatalf("expected publication for %q at offset %d with data %q, got %v", key, offset, data, pub)
+			}
+			// PostgreSQL stores the payload as JSONB and reformats its whitespace.
+			if data != "" {
+				var compact bytes.Buffer
+				if err := json.Compact(&compact, pub.Data); err != nil || compact.String() != data {
+					s.T.Fatalf("expected publication data %q, got %s", data, pub.Data)
+				}
 			}
 		}
 		push := func(ws *h.WS, key, data string, offset uint64) {

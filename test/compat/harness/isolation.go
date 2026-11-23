@@ -1,11 +1,18 @@
 package harness
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"maps"
 	"slices"
 	"strings"
+	"time"
+
+	pb "cloud.google.com/go/pubsub/v2/apiv1/pubsubpb"
+	"github.com/xantos008/centrifunahuy-na-go/test/compat/internal/pubsubfixture"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // CheckIsolation is CS-ISO-01 (condition C2 of the phase-2 plan). For a
@@ -114,6 +121,12 @@ func inspect(svc string) (container, error) {
 // other side not to see it (Redis: -c follows cluster redirects).
 func probe(b string) error {
 	switch b {
+	case "pubsub":
+		return probePubSub()
+	case "localstack":
+		return probeSQS()
+	case "kafka":
+		return probeKafka()
 	case "nats":
 		return probeNATS()
 	case "postgres":
@@ -152,6 +165,88 @@ func probe(b string) error {
 		}
 		if _, err := cli(pair[0], "DEL", key); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// Create a queue on each side in turn and compare name lookups across emulators.
+func probeSQS() error {
+	query := func(side string, args ...string) (string, error) {
+		return compose(append([]string{"exec", "-T", "localstack-" + side, "awslocal", "sqs"}, args...)...)
+	}
+	for _, pair := range [][2]string{{"ref", "sut"}, {"sut", "ref"}} {
+		name := "compat-iso-" + pair[0] + "-" + runID
+		url, err := query(pair[0], "create-queue", "--queue-name", name, "--query", "QueueUrl", "--output", "text")
+		if err != nil {
+			return err
+		}
+		for i, side := range pair {
+			got, err := query(side, "list-queues", "--queue-name-prefix", name, "--query", "QueueUrls", "--output", "text")
+			if err != nil {
+				return err
+			}
+			if strings.Contains(got, "/"+name) != (i == 0) {
+				return fmt.Errorf("CS-ISO-01: queue %s created on %s, lookup on %s returned %q", name, pair[0], side, got)
+			}
+		}
+		if _, err := query(pair[0], "delete-queue", "--queue-url", strings.TrimSpace(url)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func probeKafka() error {
+	topics := func(side string, args ...string) (string, error) {
+		return compose(append([]string{"exec", "-T", "kafka-" + side, "kafka-topics", "--bootstrap-server", "kafka:29092"}, args...)...)
+	}
+	for _, pair := range [][2]string{{"ref", "sut"}, {"sut", "ref"}} {
+		name := "compat-iso-" + pair[0] + "-" + runID
+		if _, err := topics(pair[0], "--create", "--topic", name, "--partitions", "1", "--replication-factor", "1"); err != nil {
+			return err
+		}
+		for i, side := range pair {
+			list, err := topics(side, "--list")
+			if err != nil {
+				return err
+			}
+			if slices.Contains(strings.Fields(list), name) != (i == 0) {
+				return fmt.Errorf("CS-ISO-01: topic %s created on %s, lookup on %s returned %q", name, pair[0], side, list)
+			}
+		}
+		if _, err := topics(pair[0], "--delete", "--topic", name); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Create a topic via each emulator and require NotFound from the opposite side.
+func probePubSub() error {
+	clients := make(map[string]pb.PublisherClient, 2)
+	for _, side := range []string{"ref", "sut"} {
+		conn, err := pubsubfixture.Dial(side)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = conn.Close() }()
+		clients[side] = pb.NewPublisherClient(conn)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	for _, pair := range [][2]string{{"ref", "sut"}, {"sut", "ref"}} {
+		name := "projects/compat-project/topics/compat-iso-" + pair[0] + "-" + runID
+		if _, err := clients[pair[0]].CreateTopic(ctx, &pb.Topic{Name: name}); err != nil {
+			return fmt.Errorf("CS-ISO-01: create topic on %s: %w", pair[0], err)
+		}
+		_, lookupErr := clients[pair[1]].GetTopic(ctx, &pb.GetTopicRequest{Topic: name})
+		_, deleteErr := clients[pair[0]].DeleteTopic(ctx, &pb.DeleteTopicRequest{Topic: name})
+		if status.Code(lookupErr) != codes.NotFound {
+			return fmt.Errorf("CS-ISO-01: lookup of %s on %s returned %v, want NotFound", name, pair[1], lookupErr)
+		}
+		if deleteErr != nil {
+			return deleteErr
 		}
 	}
 	return nil

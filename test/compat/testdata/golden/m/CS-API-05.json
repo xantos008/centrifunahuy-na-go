@@ -1,0 +1,20 @@
+{
+  "events": [
+    {
+      "kind": "note",
+      "text": "Publish OK over plaintext"
+    },
+    {
+      "kind": "note",
+      "text": "reflection status Unimplemented"
+    },
+    {
+      "kind": "note",
+      "text": "Publish transport metadata=false status=OK error=107 bad request temporary=false"
+    },
+    {
+      "kind": "note",
+      "text": "Publish transport metadata=true status=InvalidArgument error=107 bad request temporary=false"
+    }
+  ]
+}

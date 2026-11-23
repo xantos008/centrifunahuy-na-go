@@ -132,6 +132,38 @@
   "prometheus": {
     "enabled": true
   },
+  "consumers": [
+    {
+      "name": "commands",
+      "enabled": true,
+      "type": "redis_stream",
+      "redis_stream": {
+        "address": ["redis://compat:compat-test-redis-password@redis:6379"],
+        "streams": ["compat_commands"],
+        "consumer_group": "compat_dispatch",
+        "method_value": "method",
+        "payload_value": "payload"
+      }
+    },
+    {
+      "name": "publications",
+      "enabled": true,
+      "type": "redis_stream",
+      "redis_stream": {
+        "address": ["redis://compat:compat-test-redis-password@redis:6379"],
+        "streams": ["compat_publications"],
+        "consumer_group": "compat_dispatch",
+        "visibility_timeout": "1s",
+        "payload_value": "payload",
+        "publication_data_mode": {
+          "enabled": true,
+          "channels_value": "channels",
+          "tags_value_prefix": "tag-",
+          "delta_value": "delta"
+        }
+      }
+    }
+  ],
   "engine": {
     "type": "redis",
     "redis": {
