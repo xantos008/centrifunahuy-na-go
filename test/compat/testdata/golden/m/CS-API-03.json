@@ -1,0 +1,973 @@
+{
+  "events": [
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Info",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "unauthenticated",
+      "code": 16
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Publish",
+      "body": {
+        "channel": "pub:a-RUN",
+        "data": {}
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Publish",
+      "body": {
+        "channel": ""
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Broadcast",
+      "body": {
+        "channels": [
+          "pub:a-RUN",
+          "pub:a-RUN2"
+        ],
+        "data": {}
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {
+          "responses": [
+            {
+              "result": {}
+            },
+            {
+              "result": {}
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Broadcast",
+      "body": {
+        "channels": []
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Subscribe",
+      "body": {
+        "channel": "news-RUN",
+        "user": "nobody"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Subscribe",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Unsubscribe",
+      "body": {
+        "channel": "news-RUN",
+        "user": "nobody"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Unsubscribe",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Disconnect",
+      "body": {
+        "user": "nobody"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Disconnect",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Refresh",
+      "body": {
+        "user": "nobody"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Refresh",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Presence",
+      "body": {
+        "channel": "news-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {
+          "presence": null
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Presence",
+      "body": {
+        "channel": "pub:a-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 108,
+          "message": "not available"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/PresenceStats",
+      "body": {
+        "channel": "news-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {
+          "num_clients": 0,
+          "num_users": 0
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/PresenceStats",
+      "body": {
+        "channel": "pub:a-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 108,
+          "message": "not available"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/History",
+      "body": {
+        "channel": "hist:a-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 0,
+          "publications": null
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/History",
+      "body": {
+        "channel": "news-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 108,
+          "message": "not available"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/HistoryRemove",
+      "body": {
+        "channel": "hist:a-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/HistoryRemove",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Channels",
+      "body": {
+        "pattern": "none-RUN*"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {
+          "channels": null
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Channels",
+      "body": {
+        "pattern": "["
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Batch",
+      "body": {
+        "commands": [
+          {
+            "publish": {
+              "channel": "pub:a-RUN",
+              "data": {}
+            }
+          },
+          {
+            "presence_stats": {
+              "channel": "news-RUN"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "replies": [
+          {
+            "publish": {}
+          },
+          {
+            "presence_stats": {
+              "num_clients": 0,
+              "num_users": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Batch",
+      "body": {
+        "commands": [
+          {}
+        ]
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "replies": [
+          {
+            "error": {
+              "code": 104,
+              "message": "not found"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/RPC",
+      "body": {
+        "method": "no_such_rpc"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 104,
+          "message": "not found"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/RPC",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapPublish",
+      "body": {
+        "channel": "pub:a-RUN",
+        "data": {},
+        "key": "k"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapPublish",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapRemove",
+      "body": {
+        "channel": "pub:a-RUN",
+        "key": "k"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapRemove",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapReadState",
+      "body": {
+        "channel": "pub:a-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapReadState",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapReadStream",
+      "body": {
+        "channel": "pub:a-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapReadStream",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapStats",
+      "body": {
+        "channel": "pub:a-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapStats",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapClear",
+      "body": {
+        "channel": "pub:a-RUN"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/MapClear",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/SharedPollPublish",
+      "body": {
+        "channel": "pub:a-RUN",
+        "data": {},
+        "key": "k"
+      }
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/SharedPollPublish",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Info",
+      "body": {}
+    },
+    {
+      "kind": "grpc_reply",
+      "body": {
+        "result": {
+          "nodes": [
+            {
+              "name": "<string>",
+              "num_channels": "<float64>",
+              "num_clients": "<float64>",
+              "num_subs": "<float64>",
+              "num_users": "<float64>",
+              "uid": "<uid:1>",
+              "version": "<version:1>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/Connections",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method Connections not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/connections",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/UpdateUserStatus",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method UpdateUserStatus not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/update_user_status",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/GetUserStatus",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method GetUserStatus not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/get_user_status",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/DeleteUserStatus",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method DeleteUserStatus not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/delete_user_status",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/BlockUser",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method BlockUser not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/block_user",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/UnblockUser",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method UnblockUser not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/unblock_user",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/RevokeToken",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method RevokeToken not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/revoke_token",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/InvalidateUserTokens",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method InvalidateUserTokens not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/invalidate_user_tokens",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/DeviceRegister",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method DeviceRegister not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/device_register",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/DeviceUpdate",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method DeviceUpdate not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/device_update",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/DeviceRemove",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method DeviceRemove not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/device_remove",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/DeviceList",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method DeviceList not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/device_list",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/DeviceTopicList",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method DeviceTopicList not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/device_topic_list",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/DeviceTopicUpdate",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method DeviceTopicUpdate not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/device_topic_update",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/UserTopicList",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method UserTopicList not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/user_topic_list",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/UserTopicUpdate",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method UserTopicUpdate not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/user_topic_update",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/SendPushNotification",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method SendPushNotification not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/send_push_notification",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/UpdatePushStatus",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method UpdatePushStatus not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/update_push_status",
+      "status": 404,
+      "body": "404 page not found"
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.api.CentrifugoApi/CancelPush",
+      "body": {}
+    },
+    {
+      "kind": "grpc_status",
+      "text": "method CancelPush not implemented",
+      "code": 12
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/cancel_push",
+      "status": 404,
+      "body": "404 page not found"
+    }
+  ]
+}

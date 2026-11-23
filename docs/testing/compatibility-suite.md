@@ -155,7 +155,7 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 ### CS-API: server API (OSS-API-01..04)
 - ★ CS-API-01: auth: `X-API-Key`, `?api_key=`, `Authorization: apikey`; bad key → 401 with empty body; non-POST → 405; bad JSON → 400; unknown path → 404. M
 - ★ CS-API-02: every HTTP route (21) with a minimal valid request and one invalid request (error code and message). M
-- CS-API-03: the same set over gRPC (`centrifugal.centrifugo.api.CentrifugoApi`); PRO-only rpc behavior on OSS (CORE OQ-04, recorded from ref). M
+- CS-API-03: the 21 OSS methods over the keyed gRPC API on M. The harness reuses CS-API-02 inputs and the generated service descriptor. An unauthenticated Info gets status 16. All 19 PRO-only methods return status 12 and their HTTP paths return 404 on the pinned reference. The loopback endpoints for ref and sut default to ports 18010 and 28010 and can be overridden with `COMPAT_REF_GRPC_ADDR` and `COMPAT_SUT_GRPC_ADDR`.
 - CS-API-04: `error_mode` variants; `disconnect`, `unsubscribe`, `refresh` by user across 2 nodes. M R
 
 ### CS-RPC: client RPC (phase 3)
