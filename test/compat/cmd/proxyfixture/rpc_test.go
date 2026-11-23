@@ -17,9 +17,38 @@ type rpcProbeContext struct {
 }
 
 func (c *rpcProbeContext) Done() <-chan struct{} {
-	// RPC evaluates Done after registering its timeout probe.
+	// The signal lets tests synchronize with entry into a blocking select.
 	c.once.Do(func() { close(c.waiting) })
 	return c.Context.Done()
+}
+
+func TestRPCObserverWaitsForHold(t *testing.T) {
+	var probes rpcTimeouts
+	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Second)
+	defer cancel()
+	observer := &rpcProbeContext{Context: ctx, waiting: make(chan struct{})}
+	started := make(chan bool, 1)
+	go func() { started <- probes.waitStarted(observer, "victim") }()
+	select {
+	case <-observer.waiting:
+	case <-ctx.Done():
+		t.Fatal("observer did not register")
+	}
+	other := probes.start("other")
+	defer close(other)
+	victim := probes.start("victim")
+	select {
+	case ok := <-started:
+		if !ok {
+			t.Fatal("observer missed pending victim")
+		}
+	case <-ctx.Done():
+		t.Fatal("observer did not wake")
+	}
+	close(victim)
+	if probes.waitStarted(ctx, "victim") {
+		t.Fatal("observer reported a finished callback as pending")
+	}
 }
 
 func TestRPCCancellationObservations(t *testing.T) {
