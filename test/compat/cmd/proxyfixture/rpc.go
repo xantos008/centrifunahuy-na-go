@@ -46,6 +46,12 @@ func (f fixture) RPC(ctx context.Context, r *p.RPCRequest) (*p.RPCResponse, erro
 	if r.User != "proxy-user" || r.Client == "" || r.Transport != "websocket" || r.Protocol != "json" || r.Encoding != "json" {
 		return &p.RPCResponse{Error: denied()}, nil
 	}
+	if route := callbackRoute(ctx); route != "" {
+		if route == "alternate_rpc" && r.Method == "named:echo" && string(r.Data) == `"rpc"` {
+			return &p.RPCResponse{Result: &p.RPCResult{Data: p.Raw(`"alternate_rpc"`)}}, nil
+		}
+		return &p.RPCResponse{Error: denied()}, nil
+	}
 	switch r.Method {
 	case "probe:echo":
 		return &p.RPCResponse{Result: &p.RPCResult{Data: r.Data}}, nil

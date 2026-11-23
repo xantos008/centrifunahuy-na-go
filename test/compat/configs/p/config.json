@@ -36,6 +36,35 @@
   "uni_http_stream": {
     "enabled": true
   },
+  "proxies": [
+    {
+      "name": "alternate_sub",
+      "endpoint": "http://proxyfixture:8080/named/subscribe",
+      "http": {
+        "static_headers": {
+          "x-compat-route": "alternate_sub"
+        }
+      }
+    },
+    {
+      "name": "alternate_pub",
+      "endpoint": "http://proxyfixture:8080/named/publish",
+      "http": {
+        "static_headers": {
+          "x-compat-route": "alternate_pub"
+        }
+      }
+    },
+    {
+      "name": "alternate_rpc",
+      "endpoint": "http://proxyfixture:8080/named/rpc",
+      "http": {
+        "static_headers": {
+          "x-compat-route": "alternate_rpc"
+        }
+      }
+    }
+  ],
   "rpc": {
     "proxy": {
       "endpoint": "http://proxyfixture:8080/rpc",
@@ -45,6 +74,11 @@
       {
         "name": "probe",
         "proxy_enabled": true
+      },
+      {
+        "name": "named",
+        "proxy_enabled": true,
+        "proxy_name": "alternate_rpc"
       }
     ]
   },
@@ -79,6 +113,14 @@
         "subscribe_proxy_enabled": true,
         "sub_refresh_proxy_enabled": true,
         "presence": true
+      },
+      {
+        "name": "named",
+        "subscribe_proxy_enabled": true,
+        "subscribe_proxy_name": "alternate_sub",
+        "publish_proxy_enabled": true,
+        "publish_proxy_name": "alternate_pub",
+        "allow_subscribe_for_client": true
       },
       {
         "name": "pcache",

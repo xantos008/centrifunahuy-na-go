@@ -50,9 +50,15 @@ func (fixture) Connect(_ context.Context, r *p.ConnectRequest) (*p.ConnectRespon
 	}}, nil
 }
 
-func (fixture) Subscribe(_ context.Context, r *p.SubscribeRequest) (*p.SubscribeResponse, error) {
+func (fixture) Subscribe(ctx context.Context, r *p.SubscribeRequest) (*p.SubscribeResponse, error) {
 	if r.User != "proxy-user" || r.Client == "" || r.Transport != "websocket" || r.Protocol != "json" ||
 		r.Encoding != "json" {
+		return &p.SubscribeResponse{Error: denied()}, nil
+	}
+	if route := callbackRoute(ctx); route != "" {
+		if route == "alternate_sub" && strings.HasPrefix(r.Channel, "named:") && string(r.Data) == `"subscribe"` {
+			return &p.SubscribeResponse{Result: &p.SubscribeResult{Data: p.Raw(`"alternate_sub"`)}}, nil
+		}
 		return &p.SubscribeResponse{Error: denied()}, nil
 	}
 	if strings.HasPrefix(r.Channel, "lease:renew-") || strings.HasPrefix(r.Channel, "lease:expire-") {
@@ -68,9 +74,18 @@ func (fixture) Subscribe(_ context.Context, r *p.SubscribeRequest) (*p.Subscribe
 	}}, nil
 }
 
-func (fixture) Publish(_ context.Context, r *p.PublishRequest) (*p.PublishResponse, error) {
+func (fixture) Publish(ctx context.Context, r *p.PublishRequest) (*p.PublishResponse, error) {
 	if r.User != "proxy-user" || r.Client == "" || r.Transport != "websocket" || r.Protocol != "json" ||
-		r.Encoding != "json" || !strings.HasPrefix(r.Channel, "proxywrite:") {
+		r.Encoding != "json" {
+		return &p.PublishResponse{Error: denied()}, nil
+	}
+	if route := callbackRoute(ctx); route != "" {
+		if route == "alternate_pub" && strings.HasPrefix(r.Channel, "named:") && string(r.Data) == `"publish"` {
+			return &p.PublishResponse{Result: &p.PublishResult{Data: p.Raw(`"alternate_pub"`)}}, nil
+		}
+		return &p.PublishResponse{Error: denied()}, nil
+	}
+	if !strings.HasPrefix(r.Channel, "proxywrite:") {
 		return &p.PublishResponse{Error: denied()}, nil
 	}
 	var action string
@@ -117,6 +132,9 @@ func main() {
 	mux.HandleFunc("POST /sub_refresh", jsonHandler(f.SubRefresh))
 	mux.HandleFunc("POST /publish", jsonHandler(f.Publish))
 	mux.HandleFunc("POST /rpc", jsonHandler(f.RPC))
+	mux.HandleFunc("POST /named/subscribe", namedHTTP("alternate_sub", jsonHandler(f.Subscribe)))
+	mux.HandleFunc("POST /named/publish", namedHTTP("alternate_pub", jsonHandler(f.Publish)))
+	mux.HandleFunc("POST /named/rpc", namedHTTP("alternate_rpc", jsonHandler(f.RPC)))
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusOK) })
 	httpServer := http.Server{Addr: ":8080", Handler: mux, ReadHeaderTimeout: 3 * time.Second}
 	log.Fatal(httpServer.ListenAndServe())

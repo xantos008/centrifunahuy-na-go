@@ -36,6 +36,35 @@
   "uni_http_stream": {
     "enabled": true
   },
+  "proxies": [
+    {
+      "name": "alternate_sub",
+      "endpoint": "grpc://proxyfixture:8081",
+      "grpc": {
+        "static_metadata": {
+          "x-compat-route": "alternate_sub"
+        }
+      }
+    },
+    {
+      "name": "alternate_pub",
+      "endpoint": "grpc://proxyfixture:8081",
+      "grpc": {
+        "static_metadata": {
+          "x-compat-route": "alternate_pub"
+        }
+      }
+    },
+    {
+      "name": "alternate_rpc",
+      "endpoint": "grpc://proxyfixture:8081",
+      "grpc": {
+        "static_metadata": {
+          "x-compat-route": "alternate_rpc"
+        }
+      }
+    }
+  ],
   "rpc": {
     "proxy": {
       "endpoint": "grpc://proxyfixture:8081",
@@ -45,6 +74,11 @@
       {
         "name": "probe",
         "proxy_enabled": true
+      },
+      {
+        "name": "named",
+        "proxy_enabled": true,
+        "proxy_name": "alternate_rpc"
       }
     ]
   },
@@ -59,6 +93,9 @@
       "sub_refresh": {
         "endpoint": "grpc://proxyfixture:8081",
         "include_connection_meta": true
+      },
+      "subscribe_stream": {
+        "endpoint": "grpc://proxyfixture:8081"
       }
     },
     "without_namespace": {
@@ -79,6 +116,23 @@
         "subscribe_proxy_enabled": true,
         "sub_refresh_proxy_enabled": true,
         "presence": true
+      },
+      {
+        "name": "named",
+        "subscribe_proxy_enabled": true,
+        "subscribe_proxy_name": "alternate_sub",
+        "publish_proxy_enabled": true,
+        "publish_proxy_name": "alternate_pub",
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "streamuni",
+        "subscribe_stream_proxy_enabled": true
+      },
+      {
+        "name": "streambi",
+        "subscribe_stream_proxy_enabled": true,
+        "subscribe_stream_proxy_bidirectional": true
       },
       {
         "name": "pcache",
