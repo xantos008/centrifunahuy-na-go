@@ -369,4 +369,31 @@ The first current compatibility run passed memory, all Redis profiles and both N
 
 A second all-profile attempt exposed a missing cross-node join in NATS golden mode. The NATS broker queues subscriptions asynchronously. CS-ENG-01 now waits for both of the receiving node’s subjects to appear in the side’s NATS subscription monitor before the other node publishes. The rerun with `COMPAT_PROFILES="n n-raw p p-notify"` passed in diff and golden mode on all four profiles against the existing transcripts.
 
-The final local `make compat-all` exited 0 after both harness fixes. All 11 profiles passed in diff and golden mode in that run. The three consecutive runs recorded in steps 2.6–2.8 apply to the earlier harness. Two further consecutive full runs on the current tree, the pushed CI run, its job durations, and the final matrix status update are pending.
+One local `make compat-all` exited 0 after both harness fixes. All 11 profiles passed in diff and golden mode in that run. The three consecutive runs recorded in steps 2.6–2.8 apply to the earlier harness. On 2026-11-24 an overlapping local memory test restarted the standard reference container while a repeat was exercising PostgreSQL. That interrupted attempt was discarded. After isolating the other stack, three consecutive complete `make compat-all` runs from an archive of `04b4414` each exited 0. Each covered all 11 profiles in both modes (66 profile/mode results across the three runs). The feature branch adds a Compose endpoint check before lifecycle actions and backend isolation probes. A separate complete run on the branch code at `3c57d44` passed all 11 profiles in diff and golden, including the additional positioning, cache and presence scenarios on their applicable profiles.
+
+## GitHub Actions results for `04b4414`
+
+The 2026-11-23 push to `phase-2/engines` passed all 14 jobs in 9m 27s. Each compatibility profile passed `make compat` against Centrifugo OSS v6.10.3 and `make compat-golden` against the recorded reference. The separate `snapshot` workflow runs on pull requests labeled `snapshot`. [GitHub Actions run](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597).
+
+| Job | Duration | Result |
+|---|---:|---|
+| Go 1.27.4 tests | 4m 31s | `make test` and `make test-integration` passed with the race detector. [Job](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845695387) |
+| Lint, vulnerabilities, licenses | 4m 05s | Formatting, server and compatibility module vet, lint, govulncheck and license checks passed. [Job](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696187) |
+| `m` | 2m 16s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696231) |
+| `r` | 2m 55s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696924) |
+| `r-opt` | 1m 58s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696162) |
+| `r-lists` | 2m 03s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845695885) |
+| `rs` | 3m 10s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696092) |
+| `rc` | 2m 33s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845695863) |
+| `rsh` | 1m 43s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696040) |
+| `n` | 1m 48s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696035) |
+| `n-raw` | 2m 03s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696218) |
+| `p` | 4m 24s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696100) |
+| `p-notify` | 1m 51s | [Diff and golden passed](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696230) |
+| Centrifuge library integration | 9m 19s | `make library-test` took 9m 07s and matched the recorded inventory of 1,526 passes and five skips. [Job](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696075) |
+
+## Remaining acceptance evidence
+
+On `m`, `r` and `p`, CS-REC-06 covers automatic cache recovery for token-driven server-side subscriptions over WebSocket and unidirectional HTTP-stream. CS-PRES-03 checks error 103 from `presence` and `presence_stats` before subscription and checks both connection and subscription JWT metadata in the presence response. CS-REC-07 confirms close 3010 after a positioned server-side subscription loses its stream epoch on all three profiles. Of the 37 matrix rows in criterion 4, 32 are verified. The five open rows are OSS-HIST-05/11, OSS-PRES-04/06 and OSS-SUB-08. They still need the connect-proxy cache recovery override, a server scenario that reaches the configured recovery queue limit, connection JWT `b64info`, proxy-supplied presence metadata, and metadata on join/leave pushes. The `allow_presence_for_client` and `allow_presence_for_anonymous` flags also need dedicated scenarios. The pinned library suite covers the queue limit and overflow. The open-question register contains the reference observations for criterion 5. [Feature matrix](../compatibility/feature-matrix.md#phase-2-compatibility-evidence-2026-11-23) · [Open questions](../research/open-questions.md).
+
+Start the remaining proxy work with step 3.2. Use the same local callback fixture to return a server-side subscription with the cache override and distinct connection and channel metadata. Compare the latest cached publication, presence and join/leave pushes against v6.10.3. The permission flags and the recovery queue limit can be verified independently.

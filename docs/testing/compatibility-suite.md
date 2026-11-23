@@ -147,15 +147,18 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 - CS-REC-03: epoch change (history reset, backend restart for memory) → `recovered=false`. M R
 - CS-REC-04: `recovery_max_publication_limit`; cache recovery mode (latest publication). M R
 - CS-REC-05: concurrent publish during subscribe-with-recover (1000 iterations, loss/duplicate check). R P
+- CS-REC-06: a connection JWT creates a server-side subscription in a namespace with automatic cache recovery. The WebSocket and unidirectional HTTP-stream connect replies each contain only the latest publication. The clients send neither a recovery request nor a previous position. The `p` profile waits for outbox delivery before connecting. M R P
+- CS-REC-07 waits for the stream metadata TTL to elapse while a positioned server-side subscriber answers pings. The next publication starts a fresh epoch at offset 1 and the WebSocket closes with code 3010. M R P
 
 ### CS-PRES: presence (OSS-PRES-*)
 - ★ CS-PRES-01: `presence` and `presence_stats` via client and API; join/leave pushes. M R
 - CS-PRES-02: presence TTL expiry after a node crash (`docker kill` of B): B's client leaves A's `presence_stats` within `presence_ttl` + `presence_update_interval` + 3 s. Bounded poll, last answer recorded. R (`r`)
+- CS-PRES-03: `presence` and `presence_stats` return error 103 before the client subscribes to a channel with subscriber-only presence. After subscribing, the presence reply carries `conn_info` from the connection JWT and `chan_info` from the subscription JWT. The `p` profile uses per-node memory presence. M R P
 
 ### CS-API: server API (OSS-API-01..04)
 - ★ CS-API-01: auth: `X-API-Key`, `?api_key=`, `Authorization: apikey`; bad key → 401 with empty body; non-POST → 405; bad JSON → 400; unknown path → 404. M
 - ★ CS-API-02: every HTTP route (21) with a minimal valid request and one invalid request (error code and message). M
-- CS-API-03: the same set over gRPC (`centrifugal.centrifugo.api.CentrifugoApi`); PRO-only rpc behavior on OSS (CORE OQ-04, recorded from ref). M
+- CS-API-03: the 21 OSS methods over the keyed gRPC API on M. The harness reuses CS-API-02 inputs and the generated service descriptor. An unauthenticated Info gets status 16. All 19 PRO-only methods return status 12 and their HTTP paths return 404 on the pinned reference. The loopback endpoints for ref and sut default to ports 18010 and 28010 and can be overridden with `COMPAT_REF_GRPC_ADDR` and `COMPAT_SUT_GRPC_ADDR`.
 - CS-API-04: `error_mode` variants; `disconnect`, `unsubscribe`, `refresh` by user across 2 nodes. M R
 
 ### CS-RPC: client RPC (phase 3)
@@ -165,7 +168,8 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 ### CS-TRANS: other transports (phase 3)
 
 - CS-TRANS-01: unidirectional SSE and HTTP-stream POST connect, initial subscription, framing and API publication delivery. Verified in diff and golden mode on `m`.
-- Remaining transport coverage includes emulated SSE and HTTP-stream, unidirectional WebSocket and gRPC, and the other transports in the phase-3 plan.
+- CS-TRANS-02 exercises unidirectional WebSocket via a first-frame connect request and via `cf_connect`. Both clients receive an API publication, a disconnect push and a WebSocket close frame with code 4001 and the configured reason. M
+- Remaining transport coverage includes emulated SSE and HTTP-stream, unidirectional gRPC, and the other transports in the phase-3 plan.
 
 ### CS-ENG: multi-node (phase 2)
 Two sut nodes against two ref nodes. Each scenario first waits until `info` on both nodes lists two nodes. `Session.OnB` points calls and new connections at node B.
@@ -197,3 +201,5 @@ Two sut nodes against two ref nodes. Each scenario first waits until `info` on b
 
 ## 6. Exit criteria per implementation phase
 Each phase in the [feature matrix](../compatibility/feature-matrix.md#implementation-order) names the CS-* groups that must be green on all applicable engine profiles. A matrix row moves to `verified` only when its scenarios are green in `make compat` (diff mode).
+
+When running an additional local Compose stack, set `COMPAT_COMPOSE_FILE` and `COMPOSE_PROJECT_NAME` to the file and project used for startup. Point the HTTP and gRPC overrides at that stack's published ports. Before a lifecycle action such as restart, the harness checks the side's node A HTTP address against the published Compose binding. This check also applies when a scenario controls a backend or node B.

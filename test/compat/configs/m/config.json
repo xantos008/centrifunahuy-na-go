@@ -17,10 +17,17 @@
   "http_api": {
     "key": "compat-test-api-key"
   },
+  "grpc_api": {
+    "enabled": true,
+    "key": "compat-test-api-key"
+  },
   "health": {
     "enabled": true
   },
   "uni_sse": {
+    "enabled": true
+  },
+  "uni_websocket": {
     "enabled": true
   },
   "uni_http_stream": {

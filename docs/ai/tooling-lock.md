@@ -103,3 +103,5 @@ The instructions live in `.claude/skills/`. Each corresponding directory in `.ag
 | `admin-contracts` | Admin API, role checks, audit and interface flows |
 
 The architecture, operations and defensive review workflows adapt practices inspected in the local SinoMotors repositories. The instructions are specific to Cedrazeka’s Go runtime, test profiles and compatibility contract.
+
+On 2026-11-24, all ten project skills passed `quick_validate.py` through their Codex paths. Each symlink resolved to its corresponding Claude skill file. The validation used PyYAML 6.0.4 from a temporary directory. The `isolated-ci` instructions now cover delegated parallel Compose runs, including endpoint selection and per-run logs.

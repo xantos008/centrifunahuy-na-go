@@ -12,4 +12,6 @@ The five top-level skips are `TestFuzzLifecycleEnumerate`, `TestFuzzLifecycleRep
 
 The first attempt at four shards produced a killed test process. The complete baseline used twelve root-package processes, `-parallel 2`, and the same race detector and integration tag. The baseline file was absent at the comparison step on this first complete run. After recording the inventory, the same `diff` command completed with exit code 0.
 
-Run `make library-test` to reproduce and compare the exact inventory. It writes raw JSON, version information and the normalized inventory under `test/library/out/`. A second complete local run exited successfully and matched all 1,531 results. The first CI run and its duration are pending. [Server baseline](baseline-upstream-tests.md).
+Run `make library-test` to reproduce and compare the exact inventory. It writes raw JSON, version information and the normalized inventory under `test/library/out/`. A second complete local run exited successfully and matched all 1,531 results. [Server baseline](baseline-upstream-tests.md).
+
+The first GitHub Actions run for `04b4414` on 2026-11-23 matched the baseline exactly, with 1,526 passes, five skips and zero failures. The job took 9m 19s, including 9m 07s for `make library-test` and its comparison. [Library CI job](https://github.com/xantos008/centrifunahuy-na-go/actions/runs/45218406597/job/137845696075).

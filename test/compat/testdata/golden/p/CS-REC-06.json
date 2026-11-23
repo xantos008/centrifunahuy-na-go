@@ -1,0 +1,110 @@
+{
+  "events": [
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 1
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 2
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "await outbox delivery"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "subs": {
+            "acache:connect-RUN": {
+              "epoch": "<epoch:1>",
+              "positioned": true,
+              "publications": [
+                {
+                  "data": {
+                    "n": 2
+                  },
+                  "epoch": "<epoch:1>",
+                  "offset": 2
+                }
+              ],
+              "recoverable": true,
+              "recovered": true,
+              "was_recovering": true
+            }
+          },
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "stream_connect",
+      "text": "POST /connection/uni_http_stream",
+      "body": {
+        "token": "<token:1>"
+      }
+    },
+    {
+      "kind": "stream_status",
+      "text": "text/plain; charset=utf-8",
+      "status": 200
+    },
+    {
+      "kind": "stream_push",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "session": "<session:1>",
+          "subs": {
+            "acache:connect-RUN": {
+              "epoch": "<epoch:1>",
+              "positioned": true,
+              "publications": [
+                {
+                  "data": {
+                    "n": 2
+                  },
+                  "epoch": "<epoch:1>",
+                  "offset": 2
+                }
+              ],
+              "recoverable": true,
+              "recovered": true,
+              "was_recovering": true
+            }
+          },
+          "version": "<version:1>"
+        }
+      }
+    }
+  ]
+}

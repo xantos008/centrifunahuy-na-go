@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
+	"net/url"
 	"os/exec"
 	"path/filepath"
 	"slices"
@@ -220,12 +222,44 @@ func side(target string) string {
 // The action is recorded as a note.
 func (s *Session) Compose(action, base string, args ...string) string {
 	s.T.Helper()
+	node := Ref()
+	if side(s.Target.Name) == "sut" {
+		node = SUT()
+	}
+	if err := checkComposeEndpoint(node, action); err != nil {
+		s.T.Fatal(err)
+	}
 	out, err := compose(append(append([]string{action}, args...), serviceFor(base, s.Target.Name))...)
 	if err != nil {
 		s.T.Fatalf("%s: %v", s.Target.Name, err)
 	}
 	s.Note(action + " " + base)
 	return out
+}
+
+func checkComposeEndpoint(node Target, action string) error {
+	binding, err := compose("port", node.Name, "8000")
+	if err != nil {
+		return fmt.Errorf("checking Compose endpoint for %s: %w", node.Name, err)
+	}
+	if !matchesEndpoint(node.BaseURL, strings.TrimSpace(binding)) {
+		return fmt.Errorf("Compose publishes %s on %s but the test uses %s; check COMPAT_COMPOSE_FILE and COMPOSE_PROJECT_NAME before %s", node.Name, strings.TrimSpace(binding), node.BaseURL, action)
+	}
+	return nil
+}
+
+// Compose profiles publish to loopback. Compare both host and port so tests
+// using a different stack cannot stop or restart the local project's services.
+func matchesEndpoint(baseURL, binding string) bool {
+	u, err := url.Parse(baseURL)
+	if err != nil || u.Port() == "" {
+		return false
+	}
+	host, port, err := net.SplitHostPort(binding)
+	if err != nil || port != u.Port() {
+		return false
+	}
+	return u.Hostname() == host || (u.Hostname() == "localhost" && net.ParseIP(host).IsLoopback())
 }
 
 // Exec runs a command inside this side's service, e.g.

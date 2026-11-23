@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -100,6 +101,7 @@ type WS struct {
 	codec codec
 	buf   []json.RawMessage // received but not yet consumed messages
 	last  json.RawMessage
+	uni   bool // unidirectional connections do not send application pongs
 }
 
 // Dial opens a JSON-protocol WebSocket connection.
@@ -110,7 +112,31 @@ func (s *Session) DialProtobuf() *WS { return s.dial(protobufCodec{}) }
 
 func (s *Session) dial(c codec) *WS {
 	s.T.Helper()
-	conn, resp, err := websocket.DefaultDialer.Dial(s.Target.WSURL()+c.query(), nil)
+	return s.dialURL(s.Target.WSURL()+c.query(), c)
+}
+
+// DialUniWS supplies the connect request in cf_connect or the first text frame.
+func (s *Session) DialUniWS(request string, inQuery bool) *WS {
+	s.T.Helper()
+	const path = "/connection/uni_websocket"
+	endpoint := "ws" + strings.TrimPrefix(s.Target.BaseURL, "http") + path
+	if inQuery {
+		s.tr.add(Event{Kind: "ws_connect", Text: path + "?cf_connect", Body: json.RawMessage(request)})
+		endpoint += "?cf_connect=" + url.QueryEscape(request)
+	} else {
+		s.tr.add(Event{Kind: "ws_connect", Text: path})
+	}
+	ws := s.dialURL(endpoint, jsonCodec{})
+	ws.uni = true
+	if !inQuery {
+		ws.Send(request)
+	}
+	return ws
+}
+
+func (s *Session) dialURL(endpoint string, c codec) *WS {
+	s.T.Helper()
+	conn, resp, err := websocket.DefaultDialer.Dial(endpoint, nil)
 	if resp != nil && resp.Body != nil {
 		_ = resp.Body.Close()
 	}
@@ -192,9 +218,11 @@ func (c *WS) readBefore(answerPings bool, deadline time.Time) error {
 		added := false
 		for _, m := range msgs {
 			if answerPings && string(m) == "{}" {
-				t, b := c.codec.pong()
-				if err := c.conn.WriteMessage(t, b); err != nil {
-					return fmt.Errorf("pong: %w", err)
+				if !c.uni {
+					t, b := c.codec.pong()
+					if err := c.conn.WriteMessage(t, b); err != nil {
+						return fmt.Errorf("pong: %w", err)
+					}
 				}
 				continue
 			}
@@ -283,26 +311,26 @@ func (c *WS) Next() {
 	c.Recv(1)
 }
 
-// ExpectClose waits for the server to close the connection, skipping messages.
-func (c *WS) ExpectClose() {
+// ExpectClose waits for the server's close frame, records it and returns its code.
+func (c *WS) ExpectClose() int {
 	c.s.T.Helper()
 	for {
 		if err := c.read(true); err != nil {
-			c.recordClose(err)
-			return
+			return c.recordClose(err)
 		}
 		c.buf = nil
 	}
 }
 
-func (c *WS) recordClose(err error) {
+func (c *WS) recordClose(err error) int {
 	c.s.T.Helper()
 	var ce *websocket.CloseError
 	if errors.As(err, &ce) {
 		c.s.tr.add(Event{Kind: "ws_close", Code: ce.Code, Text: ce.Text})
-		return
+		return ce.Code
 	}
 	c.s.T.Fatalf("%s: expected a message or a close frame, got %v", c.s.Target.Name, err)
+	return 0
 }
 
 // RecvPing waits for a server ping and records it. With answer=false no pong

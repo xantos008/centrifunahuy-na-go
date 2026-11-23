@@ -1,0 +1,131 @@
+{
+  "events": [
+    {
+      "kind": "ws_connect",
+      "text": "/connection/uni_websocket"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "token": "<token:1>"
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "session": "<session:1>",
+          "subs": {
+            "pub:uni-ws-frame-RUN": {}
+          },
+          "version": "<version:1>"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "channel": "pub:uni-ws-frame-RUN",
+        "pub": {
+          "data": {
+            "n": 1
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/disconnect",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "disconnect": {
+          "code": 4001,
+          "reason": "test complete"
+        }
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "test complete",
+      "code": 4001
+    },
+    {
+      "kind": "ws_connect",
+      "text": "/connection/uni_websocket?cf_connect",
+      "body": {
+        "token": "<token:2>"
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "session": "<session:2>",
+          "subs": {
+            "pub:uni-ws-query-RUN": {}
+          },
+          "version": "<version:1>"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "channel": "pub:uni-ws-query-RUN",
+        "pub": {
+          "data": {
+            "n": 1
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/disconnect",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "disconnect": {
+          "code": 4001,
+          "reason": "test complete"
+        }
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "test complete",
+      "code": 4001
+    }
+  ]
+}

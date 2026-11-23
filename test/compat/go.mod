@@ -6,6 +6,9 @@ require (
 	github.com/centrifugal/protocol v0.23.1
 	github.com/gorilla/websocket v1.5.3
 	github.com/nats-io/nats.go v1.55.0
+	github.com/xantos008/centrifunahuy-na-go v0.0.0
+	google.golang.org/grpc v1.85.0
+	google.golang.org/protobuf v1.36.12
 )
 
 require (
@@ -13,6 +16,10 @@ require (
 	github.com/nats-io/nkeys v0.4.17 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	golang.org/x/crypto v0.59.0 // indirect
+	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
-	google.golang.org/protobuf v1.36.12 // indirect
+	golang.org/x/text v0.44.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261104224025-d1e00e9f33ab // indirect
 )
+
+replace github.com/xantos008/centrifunahuy-na-go => ../..
