@@ -7,9 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	. "github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
+	"github.com/xantos008/centrifunahuy-na-go/internal/configtypes"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/stretchr/testify/require"
@@ -39,57 +41,85 @@ func TestToAPIErr(t *testing.T) {
 	}
 }
 
-// failingBroker fails every publication with err. It embeds the Broker
-// interface, not a broker, so that it has no methods but Broker's: a broker
-// which publishes in batches would take publications past Publish.
+// Embedding the Broker interface routes each publication through Publish,
+// including publications made by a broadcast.
 type failingBroker struct {
 	centrifuge.Broker
 	err error
 }
 
-func (b *failingBroker) Publish(string, []byte, centrifuge.PublishOptions) (centrifuge.PublishResult, error) {
-	return centrifuge.PublishResult{}, b.err
+func (b *failingBroker) Publish(ch string, data []byte, opts centrifuge.PublishOptions) (centrifuge.PublishResult, error) {
+	if ch == "failed" && b.err != nil {
+		return centrifuge.PublishResult{}, b.err
+	}
+	return b.Broker.Publish(ch, data, opts)
 }
 
-// A publication the Node refuses is reported as such, not as a temporary
-// internal error, and consumers skip it instead of retrying it.
 func TestNodeErrorsReachAPI(t *testing.T) {
 	for _, tc := range []struct {
-		name      string
-		err       error
-		want      *Error
-		consumeOK bool
+		name  string
+		err   error
+		want  *Error
+		retry bool
 	}{
-		{"refused", fmt.Errorf("%w: channel name is not supported", centrifuge.ErrorBadRequest), ErrorBadRequest, true},
-		{"broker failure", errors.New("connection refused"), ErrorInternal, false},
+		{"refused", fmt.Errorf("%w: channel name is not supported", centrifuge.ErrorBadRequest), ErrorBadRequest, false},
+		{"broker failure", errors.New("connection refused"), ErrorInternal, true},
+		{"rate limited", centrifuge.ErrorTooManyRequests, ErrorTooManyRequests, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			ctx := t.Context()
 			node, err := centrifuge.New(centrifuge.Config{})
 			require.NoError(t, err)
 			memory, err := centrifuge.NewMemoryBroker(node, centrifuge.MemoryBrokerConfig{})
 			require.NoError(t, err)
-			node.SetBroker(&failingBroker{Broker: memory, err: tc.err})
+			broker := &failingBroker{Broker: memory, err: tc.err}
+			node.SetBroker(broker)
 			require.NoError(t, node.Run())
 			defer func() { _ = node.Shutdown(context.Background()) }()
 
-			cfgContainer, err := config.NewContainer(config.DefaultConfig())
+			cfg := config.DefaultConfig()
+			cfg.Channel.WithoutNamespace.HistorySize = 4
+			cfg.Channel.WithoutNamespace.HistoryTTL = configtypes.Duration(time.Minute)
+			cfgContainer, err := config.NewContainer(cfg)
 			require.NoError(t, err)
 			executor := NewExecutor(node, cfgContainer, &testSurveyCaller{}, ExecutorConfig{Protocol: "test"})
 
-			resp := executor.Publish(context.Background(), &PublishRequest{Channel: "test", Data: []byte("{}")})
+			resp := executor.Publish(ctx, &PublishRequest{Channel: "failed", Data: []byte("{}")})
 			require.Equal(t, tc.want, resp.Error)
-
-			bResp := executor.Broadcast(context.Background(), &BroadcastRequest{Channels: []string{"test"}, Data: []byte("{}")})
-			require.Nil(t, bResp.Error)
-			require.Equal(t, tc.want, bResp.Result.Responses[0].Error)
+			result := executor.Broadcast(ctx, &BroadcastRequest{Channels: []string{"api-ok", "failed"}, Data: []byte("{}")})
+			require.Nil(t, result.Error)
+			require.Len(t, result.GetResult().GetResponses(), 2)
+			require.Nil(t, result.Result.Responses[0].Error)
+			require.EqualValues(t, 1, result.Result.Responses[0].GetResult().GetOffset())
+			require.Equal(t, tc.want, result.Result.Responses[1].Error)
 
 			dispatcher := NewDispatcher(NewConsumingHandler(node, executor, ConsumingHandlerConfig{}))
-			err = dispatcher.DispatchCommand(context.Background(), "publish", []byte(`{"channel":"test","data":{}}`))
-			if tc.consumeOK {
-				require.NoError(t, err, "a refused publication must be skipped, not retried")
+			publishErr := dispatcher.DispatchCommand(ctx, "publish", []byte(`{"channel":"failed","data":{}}`))
+			payload := []byte(`{"channels":["delivered","failed"],"data":{"n":1}}`)
+			broadcastErr := dispatcher.DispatchCommand(ctx, "broadcast", payload)
+			wantDeliveries := 1
+			if tc.retry {
+				require.ErrorIs(t, publishErr, tc.want)
+				require.ErrorIs(t, broadcastErr, tc.want)
+
+				// A consumer redelivers the original message once the broker recovers.
+				broker.err = nil
+				require.NoError(t, dispatcher.DispatchCommand(ctx, "broadcast", payload))
+				wantDeliveries = 2
 			} else {
-				require.Error(t, err, "a temporary error must be retried")
+				require.NoError(t, publishErr)
+				require.NoError(t, broadcastErr)
 			}
+
+			history, err := node.History("delivered", centrifuge.WithLimit(-1))
+			require.NoError(t, err)
+			require.Len(t, history.Publications, wantDeliveries)
+			for _, pub := range history.Publications {
+				require.JSONEq(t, `{"n":1}`, string(pub.Data))
+			}
+			recovered, err := node.History("failed", centrifuge.WithLimit(-1))
+			require.NoError(t, err)
+			require.Len(t, recovered.Publications, wantDeliveries-1)
 		})
 	}
 }

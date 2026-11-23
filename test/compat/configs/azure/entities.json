@@ -4,7 +4,8 @@
       "Name": "sbemulatorns",
       "Queues": [
         {"Name": "compat-commands", "Properties": {"LockDuration": "PT30S", "MaxDeliveryCount": 5}},
-        {"Name": "compat-isolation", "Properties": {"LockDuration": "PT30S", "MaxDeliveryCount": 5}}
+        {"Name": "compat-isolation", "Properties": {"LockDuration": "PT30S", "MaxDeliveryCount": 5}},
+        {"Name": "compat-drain", "Properties": {"LockDuration": "PT30S", "MaxDeliveryCount": 5}}
       ],
       "Topics": []
     }],
