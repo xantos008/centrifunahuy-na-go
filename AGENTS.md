@@ -4,4 +4,12 @@ Use [CLAUDE.md](CLAUDE.md) for repository workflow and [SPEC.md](SPEC.md) for pr
 
 Project skills are maintained in `.claude/skills` and exposed to Codex through `.agents/skills`. Read the relevant skill before changing a wire contract, test infrastructure, or product subsystem.
 
-For this handoff, prepare proposed commit messages for reviewed changes. The user handles commits and pushes.
+## Subagents and delegation
+
+GPT-6.2 Astra with high reasoning leads the work. It handles complex analysis, planning, investigation of subtle bugs, and authors new or complex code. It owns integration and final review.
+
+Delegate routine implementation following an established pattern, test execution, and small edits to GPT-6.2 Sol with medium reasoning. Give each subagent a bounded assignment, the relevant files, and acceptance checks. Keep simultaneous edits and test stacks isolated. Have the subagent return changed paths, commands, results, and unexpected observations. Bring unexplained failures back to Astra for diagnosis.
+
+## Local Git and handoff
+
+Local branches, commits and merges are authorized. The user handles pushes and remote pull requests. Give each proposed or completed commit a descriptive subject, a body explaining behavior and verification, and the exact paths included. Provide a PR title, target and source branches, summary and test results when a change is ready to publish.
