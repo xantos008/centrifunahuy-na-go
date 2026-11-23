@@ -36,7 +36,7 @@ local-deps:
 
 # Dev tools are project-local, pinned in tools/go.mod and built into .bin/
 # (docs/ai/tooling-lock.md). Nothing is installed globally.
-.PHONY: tools lint vuln licenses licenses-check compat-build compat-up compat-down compat compat-golden compat-record compat-all
+.PHONY: library-test tools lint vuln licenses licenses-check compat-build compat-up compat-down compat compat-golden compat-record compat-all
 
 # Compatibility suite (ADR-0028): ref = centrifugo v6.10.3 image, sut = our build.
 # The sut binary is cross-compiled on the host and mounted into alpine, so
@@ -94,6 +94,25 @@ LINT_BASE ?= 66d1418
 lint: tools
 	.bin/golangci-lint run --timeout 10m0s --new-from-rev=$(LINT_BASE) ./...
 	cd test/compat && ../../.bin/golangci-lint run --timeout 10m0s ./...
+
+# The centrifuge library's own integration tests at the pinned version and
+# commit (condition C4; docs/testing/baseline-library-tests.md). Results go to
+# test/library/out/ and are never mixed with the server's test results.
+LIBRARY_VERSION := v0.40.2-0.20261031074606-ae446d43faf0
+LIBRARY_COMMIT := ae446d43faf0e6f34619e42c11935340257669a7
+LIBRARY_COMPOSE = LIBRARY_VERSION=$(LIBRARY_VERSION) LIBRARY_COMMIT=$(LIBRARY_COMMIT) HOSTMOD=$$(go env GOMODCACHE) docker compose -f test/library/compose.isolated.yml
+library-test:
+	@test "$$(go list -m -f '{{.Version}}' github.com/centrifugal/centrifuge)" = "$(LIBRARY_VERSION)" || { echo "go.mod centrifuge != LIBRARY_VERSION: update the pin and re-record the baseline"; exit 1; }
+	go mod download && go mod verify
+	# The library's own test-only dependencies; the container runs with GOPROXY=off.
+	cd $$(go env GOMODCACHE)/github.com/centrifugal/centrifuge@$(LIBRARY_VERSION) && go mod download
+	mkdir -p test/library/out
+	$(LIBRARY_COMPOSE) up -d --wait || { $(LIBRARY_COMPOSE) down -v; exit 1; }
+	$(LIBRARY_COMPOSE) --profile tests run --rm -T tests || { $(LIBRARY_COMPOSE) down -v; exit 1; }
+	$(LIBRARY_COMPOSE) down -v
+	go run test/library/summary.go test/library/out/library.json > test/library/out/library-tests.txt
+	grep -c . test/library/out/library-tests.txt; grep -v 'pass$$' test/library/out/library-tests.txt || true
+	diff docs/testing/baseline/library-$(LIBRARY_VERSION)-tests.txt test/library/out/library-tests.txt
 
 vuln: tools
 	.bin/govulncheck ./...

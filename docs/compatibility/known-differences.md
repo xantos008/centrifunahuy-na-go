@@ -17,7 +17,7 @@ Status values:
 | KD-04 | Ephemeral client publications / schemas (PRO-29) | Page unlisted; no release note | accepted (DEC-06, ADR-0024) |
 | KD-05 | PRO licensing: license keys, sandbox limits, license-expiry metric | Not a product feature for us; must not be replicated | accepted |
 | KD-06 | Anonymous usage stats reporting (`usage_stats`) | Our product sends no telemetry. The inherited reporter (`internal/usage`) is never started (step 1.3); the config key is accepted and ignored | accepted |
-| KD-07 | Redis `history_use_lists` (deprecated upstream) | Deprecated; limitations differ between docs and code (INFRA-CONFLICT-04) | proposed: accept the key, fail validation with a clear message |
+| KD-07 | Redis `history_use_lists` (deprecated upstream) | Deprecated; limitations differ between docs and code (INFRA-CONFLICT-04) | inherited, deprecated, not recommended (D2-4; CS-HIST-01 on `r-lists` confirms forward order for `reverse: true`) |
 | KD-08 | Bidirectional gRPC client transport | Does not exist upstream; the user declined it | accepted (DEC-03, ADR-0021) |
 
 ## Same feature, different internals (not observable through public APIs)

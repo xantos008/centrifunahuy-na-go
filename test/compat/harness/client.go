@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -172,7 +173,13 @@ func (c *WS) SendCmd(cmds ...*protocol.Command) {
 // read fills buf with at least one message, answering pings when answerPings
 // is set. It returns a close error when the server closes the connection.
 func (c *WS) read(answerPings bool) error {
-	_ = c.conn.SetReadDeadline(time.Now().Add(Deadline))
+	return c.readBefore(answerPings, time.Now().Add(Deadline))
+}
+
+func (c *WS) readBefore(answerPings bool, deadline time.Time) error {
+	if err := c.conn.SetReadDeadline(deadline); err != nil {
+		return err
+	}
 	for {
 		_, data, err := c.conn.ReadMessage()
 		if err != nil {
@@ -180,13 +187,15 @@ func (c *WS) read(answerPings bool) error {
 		}
 		msgs, err := c.codec.messages(data)
 		if err != nil {
-			c.s.T.Fatalf("%s: decode: %v", c.s.Target.Name, err)
+			return fmt.Errorf("decode: %w", err)
 		}
 		added := false
 		for _, m := range msgs {
 			if answerPings && string(m) == "{}" {
 				t, b := c.codec.pong()
-				_ = c.conn.WriteMessage(t, b)
+				if err := c.conn.WriteMessage(t, b); err != nil {
+					return fmt.Errorf("pong: %w", err)
+				}
 				continue
 			}
 			c.buf = append(c.buf, m)
@@ -195,6 +204,41 @@ func (c *WS) read(answerPings bool) error {
 		if added {
 			return nil
 		}
+	}
+}
+
+// CaptureUntil reads pushes and answers pings while the scenario performs
+// backend work. Call the returned function before using this WS again. It
+// records the captured pushes at that point, after the backend actions.
+func (c *WS) CaptureUntil(marker string, timeout time.Duration) func() {
+	c.s.T.Helper()
+	type result struct {
+		count int
+		err   error
+	}
+	done := make(chan result, 1)
+	deadline := time.Now().Add(timeout)
+	go func() {
+		for i := 0; ; i++ {
+			if i == len(c.buf) {
+				if err := c.readBefore(true, deadline); err != nil {
+					done <- result{err: err}
+					return
+				}
+			}
+			if strings.Contains(string(c.buf[i]), marker) {
+				done <- result{count: i + 1}
+				return
+			}
+		}
+	}()
+	return func() {
+		c.s.T.Helper()
+		captured := <-done
+		if captured.err != nil {
+			c.s.T.Fatalf("%s: waiting for push %s: %v", c.s.Target.Name, marker, captured.err)
+		}
+		c.Recv(captured.count)
 	}
 }
 

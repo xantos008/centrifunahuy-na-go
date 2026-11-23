@@ -45,6 +45,9 @@ func TestCS_ENG_01(t *testing.T) {
 		a.Recv(1) // own join of u1
 		a.Send(fmt.Sprintf(`{"id":3,"subscribe":{"channel":%q}}`, pub))
 		a.Recv(1)
+		if h.Profile() == "n" {
+			s.AwaitNATSSubscriptions("centrifugo.client."+ch, "centrifugo.client."+pub)
+		}
 		s.OnB(func() {
 			b := connect(s, h.HS256(h.Claims{Sub: "u2"}))
 			b.Send(fmt.Sprintf(`{"id":2,"subscribe":{"channel":%q}}`, ch))

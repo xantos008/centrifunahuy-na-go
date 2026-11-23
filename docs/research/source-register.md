@@ -1,6 +1,6 @@
 # Source register
 
-All sources were accessed on **2026-11-15**. Version pins are in [baseline.md](../compatibility/baseline.md). Hierarchy follows CLAUDE.md: official docs and release notes come first, then official repositories, then provider docs, then black-box experiments. Secondary sources are leads only.
+Initial source access was on **2026-11-15**. Later reference observations are listed below. Version pins are in [baseline.md](../compatibility/baseline.md). Hierarchy follows CLAUDE.md: official docs and release notes come first, then official repositories, then provider docs, then black-box experiments. Secondary sources are leads only.
 
 ## 1. Repositories (read-only clones; nothing executed)
 
@@ -136,3 +136,7 @@ Blog posts cited by the annexes (e.g. `blog/2025-01-16-centrifugo-v6-released.md
 | Prometheus | https://prometheus.io/docs/practices/naming/, native histograms | 1, 6 |
 
 These are recorded as the sources we will use; their content was **not** verified in Phase 0 beyond what the Centrifugo docs reference. Each phase re-verifies the relevant spec and records the version here.
+
+## Reference observations on 2026-11-23
+
+The pinned Centrifugo OSS reference image in §1 was run locally against the memory profile. CS-RPC-01 exercises OSS-SUB-12 and CS-TRANS-01 exercises the POST paths of OSS-TRANS-11 and OSS-TRANS-12 and the corresponding push framing in OSS-TRANS-09. See the [scenario catalogue](../testing/compatibility-suite.md) for scope.

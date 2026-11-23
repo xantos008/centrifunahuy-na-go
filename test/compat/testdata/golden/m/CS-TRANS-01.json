@@ -1,0 +1,100 @@
+{
+  "events": [
+    {
+      "kind": "stream_connect",
+      "text": "POST /connection/uni_sse",
+      "body": {
+        "subs": {
+          "pub:uni_sse-RUN": {}
+        },
+        "token": "<token:1>"
+      }
+    },
+    {
+      "kind": "stream_status",
+      "text": "text/event-stream; charset=utf-8",
+      "status": 200
+    },
+    {
+      "kind": "stream_push",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "session": "<session:1>",
+          "subs": {
+            "pub:uni_sse-RUN": {}
+          },
+          "version": "<version:1>"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "stream_push",
+      "body": {
+        "channel": "pub:uni_sse-RUN",
+        "pub": {
+          "data": {
+            "probe": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "stream_connect",
+      "text": "POST /connection/uni_http_stream",
+      "body": {
+        "subs": {
+          "pub:uni_http_stream-RUN": {}
+        },
+        "token": "<token:1>"
+      }
+    },
+    {
+      "kind": "stream_status",
+      "text": "text/plain; charset=utf-8",
+      "status": 200
+    },
+    {
+      "kind": "stream_push",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "session": "<session:2>",
+          "subs": {
+            "pub:uni_http_stream-RUN": {}
+          },
+          "version": "<version:1>"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "stream_push",
+      "body": {
+        "channel": "pub:uni_http_stream-RUN",
+        "pub": {
+          "data": {
+            "probe": true
+          }
+        }
+      }
+    }
+  ]
+}

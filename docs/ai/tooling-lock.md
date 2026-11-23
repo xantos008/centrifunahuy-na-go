@@ -77,6 +77,29 @@ Pulled into the local Docker image store; used only by test compose files, never
 
 | Image | Digest | License | Used by | Since |
 |---|---|---|---|---|
-| `redis:8.10.3-alpine` | `sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3` | Redis 8: RSALv2 / SSPLv1 / AGPLv3 (tri-license; RSAL and SSPL are not OSI open source). Condition C1: using it only for tests does not make its license irrelevant; Redis is never shipped | `test/compat/docker-compose.yml` (`redis-ref`, `redis-sut`) | 2.2 |
+| `redis:8.10.3-alpine` | `sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3` | Redis 8: RSALv2 / SSPLv1 / AGPLv3 (tri-license; RSAL and SSPL are not OSI open source). Condition C1: using it only for tests does not make its license irrelevant; Redis is never shipped | `test/compat/docker-compose.yml` (`redis-ref`, `redis-sut`); `test/library/compose.isolated.yml` | 2.2 |
 | `nats:2.15.3-alpine` | `sha256:558394a23dd3c36f2d3a64b51865fd09908010e80a542cea5e75c2af543ed62a` | NATS server: Apache-2.0. Current stable release on 2026-11-16 (same digest as `2-alpine`) | `test/compat/docker-compose.yml` (`nats-ref`, `nats-sut`) | 2.5 |
 | `postgres:18.7-alpine` | `sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015` | PostgreSQL License. Current release on 2026-11-16 (same digest as `18-alpine`); the docs require PostgreSQL 16+ | `test/compat/docker-compose.yml` (`postgres-ref`, `postgres-sut`) | 2.6 |
+| `valkey/valkey:9.1.3-alpine` | `sha256:bf09d58e96d6b4524a15396b65b242bbe18beebbcc15a04d8ee75ddac62fae0b` | Valkey: BSD-3-Clause. Current release on 2026-11-16 (same digest as `9-alpine`) | `test/library/compose.isolated.yml` (library job, D2-6) | 2.10 |
+| `golang:1.27.4-bookworm` | `sha256:4fa7c968ba93f1635670522dbb01a2c78150443e1385746924566079f36570ea` | Go: BSD-3-Clause; Debian packages under their own licenses | `test/library/compose.isolated.yml` (`tests`) | 2.10 |
+
+Phase 2, step 2.10: the centrifuge library's own test-only modules (e.g. `github.com/quagmt/udecimal`, `github.com/prometheus/common`) were added to `$GOMODCACHE` by `go mod download` in the library module (`make library-test`). Download cache, not an install.
+
+CI action added in step 2.10: `actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9` (v7.0.2, tag SHA from `git ls-remote` on 2026-11-16), library job results only.
+
+## Shared project skills
+
+The instructions live in `.claude/skills/`. Each corresponding directory in `.agents/skills/` is a relative symlink for Codex discovery. ADR-0026 continues to govern project-local tooling. These instructions are authored in this repository and have no executable hooks, credentials, network permissions, or third-party packages.
+
+| Skill | Workflow |
+|---|---|
+| `protocol-compatibility` | Wire behavior, SDKs and reference transcripts |
+| `engine-integration` | Backend isolation, state, failover and library tests |
+| `extension-architecture` | Extension seams, migration and decisions |
+| `defensive-security-review` | Server-side policy, redaction, and bounded work |
+| `isolated-ci` | Compose, pinned CI, dependency checks and release gates |
+| `realtime-observability` | Traces, analytics, backpressure and benchmarks |
+| `push-delivery` | Device lifecycle, queue behavior and provider contracts |
+| `admin-contracts` | Admin API, role checks, audit and interface flows |
+
+The architecture, operations and defensive review workflows adapt practices inspected in the local SinoMotors repositories. The instructions are specific to Cedrazeka’s Go runtime, test profiles and compatibility contract.

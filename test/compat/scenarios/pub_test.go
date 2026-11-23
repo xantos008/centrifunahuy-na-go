@@ -187,6 +187,7 @@ func TestCS_PUB_07(t *testing.T) {
 		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"n":3}}`, ch)})
 		ws.Next() // n=3 directly after n=1: the rolled-back publication never arrives
 
+		finish := ws.CaptureUntil(`"marker"`, 3*h.Deadline)
 		withKey := `, p_idempotency_key := 'k1'`
 		s.SQL(`SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := '` + ch + `', p_data := '{"n":4}'` + withKey + `)`)
 		s.SQL(`SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := '` + ch + `', p_data := '{"n":4}'` + withKey + `)`)
@@ -194,7 +195,7 @@ func TestCS_PUB_07(t *testing.T) {
 		s.SQL(`SELECT out_channel_offset, out_suppressed, out_suppress_reason FROM cf_stream_publish(p_channel := '` + ch + `', p_data := '{"n":6}', p_version := 4, p_version_epoch := 'e')`)
 		s.SQL(pub("cf_stream_publish_strict", `{"n":7}`, `, p_version := 3, p_version_epoch := 'e'`))
 		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"marker":"end"}}`, ch)})
-		ws.RecvUntil(`"marker"`)
+		finish()
 
 		s.SQL(`SELECT out_top_offset FROM cf_stream_top_position('` + ch + `')`)
 		s.API(h.APIRequest{Path: "/api/history", Body: fmt.Sprintf(`{"channel":%q,"limit":10}`, ch)})

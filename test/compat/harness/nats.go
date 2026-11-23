@@ -2,10 +2,35 @@ package harness
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/nats-io/nats.go"
 )
+
+// AwaitNATSSubscriptions waits for the broker to process the asynchronous
+// subscription requests before another node publishes to their subjects.
+func (s *Session) AwaitNATSSubscriptions(subjects ...string) {
+	s.T.Helper()
+	deadline := time.Now().Add(Deadline)
+	for {
+		list := s.Exec("nats", "wget", "-qO-", "http://127.0.0.1:8222/subsz?subs=1")
+		missing := ""
+		for _, subject := range subjects {
+			if !strings.Contains(list, `"`+subject+`"`) {
+				missing = subject
+				break
+			}
+		}
+		if missing == "" {
+			return
+		}
+		if time.Now().After(deadline) {
+			s.T.Fatalf("%s: NATS did not register %s", s.Target.Name, missing)
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+}
 
 // natsURL is the loopback client port of one side's NATS (compose: ref
 // 14222, sut 24222), with the test-only user.

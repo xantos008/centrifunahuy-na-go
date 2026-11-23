@@ -1,0 +1,92 @@
+# Isolated runner for the centrifuge library's own integration tests (phase 2,
+# step 2.10, decision D2-3, condition C4). See docs/testing/baseline-library-tests.md.
+#
+# The library's tests hardcode 127.0.0.1/localhost ports from its
+# docker-compose.yml: Redis 6379, Cluster 7001-7003, Sentinel 26379 (master
+# 6380, replicas 6381/6382), Valkey 16379, Valkey Cluster 17000-17002. All
+# services and the test container share the network namespace of `netns`, so
+# those addresses reach these containers (and Cluster/Sentinel may announce
+# 127.0.0.1). No host ports are published. DragonflyDB is not run (D2-3).
+# One namespace means one port space: the Redis Cluster bus moves from the
+# default port+10000 (17001-17003, the Valkey Cluster's client ports) to
+# 37001-37003.
+#
+# Redis 8 is tri-licensed RSALv2 / SSPLv1 / AGPLv3 (condition C1): the image is
+# used only to run these tests and is never part of a Cedrazeka artifact.
+# Valkey: BSD-3-Clause.
+name: cedrazeka-lib
+x-redis: &redis
+  image: redis:8.10.3-alpine@sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3
+  network_mode: service:netns
+x-valkey: &valkey
+  image: valkey/valkey:9.1.3-alpine@sha256:bf09d58e96d6b4524a15396b65b242bbe18beebbcc15a04d8ee75ddac62fae0b
+  network_mode: service:netns
+services:
+  netns:
+    image: alpine:3.24
+    command: ["sleep", "infinity"]
+  redis:
+    <<: *redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck: {test: ["CMD", "redis-cli", "ping"], interval: 1s, retries: 30}
+  cluster:
+    <<: *redis
+    entrypoint:
+      - sh
+      - -c
+      - |
+        cd /tmp
+        for p in 7001 7002 7003; do
+          redis-server --port $$p --cluster-port 3$$p --save "" --appendonly no --cluster-enabled yes --cluster-config-file $$p.conf &
+        done
+        until redis-cli --cluster create 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 --cluster-yes; do sleep 1; done
+        wait
+    healthcheck: {test: ["CMD-SHELL", "for p in 7001 7002 7003; do redis-cli -p $$p cluster info | grep -q cluster_state:ok || exit 1; done"], interval: 1s, retries: 60}
+  sentinel:
+    <<: *redis
+    # As the library's compose: one sentinel, quorum 2 (it never fails over).
+    entrypoint:
+      - sh
+      - -c
+      - |
+        cd /tmp
+        redis-server --save "" --appendonly no --port 6380 &
+        redis-server --save "" --appendonly no --port 6381 --replicaof 127.0.0.1 6380 &
+        redis-server --save "" --appendonly no --port 6382 --replicaof 127.0.0.1 6380 &
+        printf 'sentinel monitor mymaster 127.0.0.1 6380 2\n' > sentinel.conf
+        exec redis-server sentinel.conf --sentinel
+    healthcheck: {test: ["CMD-SHELL", "redis-cli -p 26379 sentinel get-master-addr-by-name mymaster | grep -q 6380"], interval: 1s, retries: 60}
+  valkey:
+    <<: *valkey
+    command: ["valkey-server", "--port", "16379", "--save", "", "--appendonly", "no"]
+    healthcheck: {test: ["CMD", "valkey-cli", "-p", "16379", "ping"], interval: 1s, retries: 30}
+  valkey-cluster:
+    <<: *valkey
+    entrypoint:
+      - sh
+      - -c
+      - |
+        cd /tmp
+        for p in 17000 17001 17002; do
+          valkey-server --port $$p --save "" --appendonly no --cluster-enabled yes --cluster-config-file $$p.conf &
+        done
+        until valkey-cli --cluster create 127.0.0.1:17000 127.0.0.1:17001 127.0.0.1:17002 --cluster-yes; do sleep 1; done
+        wait
+    healthcheck: {test: ["CMD-SHELL", "for p in 17000 17001 17002; do valkey-cli -p $$p cluster info | grep -q cluster_state:ok || exit 1; done"], interval: 1s, retries: 60}
+  # Copies the pinned module from the read-only host module cache and runs its
+  # tests (test/library/run.sh). Results go to test/library/out/ (ignored).
+  # run.sh limits parallel test execution and splits the root package. The
+  # container limit constrains its memory impact on other Docker projects.
+  tests:
+    image: golang:1.27.4-bookworm@sha256:4fa7c968ba93f1635670522dbb01a2c78150443e1385746924566079f36570ea
+    network_mode: service:netns
+    profiles: ["tests"]
+    mem_limit: 5g
+    environment: {GOMODCACHE: /hostmod, GOPROXY: "off",LIBRARY_VERSION: "${LIBRARY_VERSION:?}", LIBRARY_COMMIT: "${LIBRARY_COMMIT:?}"}
+    volumes:
+      - ./run.sh:/run.sh:ro
+      - ./out:/out
+      - ${HOSTMOD:?}:/hostmod:ro
+      - gocache:/root/.cache/go-build
+    command: ["bash", "/run.sh"]
+volumes: {gocache: {}}

@@ -1,6 +1,6 @@
 # Compatibility test suite (mandatory)
 
-Decision: [ADR-0028](../architecture/adr/0028-compatibility-test-suite.md). Status: specified. The harness and the first scenarios are built in implementation phase 1 ([plan](../plan/phase-1.md)).
+Decision: [ADR-0028](../architecture/adr/0028-compatibility-test-suite.md). The harness and first scenarios landed in implementation phase 1 ([plan](../plan/phase-1.md)).
 
 ## 1. Goal
 Run the same scenarios against:
@@ -104,7 +104,7 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 
 Configs: `configs/r` is `configs/m` plus the engine section; `rs`, `rc`, `rsh` differ from `r` only in `engine.redis.address`; `r-opt` and `r-lists` are `r` plus one option each. Regenerate them with `jq` when `m` changes (see the step 2.3 notes in the plan). Note: `version` is a volatile key, so publication versions in CS-PUB-05 appear as placeholders. Equal versions keep equal placeholders, which is all the scenario needs.
 
-**Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; this catalogue is rewritten when they land.
+**Phase 2** ([plan](../plan/phase-2.md)) adds engine profiles (`r`, `r-opt`, `r-lists`, `rs`, `rc`, `rsh`, `n`, `n-raw`, `p`, `p-notify`), two nodes per target, and the CS-ENG, CS-ISO and new CS-HIST/REC/PUB scenarios; see the profile and scenario tables below.
 
 Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` NATS (broker only), `P` PostgreSQL (broker and controller only; no presence).
 
@@ -158,8 +158,14 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 - CS-API-03: the same set over gRPC (`centrifugal.centrifugo.api.CentrifugoApi`); PRO-only rpc behavior on OSS (CORE OQ-04, recorded from ref). M
 - CS-API-04: `error_mode` variants; `disconnect`, `unsubscribe`, `refresh` by user across 2 nodes. M R
 
+### CS-RPC: client RPC (phase 3)
+
+- CS-RPC-01: configured RPC ping method returns an empty result. The default name and an unknown method return 104. Verified in diff and golden mode on `m`.
+
 ### CS-TRANS: other transports (phase 3)
-HTTP-stream, SSE with emulation, uni WS / SSE / HTTP-stream / gRPC: CS-PROTO-01 run over each.
+
+- CS-TRANS-01: unidirectional SSE and HTTP-stream POST connect, initial subscription, framing and API publication delivery. Verified in diff and golden mode on `m`.
+- Remaining transport coverage includes emulated SSE and HTTP-stream, unidirectional WebSocket and gRPC, and the other transports in the phase-3 plan.
 
 ### CS-ENG: multi-node (phase 2)
 Two sut nodes against two ref nodes. Each scenario first waits until `info` on both nodes lists two nodes. `Session.OnB` points calls and new connections at node B.
@@ -173,7 +179,7 @@ Two sut nodes against two ref nodes. Each scenario first waits until `info` on b
 - CS-ENG-07: `SENTINEL FAILOVER mymaster`. Once a new master is elected, publishing works again within 30 s, and history holds the publications made before the failover. Then delivery must work for 5 s without a miss (unrecorded probes, ~20/s) before one delivered publication is recorded. R (`rs`)
 
 ### CS-NAME: names (sut-only, ADR-0022)
-- ★ CS-NAME-01: default mode reads `CEDRAZEKA_*` env and exposes `cedrazeka_*` metrics; compatibility mode reads `CENTRIFUGO_*` and exposes `centrifugo_*`; the gRPC API answers on both service names in compatibility mode.
+- ★ CS-NAME-01: default and compatibility modes expose their respective metrics prefixes. The branded HTTP error-mode headers are exercised here. The environment and gRPC service-name checks are covered by the separate server tests in `internal/brand/e2e`.
 - CS-NAME-02: on `r` and `n`, default mode prefixes Redis keys and channels and NATS subjects with `cedrazeka`, compatibility mode with `centrifugo`; checked in the shared sut backends (Redis presence key, Redis `PUBSUB CHANNELS`, NATS `/subsz`). PG `table_prefix` is `cf` in both modes.
 
 ### PRO and EXTENSION
