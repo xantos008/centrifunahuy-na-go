@@ -254,7 +254,7 @@ services:
     <<: *sut
     profiles: [m]
     depends_on: {}
-    environment: {GODEBUG: "http2xconnect=1"}
+    environment: {GODEBUG: "http2xconnect=1", CENTRIFUGO_UNI_WEBSOCKET_ENABLED: "true"}
     command: ["/opt/cedrazeka/cedrazeka", "--compat=centrifugo", "-c", "/etc/compat/h2c.json"]
     ports: ["127.0.0.1:28082:8000"]
     healthcheck:

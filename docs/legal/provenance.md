@@ -40,6 +40,7 @@ Rules (ADR-0002, user requirement E):
 | Path | Change | Step / commit | ADR |
 |---|---|---|---|
 | `internal/app/mux.go` | Prepare the QUIC TLS configuration before starting the WebTransport listener so it advertises HTTP/3 ALPN in both naming modes. | 3.1 | ADR-0031 |
+| `internal/uniws/handler.go` | Run the connection loop for the lifetime of an HTTP/2 request. The HTTP/1.1 upgrade retains its detached lifecycle. | 3.1 | ADR-0032 |
 | `README.md` | replaced by the Cedrazeka README, with an origin/license section; the upstream text stays in the import commit | 1.2 | ADR-0002 |
 | `.gitignore` | merged: all upstream rules except `.claude/` (our project skills are tracked), plus `/cedrazeka` and our rules | 1.2 | ADR-0020 |
 | `misc/snapshot/go.mod`, `misc/snapshot/go.sum` | **history note, no change**: import commit `66d1418` accidentally contains IDE-made dependency bumps. The next commit (`fixup!`, `4edc28d`) restores the upstream bytes. From `4edc28d` on, the tree equals upstream for all upstream paths | 1.1 | — |

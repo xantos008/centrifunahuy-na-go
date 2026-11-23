@@ -121,8 +121,7 @@ func (s *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Separate goroutine for better GC of caller's data.
-	go func() {
+	handleConn := func() {
 		// Record server-sent (outgoing) close codes for observability. Runs last
 		// (registered first), after any teardown close frame has been written.
 		// Client-supplied codes are skipped to keep metric cardinality bounded.
@@ -153,10 +152,13 @@ func (s *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		default:
 		}
 
-		ctxCh := make(chan struct{})
-		defer close(ctxCh)
-
-		c, closeFn, err := centrifuge.NewClient(NewCancelContext(r.Context(), ctxCh), s.node, transport)
+		clientCtx := r.Context()
+		if r.ProtoMajor == 1 {
+			ctxCh := make(chan struct{})
+			defer close(ctxCh)
+			clientCtx = NewCancelContext(clientCtx, ctxCh)
+		}
+		c, closeFn, err := centrifuge.NewClient(clientCtx, s.node, transport)
 		if err != nil {
 			log.Error().Err(err).Str("transport", transportName).Msg("error creating client")
 			return
@@ -231,5 +233,12 @@ func (s *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 			}
 		}
 		waitClose()
-	}()
+	}
+	if r.ProtoMajor == 1 {
+		// The upgraded HTTP/1 connection has been hijacked.
+		go handleConn()
+		return
+	}
+	// An HTTP/2 tunnel uses the response writer for the lifetime of the stream.
+	handleConn()
 }
