@@ -69,6 +69,46 @@ func Run(t *testing.T, name string, sc Scenario) {
 	}
 }
 
+// RunWebTransport checks each side of the acceptance decision in ADR-0031.
+// Only CS-TRANS-06 has this exception. Its golden always comes from the pinned
+// server. Both Cedrazeka modes must pass the positive delivery contract.
+func RunWebTransport(t *testing.T, reference, delivery Scenario) {
+	t.Helper()
+	const name = "CS-TRANS-06"
+	switch Mode() {
+	case "record":
+		Run(t, name, reference)
+		return
+	case "diff":
+		got, ok := runOn(t, Ref(), reference)
+		if !ok {
+			return
+		}
+		want, err := loadGolden(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if d := Diff("pinned", want, "reference", got); d != "" {
+			t.Fatalf("WebTransport reference handshake changed: %s", d)
+		}
+	case "golden":
+		// The reference cannot negotiate h3. The positive expectations are
+		// asserted message by message in delivery in both test modes.
+	default:
+		t.Fatalf("unknown COMPAT_MODE %q", Mode())
+	}
+	compat, ok := runOn(t, SUT(), delivery)
+	if !ok {
+		return
+	}
+	normal, ok := runOn(t, SUTDefault(), delivery)
+	if ok {
+		if d := Diff("compatible names", compat, "default names", normal); d != "" {
+			t.Errorf("WebTransport delivery differs across naming modes: %s", d)
+		}
+	}
+}
+
 // runOn runs sc in a subtest named after the target, so a Fatal in one target
 // does not hide the other's result.
 func runOn(t *testing.T, tg Target, sc Scenario) (Transcript, bool) {

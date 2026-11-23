@@ -1,0 +1,12 @@
+{
+  "events": [
+    {
+      "kind": "webtransport_handshake",
+      "text": "/connection/webtransport TLS no_application_protocol"
+    },
+    {
+      "kind": "webtransport_handshake",
+      "text": "/connection/webtransport?cf_protocol=protobuf TLS no_application_protocol"
+    }
+  ]
+}
