@@ -121,6 +121,8 @@ func inspect(svc string) (container, error) {
 // other side not to see it (Redis: -c follows cluster redirects).
 func probe(b string) error {
 	switch b {
+	case "servicebus":
+		return probeAzure()
 	case "pubsub":
 		return probePubSub()
 	case "localstack":

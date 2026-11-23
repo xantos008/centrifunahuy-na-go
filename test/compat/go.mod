@@ -4,6 +4,7 @@ go 1.27.0
 
 require (
 	cloud.google.com/go/pubsub/v2 v2.9.0
+	github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus v1.11.0
 	github.com/centrifugal/protocol v0.23.1
 	github.com/gorilla/websocket v1.5.3
 	github.com/nats-io/nats.go v1.55.0
@@ -16,6 +17,9 @@ require (
 )
 
 require (
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.24.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v1.13.0 // indirect
+	github.com/Azure/go-amqp v1.7.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/centrifugal/centrifuge v0.40.2-0.20261031074606-ae446d43faf0 // indirect
 	github.com/centrifugal/fdelta v0.0.3 // indirect

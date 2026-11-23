@@ -34,6 +34,7 @@ Rules (ADR-0002, user requirement E):
 | PRV-14 | github.com/nats-io/nats.go (test module `test/compat` only) | v1.55.0 (+ nkeys v0.4.17, nuid v1.0.1: Apache-2.0; klauspost/compress v1.20.3, golang.org/x/crypto v0.59.0, x/sys v0.50.0: already in the binary, PRV-12) | Apache-2.0 | NATS client of the compatibility suite: raw-subject publish/subscribe (CS-PUB-06) and the CS-ISO-01 probe. Versions equal the root `go.mod`. Not distributed |
 | PRV-13 | github.com/gorilla/websocket (test module `test/compat` only) | v1.5.3 | BSD-2-Clause | raw WebSocket client of the compatibility suite. Not distributed in the binary. The test module also uses github.com/centrifugal/protocol v0.23.1 (MIT, PRV-11) for Protobuf frames. centrifuge-go v0.13.0 (MIT) will be added when SDK-level scenarios need it |
 | PRV-15 | github.com/quic-go/quic-go, github.com/quic-go/webtransport-go, cloud.google.com/go/pubsub/v2, golang.org/x/net | Same versions as the server module, pinned in `test/compat/go.mod` | MIT (QUIC and WebTransport), Apache-2.0 (Pub/Sub), BSD-3-Clause (x/net) | The compatibility client uses HTTP/3, HTTP/2 framing and the local Pub/Sub emulator. Server dependencies are already covered by PRV-12. |
+| PRV-16 | github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus | v1.11.0, same version as the server | MIT | Direct AMQP client for the opt-in local Service Bus comparison. The server module is covered by PRV-12. |
 
 ## 3. Upstream files modified or deleted
 
