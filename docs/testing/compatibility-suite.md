@@ -165,6 +165,14 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 
 - CS-RPC-01: configured RPC ping method returns an empty result. The default name and an unknown method return 104. Verified in diff and golden mode on `m`.
 
+### CS-PROXY: application callbacks (phase 3)
+
+Each server calls a separate instance of `cmd/proxyfixture` on its private Compose network. Profiles `m` and `p` use HTTP JSON. Profile `r` uses the generated gRPC proxy service. The fixture has no published host ports.
+
+- CS-PROXY-01 uses a tokenless connect callback to grant a server-side subscription. The namespace has automatic cache recovery disabled. Both WebSocket and unidirectional HTTP-stream connect with the callback override off and on. The scenario checks the latest publication at offset 2 and the connection/subscription info in presence.
+- CS-PROXY-02 uses a connection JWT, a proxied channel and a namespaced RPC. It checks subscribe and RPC reply data, presence info from the JWT and subscribe callback, and propagation of application error 470 on both methods.
+- CS-PROXY-03 publishes through the client protocol. The callback rewrites the data, attaches a tag and sets `skip_history` on the second publication. A separate subscriber checks both deliveries. Memory and Redis retain only the first publication. The PostgreSQL stream broker retains both with consecutive offsets. A third request receives the callback's rejection.
+
 ### CS-TRANS: other transports (phase 3)
 
 - CS-TRANS-01: unidirectional SSE and HTTP-stream POST connect, initial subscription, framing and API publication delivery. Verified in diff and golden mode on `m`.
