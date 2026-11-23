@@ -197,3 +197,5 @@ Two sut nodes against two ref nodes. Each scenario first waits until `info` on b
 
 ## 6. Exit criteria per implementation phase
 Each phase in the [feature matrix](../compatibility/feature-matrix.md#implementation-order) names the CS-* groups that must be green on all applicable engine profiles. A matrix row moves to `verified` only when its scenarios are green in `make compat` (diff mode).
+
+When running an additional local Compose stack, set `COMPAT_COMPOSE_FILE` and `COMPOSE_PROJECT_NAME` to the file and project used for startup. Point the HTTP and gRPC overrides at that stack's published ports. Before a lifecycle action such as restart, the harness checks the side's node A HTTP address against the published Compose binding. This check also applies when a scenario controls a backend or node B.

@@ -22,6 +22,33 @@ func TestServiceForStaysOnOwnSide(t *testing.T) {
 	}
 }
 
+func TestMatchesEndpoint(t *testing.T) {
+	cases := []struct {
+		name    string
+		baseURL string
+		binding string
+		want    bool
+	}{
+		{"matching address", "http://127.0.0.1:18000", "127.0.0.1:18000", true},
+		{"matching hostname", "http://localhost:18000", "localhost:18000", true},
+		{"localhost IPv4 alias", "http://localhost:18000", "127.0.0.1:18000", true},
+		{"localhost IPv6 alias", "http://localhost:18000", "[::1]:18000", true},
+		{"localhost wrong port", "http://localhost:18500", "127.0.0.1:18000", false},
+		{"loopback wrong port", "http://127.0.0.1:18500", "127.0.0.1:18000", false},
+		{"other host", "http://192.0.2.1:18000", "127.0.0.1:18000", false},
+		{"localhost with non-loopback binding", "http://localhost:18000", "192.0.2.1:18000", false},
+		{"malformed binding", "http://127.0.0.1:18000", "127.0.0.1", false},
+		{"URL missing port", "http://127.0.0.1", "127.0.0.1:18000", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := matchesEndpoint(c.baseURL, c.binding); got != c.want {
+				t.Errorf("matchesEndpoint(%q, %q) = %t, want %t", c.baseURL, c.binding, got, c.want)
+			}
+		})
+	}
+}
+
 func TestRecordListIsExplicit(t *testing.T) {
 	t.Setenv("COMPAT_MODE", "record")
 	t.Setenv("COMPAT_RECORD", "")
