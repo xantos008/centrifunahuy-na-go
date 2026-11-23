@@ -17,6 +17,7 @@ import (
 
 type fixture struct {
 	p.UnimplementedCentrifugoProxyServer
+	rpcTimeouts *rpcTimeouts
 }
 
 func denied() *p.Error {
@@ -51,20 +52,20 @@ func (fixture) Connect(_ context.Context, r *p.ConnectRequest) (*p.ConnectRespon
 
 func (fixture) Subscribe(_ context.Context, r *p.SubscribeRequest) (*p.SubscribeResponse, error) {
 	if r.User != "proxy-user" || r.Client == "" || r.Transport != "websocket" || r.Protocol != "json" ||
-		r.Encoding != "json" || !strings.HasPrefix(r.Channel, "proxied:allowed-") {
+		r.Encoding != "json" {
+		return &p.SubscribeResponse{Error: denied()}, nil
+	}
+	if strings.HasPrefix(r.Channel, "lease:renew-") || strings.HasPrefix(r.Channel, "lease:expire-") {
+		return &p.SubscribeResponse{Result: &p.SubscribeResult{
+			ExpireAt: time.Now().Unix() + 2, Info: p.Raw(`{"source":"subscribe"}`),
+		}}, nil
+	}
+	if !strings.HasPrefix(r.Channel, "proxied:allowed-") {
 		return &p.SubscribeResponse{Error: denied()}, nil
 	}
 	return &p.SubscribeResponse{Result: &p.SubscribeResult{
 		Info: p.Raw(`{"source":"subscribe"}`), Data: r.Data,
 	}}, nil
-}
-
-func (fixture) RPC(_ context.Context, r *p.RPCRequest) (*p.RPCResponse, error) {
-	if r.User != "proxy-user" || r.Client == "" || r.Transport != "websocket" || r.Protocol != "json" ||
-		r.Encoding != "json" || r.Method != "probe:echo" {
-		return &p.RPCResponse{Error: denied()}, nil
-	}
-	return &p.RPCResponse{Result: &p.RPCResult{Data: r.Data}}, nil
 }
 
 func (fixture) Publish(_ context.Context, r *p.PublishRequest) (*p.PublishResponse, error) {
@@ -101,7 +102,7 @@ func jsonHandler[Request, Response any](call func(context.Context, *Request) (*R
 }
 
 func main() {
-	f := fixture{}
+	f := fixture{rpcTimeouts: &rpcTimeouts{}}
 	listener, err := net.Listen("tcp", ":8081") //nolint:gosec // The peer runs in the same private test network. Compose publishes no fixture ports.
 	if err != nil {
 		log.Fatal(err)
@@ -112,6 +113,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /connect", jsonHandler(f.Connect))
 	mux.HandleFunc("POST /subscribe", jsonHandler(f.Subscribe))
+	mux.HandleFunc("POST /refresh", jsonHandler(f.Refresh))
+	mux.HandleFunc("POST /sub_refresh", jsonHandler(f.SubRefresh))
 	mux.HandleFunc("POST /publish", jsonHandler(f.Publish))
 	mux.HandleFunc("POST /rpc", jsonHandler(f.RPC))
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusOK) })

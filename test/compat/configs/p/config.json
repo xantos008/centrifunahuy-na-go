@@ -11,6 +11,7 @@
     ],
     "ping_interval": "2s",
     "pong_timeout": "1s",
+    "expired_sub_close_delay": "1s",
     "history_max_publication_limit": 8,
     "recovery_max_publication_limit": 8,
     "presence_update_interval": "2s",
@@ -18,6 +19,11 @@
       "connect": {
         "enabled": true,
         "endpoint": "http://proxyfixture:8080/connect"
+      },
+      "refresh": {
+        "enabled": true,
+        "endpoint": "http://proxyfixture:8080/refresh",
+        "include_connection_meta": true
       }
     }
   },
@@ -32,7 +38,8 @@
   },
   "rpc": {
     "proxy": {
-      "endpoint": "http://proxyfixture:8080/rpc"
+      "endpoint": "http://proxyfixture:8080/rpc",
+      "timeout": "1s"
     },
     "namespaces": [
       {
@@ -48,6 +55,10 @@
       },
       "publish": {
         "endpoint": "http://proxyfixture:8080/publish"
+      },
+      "sub_refresh": {
+        "endpoint": "http://proxyfixture:8080/sub_refresh",
+        "include_connection_meta": true
       }
     },
     "without_namespace": {
@@ -61,6 +72,12 @@
       {
         "name": "proxied",
         "subscribe_proxy_enabled": true,
+        "presence": true
+      },
+      {
+        "name": "lease",
+        "subscribe_proxy_enabled": true,
+        "sub_refresh_proxy_enabled": true,
         "presence": true
       },
       {

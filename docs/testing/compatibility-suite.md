@@ -165,6 +165,7 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 
 - CS-RPC-01 runs on the ping-only `m` profile. The custom RPC ping method returns an empty result. The default name and an unknown method return error 104. Verified in diff and golden mode.
 - CS-RPC-02 exercises the RPC proxy over gRPC on `r` and HTTP on `p`. The `probe` namespace echoes the request data or returns application error 470. An unqualified unknown method returns 108 with proxying outside namespaces disabled. An unknown namespace returns 104. Verified in diff and golden mode on both profiles.
+- CS-RPC-03 calls a backend that waits for cancellation. On `r` and `p`, the one-second proxy deadline produces temporary error 100. A second RPC on the same WebSocket checks that the backend observed its request context ending. A third RPC echoes data.
 
 ### CS-PROXY: application callbacks (phase 3)
 
@@ -173,6 +174,8 @@ Each server calls a separate instance of `cmd/proxyfixture` on its private Compo
 - CS-PROXY-01 uses a tokenless connect callback to grant a server-side subscription. The namespace has automatic cache recovery disabled. Both WebSocket and unidirectional HTTP-stream connect with the callback override off and on. The scenario checks the latest publication at offset 2 and the connection/subscription info in presence.
 - CS-PROXY-02 uses a connection JWT and subscribes to a proxied channel. It checks reply data, connection info from the JWT and channel info from the subscribe callback in presence, and propagation of application error 470 when the callback rejects the subscription.
 - CS-PROXY-03 publishes through the client protocol. The callback rewrites the data, attaches a tag and sets `skip_history` on the second publication. A separate subscriber checks both deliveries. Memory and Redis retain only the first publication. The PostgreSQL stream broker retains both with consecutive offsets. A third request receives the callback's rejection.
+- CS-PROXY-04 starts two connections with expiring JWTs. One receives updated connection info in presence and can still receive a publication. The other closes with code 3005 after the callback reports expiry. Both callbacks require the JWT connection meta. Runs on `r` and `p`.
+- CS-PROXY-05 starts two expiring subscriptions on one WebSocket. Renewal updates channel info in presence and preserves the original connection info. Expiry produces an unsubscribe push (2501) for the second channel. The first still receives a publication. Both callbacks require the channel name and JWT connection meta. In both refresh scenarios the PostgreSQL stream broker includes the stream epoch and offset in delivered publications. Redis omits those fields on these channels.
 
 ### CS-TRANS: other transports (phase 3)
 
