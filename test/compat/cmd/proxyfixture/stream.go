@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"sync"
+	"time"
 
 	p "github.com/xantos008/centrifunahuy-na-go/internal/proxyproto"
 	"google.golang.org/grpc/codes"
@@ -32,7 +33,43 @@ func streamPublication(data p.Raw, source string) *p.StreamSubscribeResponse {
 	return &p.StreamSubscribeResponse{Publication: &p.Publication{Data: data, Tags: map[string]string{"source": source}}}
 }
 
+const alternateLease = "alternate_lease"
+
+// The named proxy allows one second for the first reply. Delay a normal
+// reply or a subsequent publication to distinguish that from a stream TTL.
+func namedLeaseStream(r *p.SubscribeRequest, stream p.CentrifugoProxy_SubscribeUnidirectionalServer) error {
+	if callbackRoute(stream.Context()) != alternateLease {
+		return stream.Send(streamDenied())
+	}
+	first := streamAck(p.Raw(`"alternate_lease"`))
+	var delayed *p.StreamSubscribeResponse
+	switch string(r.Data) {
+	case `"slow"`:
+		delayed = first
+	case `"ready"`:
+		if err := stream.Send(first); err != nil {
+			return err
+		}
+		delayed = streamPublication(p.Raw(`"still-active"`), alternateLease)
+	default:
+		return stream.Send(streamDenied())
+	}
+	select {
+	case <-time.After(2 * time.Second):
+	case <-stream.Context().Done():
+		return stream.Context().Err()
+	}
+	if err := stream.Send(delayed); err != nil {
+		return err
+	}
+	<-stream.Context().Done()
+	return stream.Context().Err()
+}
+
 func (fixture) SubscribeUnidirectional(r *p.SubscribeRequest, stream p.CentrifugoProxy_SubscribeUnidirectionalServer) error {
+	if _, ok := streamKey(r, "namedstream:feed-"); ok {
+		return namedLeaseStream(r, stream)
+	}
 	key, ok := streamKey(r, "streamuni:feed-")
 	if !ok {
 		return stream.Send(streamDenied())

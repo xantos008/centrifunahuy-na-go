@@ -18,7 +18,17 @@
     "proxy": {
       "connect": {
         "enabled": true,
-        "endpoint": "grpc://proxyfixture:8081"
+        "endpoint": "grpc://proxyfixture:8081",
+        "grpc_metadata": ["x-compat-connect-marker"],
+        "emulated_headers": ["x-compat-connect-marker"],
+        "grpc": {
+          "credentials_key": "x-compat-connect-credential",
+          "credentials_value": "compat-test-proxy-credential",
+          "compression": true,
+          "static_metadata": {
+            "x-compat-connect-marker": "static"
+          }
+        }
       },
       "refresh": {
         "enabled": true,
@@ -37,6 +47,9 @@
     "hmac_secret_key": "compat-test-poll-secret"
   },
   "uni_http_stream": {
+    "enabled": true
+  },
+  "uni_grpc": {
     "enabled": true
   },
   "proxies": [
@@ -79,6 +92,17 @@
       "grpc": {
         "static_metadata": {
           "x-compat-marker": "static"
+        }
+      }
+    },
+    {
+      "name": "alternate_lease",
+      "endpoint": "grpc://proxyfixture:8081",
+      "timeout": "1s",
+      "include_connection_meta": true,
+      "grpc": {
+        "static_metadata": {
+          "x-compat-route": "alternate_lease"
         }
       }
     }
@@ -155,6 +179,7 @@
       {
         "name": "proxied",
         "subscribe_proxy_enabled": true,
+        "allow_user_limited_channels": true,
         "presence": true
       },
       {
@@ -285,6 +310,15 @@
         "allow_subscribe_for_client": true
       },
       {
+        "name": "proxystate",
+        "publish_proxy_enabled": true,
+        "allow_subscribe_for_client": true,
+        "history_size": 8,
+        "history_ttl": "300s",
+        "force_positioning": true,
+        "allowed_delta_types": ["fossil"]
+      },
+      {
         "name": "proxywrite",
         "publish_proxy_enabled": true,
         "allow_subscribe_for_client": true,
@@ -313,6 +347,18 @@
           "refresh_interval": "1s",
           "channel_shutdown_delay": "1s"
         }
+      },
+      {
+        "name": "namedstream",
+        "subscribe_stream_proxy_enabled": true,
+        "subscribe_stream_proxy_name": "alternate_lease"
+      },
+      {
+        "name": "namedlease",
+        "subscribe_proxy_enabled": true,
+        "sub_refresh_proxy_enabled": true,
+        "sub_refresh_proxy_name": "alternate_lease",
+        "presence": true
       }
     ]
   },

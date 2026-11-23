@@ -1,0 +1,135 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "namedstream:feed-RUN",
+          "data": "slow"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 100,
+          "message": "internal server error",
+          "temporary": true
+        },
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "subscribe": {
+          "channel": "namedstream:feed-RUN",
+          "data": "ready"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "subscribe": {
+          "data": "alternate_lease"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "namedstream:feed-RUN",
+          "pub": {
+            "data": "still-active",
+            "tags": {
+              "source": "alternate_lease"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "subscribe": {
+          "channel": "namedlease:renew-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 4,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {
+            "<client:1>": {
+              "chan_info": {
+                "source": "alternate_lease"
+              },
+              "client": "<client:1>",
+              "conn_info": {
+                "name": "initial"
+              },
+              "user": "proxy-user"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "namedlease:renew-RUN",
+          "pub": {
+            "data": "lease-refreshed"
+          }
+        }
+      }
+    }
+  ]
+}

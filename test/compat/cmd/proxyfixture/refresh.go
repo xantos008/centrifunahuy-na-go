@@ -60,6 +60,10 @@ func (f fixture) Refresh(_ context.Context, r *p.RefreshRequest) (*p.RefreshResp
 		return &p.RefreshResponse{Result: &p.RefreshResult{
 			ExpireAt: time.Now().Add(time.Minute).Unix(), Info: p.Raw(`{"source":"refresh"}`),
 		}}, nil
+	case "lease-error":
+		return &p.RefreshResponse{Error: denied()}, nil
+	case "lease-disconnect":
+		return &p.RefreshResponse{Disconnect: &p.Disconnect{Code: 4472, Reason: "fixture disconnect"}}, nil
 	case "lease-expire":
 		return &p.RefreshResponse{Result: &p.RefreshResult{Expired: true}}, nil
 	default:
@@ -67,7 +71,7 @@ func (f fixture) Refresh(_ context.Context, r *p.RefreshRequest) (*p.RefreshResp
 	}
 }
 
-func (f fixture) SubRefresh(_ context.Context, r *p.SubRefreshRequest) (*p.SubRefreshResponse, error) {
+func (f fixture) SubRefresh(ctx context.Context, r *p.SubRefreshRequest) (*p.SubRefreshResponse, error) {
 	if !validRefresh(r.Client, r.Transport, r.Protocol, r.Encoding, r.Meta) {
 		return nil, errors.New("unexpected subscription refresh fields")
 	}
@@ -81,10 +85,18 @@ func (f fixture) SubRefresh(_ context.Context, r *p.SubRefreshRequest) (*p.SubRe
 		return nil, errors.New("unexpected subscription refresh user")
 	}
 	switch {
+	case strings.HasPrefix(r.Channel, "namedlease:renew-") && callbackRoute(ctx) == alternateLease:
+		return &p.SubRefreshResponse{Result: &p.SubRefreshResult{
+			ExpireAt: time.Now().Add(time.Minute).Unix(), Info: p.Raw(`{"source":"alternate_lease"}`),
+		}}, nil
 	case strings.HasPrefix(r.Channel, "lease:renew-"):
 		return &p.SubRefreshResponse{Result: &p.SubRefreshResult{
 			ExpireAt: time.Now().Add(time.Minute).Unix(), Info: p.Raw(`{"source":"sub_refresh"}`),
 		}}, nil
+	case strings.HasPrefix(r.Channel, "lease:expire-error-"):
+		return &p.SubRefreshResponse{Error: denied()}, nil
+	case strings.HasPrefix(r.Channel, "lease:expire-disconnect-"):
+		return &p.SubRefreshResponse{Disconnect: &p.Disconnect{Code: 4472, Reason: "fixture disconnect"}}, nil
 	case strings.HasPrefix(r.Channel, "lease:expire-"):
 		return &p.SubRefreshResponse{Result: &p.SubRefreshResult{Expired: true}}, nil
 	default:

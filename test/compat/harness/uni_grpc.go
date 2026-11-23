@@ -9,11 +9,18 @@ import (
 	"github.com/xantos008/centrifunahuy-na-go/internal/unigrpc/unistream"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 // OpenUniGRPC consumes the public unistream service. A clean gRPC completion
 // yields nil. Failures, including a missed disconnect followed by timeout, fail the test.
 func (s *Session) OpenUniGRPC(req *unistream.ConnectRequest) func() *unistream.Push {
+	s.T.Helper()
+	return s.OpenUniGRPCWithMetadata(req, nil)
+}
+
+// OpenUniGRPCWithMetadata attaches transport metadata to the unistream call.
+func (s *Session) OpenUniGRPCWithMetadata(req *unistream.ConnectRequest, md metadata.MD) func() *unistream.Push {
 	s.T.Helper()
 	addr := envOr("COMPAT_REF_UNI_GRPC_ADDR", "127.0.0.1:18011")
 	if s.Target.Name == "sut" {
@@ -31,7 +38,7 @@ func (s *Session) OpenUniGRPC(req *unistream.ConnectRequest) func() *unistream.P
 		s.T.Fatal(err)
 	}
 	s.tr.add(Event{Kind: "grpc_send", Text: unistream.CentrifugoUniStream_Consume_FullMethodName, Body: request})
-	stream, err := unistream.NewCentrifugoUniStreamClient(conn).Consume(ctx, req)
+	stream, err := unistream.NewCentrifugoUniStreamClient(conn).Consume(metadata.NewOutgoingContext(ctx, md), req)
 	if err != nil {
 		s.T.Fatalf("%s: consume: %v", s.Target.Name, err)
 	}

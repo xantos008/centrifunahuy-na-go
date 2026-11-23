@@ -3,6 +3,7 @@ package scenarios
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/centrifugal/protocol"
 	h "github.com/xantos008/centrifunahuy-na-go/test/compat/harness"
@@ -73,5 +74,45 @@ func TestCS_PROXY_07(t *testing.T) {
 				s.T.Fatalf("expected application rejection on %s: %v", tc.channel, reply)
 			}
 		}
+	})
+}
+
+func TestCS_PROXY_11(t *testing.T) {
+	h.Profiles(t, "r")
+	h.Run(t, "CS-PROXY-11", func(s *h.Session) {
+		ws, client := leaseClient(s, h.Claims{Sub: "proxy-user", Info: &h.Info{Name: "initial"}})
+		channel := s.Ch("namedstream:feed")
+		start := time.Now()
+		ws.Send(fmt.Sprintf(`{"id":2,"subscribe":{"channel":%q,"data":"slow"}}`, channel))
+		ws.Recv(1)
+		var timeout protocol.Reply
+		ws.Last(&timeout)
+		e := timeout.GetError()
+		if timeout.Id != 2 || timeout.Subscribe != nil || e.GetCode() != 100 ||
+			e.GetMessage() != "internal server error" || !e.GetTemporary() || time.Since(start) < time.Second {
+			s.T.Fatalf("expected temporary error 100 after the first-response deadline: %v", &timeout)
+		}
+
+		// Retry the same channel and keep reading beyond the first-response deadline.
+		ws.Send(fmt.Sprintf(`{"id":3,"subscribe":{"channel":%q,"data":"ready"}}`, channel))
+		ws.Recv(1)
+		var ack protocol.Reply
+		ws.Last(&ack)
+		if ack.Id != 3 || ack.Error != nil || string(ack.GetSubscribe().GetData()) != `"alternate_lease"` {
+			s.T.Fatalf("expected named stream acknowledgement after retry: %v", &ack)
+		}
+		ws.Recv(1)
+		var delivery protocol.Reply
+		ws.Last(&delivery)
+		push := delivery.GetPush()
+		pub := push.GetPub()
+		if delivery.Id != 0 || push.GetChannel() != channel || string(pub.GetData()) != `"still-active"` ||
+			pub.GetTags()["source"] != "alternate_lease" {
+			s.T.Fatalf("expected a publication on the retried stream: %v", &delivery)
+		}
+
+		lease := s.Ch("namedlease:renew")
+		subscribeLease(s, ws, 4, lease)
+		awaitLeaseInfo(s, ws, lease, client, "proxy-user", `{"name":"initial"}`, `{"source":"alternate_lease"}`, 15*time.Second)
 	})
 }

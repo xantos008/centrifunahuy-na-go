@@ -144,6 +144,7 @@
       {
         "name": "proxied",
         "subscribe_proxy_enabled": true,
+        "allow_user_limited_channels": true,
         "presence": true
       },
       {
@@ -249,6 +250,15 @@
         "history_size": 10,
         "history_ttl": "300s",
         "allow_subscribe_for_client": true
+      },
+      {
+        "name": "proxystate",
+        "publish_proxy_enabled": true,
+        "allow_subscribe_for_client": true,
+        "history_size": 8,
+        "history_ttl": "300s",
+        "force_positioning": true,
+        "allowed_delta_types": ["fossil"]
       },
       {
         "name": "proxywrite",

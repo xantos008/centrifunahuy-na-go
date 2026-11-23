@@ -25,7 +25,10 @@ func denied() *p.Error {
 	return &p.Error{Code: 470, Message: "fixture denied"}
 }
 
-func (fixture) Connect(_ context.Context, r *p.ConnectRequest) (*p.ConnectResponse, error) {
+func (fixture) Connect(ctx context.Context, r *p.ConnectRequest) (*p.ConnectResponse, error) {
+	if r.Name == "proxy-metadata" {
+		return metadataConnect(ctx, r)
+	}
 	if r.Name != "proxy-compat" {
 		// Defer to the server's usual anonymous connection policy.
 		return &p.ConnectResponse{}, nil
@@ -66,7 +69,8 @@ func (fixture) Subscribe(ctx context.Context, r *p.SubscribeRequest) (*p.Subscri
 		}
 		return &p.SubscribeResponse{Error: denied()}, nil
 	}
-	if strings.HasPrefix(r.Channel, "lease:renew-") || strings.HasPrefix(r.Channel, "lease:expire-") {
+	if strings.HasPrefix(r.Channel, "lease:renew-") || strings.HasPrefix(r.Channel, "lease:expire-") ||
+		strings.HasPrefix(r.Channel, "namedlease:renew-") {
 		return &p.SubscribeResponse{Result: &p.SubscribeResult{
 			ExpireAt: time.Now().Unix() + 2, Info: p.Raw(`{"source":"subscribe"}`),
 		}}, nil
@@ -89,6 +93,9 @@ func (fixture) Publish(ctx context.Context, r *p.PublishRequest) (*p.PublishResp
 			return &p.PublishResponse{Result: &p.PublishResult{Data: p.Raw(`"alternate_pub"`)}}, nil
 		}
 		return &p.PublishResponse{Error: denied()}, nil
+	}
+	if strings.HasPrefix(r.Channel, "proxystate:") {
+		return statePublication(r), nil
 	}
 	if !strings.HasPrefix(r.Channel, "proxywrite:") {
 		return &p.PublishResponse{Error: denied()}, nil
@@ -132,7 +139,8 @@ func connectHTTP(next http.HandlerFunc) http.HandlerFunc {
 		case "unavailable":
 			w.WriteHeader(http.StatusServiceUnavailable)
 		default:
-			next(w, r)
+			ctx := context.WithValue(r.Context(), connectHeadersKey{}, r.Header)
+			next(w, r.WithContext(ctx))
 		}
 	}
 }
@@ -143,7 +151,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	server := grpc.NewServer()
+	server := grpc.NewServer(grpc.StatsHandler(connectStats{}))
 	p.RegisterCentrifugoProxyServer(server, f)
 	go func() { log.Fatal(server.Serve(listener)) }()
 	mux := http.NewServeMux()

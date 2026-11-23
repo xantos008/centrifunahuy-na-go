@@ -1,0 +1,196 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "proxied:allowed-signed-RUN",
+          "data": "route-probe",
+          "token": "<token:2>"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {
+            "<client:1>": {
+              "chan_info": {
+                "name": "subscription"
+              },
+              "client": "<client:1>",
+              "conn_info": {
+                "name": "connection"
+              },
+              "user": "proxy-user"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "proxied:allowed-signed-RUN",
+          "pub": {
+            "data": "delivery"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "subscribe": {
+          "channel": "proxied:allowed-personal-RUN#proxy-user",
+          "data": "route-probe"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {
+            "<client:1>": {
+              "client": "<client:1>",
+              "conn_info": {
+                "name": "connection"
+              },
+              "user": "proxy-user"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "proxied:allowed-personal-RUN#proxy-user",
+          "pub": {
+            "data": "delivery"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "subscribe": {
+          "channel": "proxied:allowed-control-RUN",
+          "data": "route-probe"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 4,
+        "subscribe": {
+          "data": "route-probe"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {
+            "<client:1>": {
+              "chan_info": {
+                "source": "subscribe"
+              },
+              "client": "<client:1>",
+              "conn_info": {
+                "name": "connection"
+              },
+              "user": "proxy-user"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "proxied:allowed-control-RUN",
+          "pub": {
+            "data": "delivery"
+          }
+        }
+      }
+    }
+  ]
+}

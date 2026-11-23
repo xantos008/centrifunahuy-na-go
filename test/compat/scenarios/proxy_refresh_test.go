@@ -120,3 +120,37 @@ func TestCS_PROXY_08(t *testing.T) {
 		awaitLeaseInfo(s, ws, channel, client, "lease-retry", `{"retry":"connection"}`, `{"retry":"subscription"}`, 90*time.Second)
 	})
 }
+
+func TestCS_PROXY_13(t *testing.T) {
+	h.Profiles(t, "r", "p")
+	h.Run(t, "CS-PROXY-13", func(s *h.Session) {
+		for _, user := range []string{"lease-error", "lease-disconnect"} {
+			ws, _ := leaseClient(s, h.Claims{Sub: user, Exp: h.ExpIn(2 * time.Second)})
+			if code := ws.ExpectClose(); code != 3005 {
+				s.T.Fatalf("%s: expected connection expired (3005), got %d", user, code)
+			}
+		}
+
+		sibling := s.Ch("refresh-sibling")
+		ws, _ := leaseClient(s, h.Claims{Sub: "proxy-user", Channels: []string{sibling}})
+		for i, kind := range []string{"error", "disconnect"} {
+			channel := s.Ch("lease:expire-" + kind)
+			subscribeLease(s, ws, i+2, channel)
+			ws.CaptureUntil("subscription expired", 15*time.Second)()
+			var reply protocol.Reply
+			ws.Last(&reply)
+			push := reply.GetPush()
+			if reply.Id != 0 || push.GetChannel() != channel || push.GetUnsubscribe().GetCode() != 2501 ||
+				push.GetUnsubscribe().GetReason() != "subscription expired" {
+				s.T.Fatalf("%s: expected subscription expired (2501), got %v", kind, &reply)
+			}
+		}
+		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":"still-connected"}`, sibling)})
+		ws.Recv(1)
+		var delivery protocol.Reply
+		ws.Last(&delivery)
+		if delivery.GetPush().GetChannel() != sibling || string(delivery.GetPush().GetPub().GetData()) != `"still-connected"` {
+			s.T.Fatalf("expected delivery on the sibling subscription: %v", &delivery)
+		}
+	})
+}

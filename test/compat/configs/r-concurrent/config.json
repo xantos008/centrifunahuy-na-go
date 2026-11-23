@@ -9,6 +9,8 @@
     {"name": "wait_grpc", "endpoint": "grpc://proxyfixture:8081", "timeout": "25s"}
   ],
   "rpc": {
+    "proxy": {"endpoint": "http://proxyfixture:8080/rpc"},
+    "without_namespace": {"proxy_enabled": true},
     "namespaces": [
       {"name": "wait_http", "proxy_enabled": true, "proxy_name": "wait_http"},
       {"name": "wait_grpc", "proxy_enabled": true, "proxy_name": "wait_grpc"}

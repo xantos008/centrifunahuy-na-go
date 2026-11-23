@@ -18,7 +18,14 @@
     "proxy": {
       "connect": {
         "enabled": true,
-        "endpoint": "http://proxyfixture:8080/connect"
+        "endpoint": "http://proxyfixture:8080/connect",
+        "grpc_metadata": ["x-compat-connect-marker"],
+        "emulated_headers": ["x-compat-connect-marker"],
+        "http": {
+          "static_headers": {
+            "x-compat-connect-marker": "static"
+          }
+        }
       },
       "refresh": {
         "enabled": true,
@@ -34,6 +41,9 @@
     "enabled": true
   },
   "uni_http_stream": {
+    "enabled": true
+  },
+  "uni_grpc": {
     "enabled": true
   },
   "proxies": [

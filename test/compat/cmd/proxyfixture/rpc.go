@@ -117,7 +117,7 @@ func (f fixture) RPC(ctx context.Context, r *p.RPCRequest) (*p.RPCResponse, erro
 	switch r.Method {
 	case "marker:read":
 		return markerRPC(ctx)
-	case "probe:echo":
+	case "echo", "probe:echo":
 		return &p.RPCResponse{Result: &p.RPCResult{Data: r.Data}}, nil
 	case "probe:timeout":
 		return f.rpcTimeouts.hold(ctx, r.Client, 4*time.Second)
