@@ -1,0 +1,93 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "subs": {
+            "connection-lease-RUN": {}
+          },
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {
+            "<client:1>": {
+              "client": "<client:1>",
+              "conn_info": {
+                "source": "refresh"
+              },
+              "user": "lease-renew"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "connection-lease-RUN",
+          "pub": {
+            "data": "lease-refreshed",
+            "epoch": "<epoch:1>",
+            "offset": 1
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "connection expired",
+      "code": 3005
+    }
+  ]
+}

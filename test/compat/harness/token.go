@@ -22,6 +22,7 @@ type Claims struct {
 	Channel  string   `json:"channel,omitempty"`
 	Channels []string `json:"channels,omitempty"`
 	Info     *Info    `json:"info,omitempty"`
+	Meta     *Info    `json:"meta,omitempty"`
 }
 
 // Info is connection info attached to presence and publications.
