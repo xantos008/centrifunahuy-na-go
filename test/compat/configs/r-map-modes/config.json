@@ -1,0 +1,79 @@
+{
+  "client": {
+    "allowed_origins": [
+      "*"
+    ],
+    "token": {
+      "hmac_secret_key": "compat-test-hmac-secret-not-a-real-secret"
+    },
+    "presence_update_interval": "1s"
+  },
+  "channel": {
+    "namespaces": [
+      {
+        "name": "shortmap",
+        "subscription_type": "map",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "ephemeral",
+          "key_ttl": "3s"
+        }
+      },
+      {
+        "name": "longmap",
+        "subscription_type": "map",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "persistent"
+        }
+      },
+      {
+        "name": "clientsmap",
+        "subscription_type": "map_clients",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "ephemeral",
+          "key_ttl": "60s"
+        }
+      },
+      {
+        "name": "usersmap",
+        "subscription_type": "map_users",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "ephemeral",
+          "key_ttl": "4s"
+        }
+      },
+      {
+        "name": "members",
+        "allow_subscribe_for_client": true,
+        "map_clients_presence_channel_prefix": "clientsmap:",
+        "map_users_presence_channel_prefix": "usersmap:"
+      }
+    ]
+  },
+  "http_api": {
+    "key": "compat-test-api-key"
+  },
+  "health": {
+    "enabled": true
+  },
+  "engine": {
+    "type": "redis",
+    "redis": {
+      "address": [
+        "redis://compat:compat-test-redis-password@redis:6379"
+      ],
+      "presence_ttl": "5s"
+    }
+  },
+  "map_broker": {
+    "type": "redis",
+    "redis": {
+      "address": [
+        "redis://compat:compat-test-redis-password@redis:6379"
+      ]
+    }
+  }
+}
