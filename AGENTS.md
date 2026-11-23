@@ -12,6 +12,8 @@ Delegate routine implementation following an established pattern, test execution
 
 ## Local Git and handoff
 
-Local branches, commits and merges are authorized. Integrate each verified stage into local `main` and start the next phase branch from the updated `main`. Check branch ancestry before merging or branching. Track phase acceptance criteria separately from local merge status.
+Local branches, commits and merges are authorized. Check branch ancestry before merging or branching. Integrate each verified stage into local `main` and track phase acceptance criteria separately from local and remote merge status. A single PR can complete a stage within a phase. Close a numbered phase only after all acceptance checks in its phase plan pass and the complete phase is merged into `main`.
 
-The user handles pushes and remote pull requests. If a later phase branch already descends from an earlier phase branch, preserve its commits and specify the order in which the PRs should reach remote `main`. Give each proposed or completed commit a descriptive subject, a body explaining behavior and verification, and the exact paths included. Provide a PR title, target and source branches, summary and test results when a change is ready to publish.
+The user handles pushes and remote pull requests unless they explicitly delegate publication for a branch. For a user-owned remote merge, provide the publication handoff and wait for the merge. For a delegated merge, verify the CI results for the exact PR head before merging. Confirm the phase is in `origin/main` and synchronize local `main` with `origin/main` before starting the next numbered phase branch. Always branch the next numbered phase from that synchronized `main`. If a later phase branch already descends from an earlier phase branch, preserve its commits and specify the order in which the PRs should reach remote `main`.
+
+Give each proposed or completed commit a descriptive subject, a body explaining behavior and verification, and the exact paths included. Provide a PR title, target and source branches, summary and test results when a change is ready to publish.
