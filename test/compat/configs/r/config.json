@@ -33,6 +33,9 @@
   "health": {
     "enabled": true
   },
+  "shared_poll": {
+    "hmac_secret_key": "compat-test-poll-secret"
+  },
   "uni_http_stream": {
     "enabled": true
   },
@@ -96,6 +99,19 @@
       },
       "subscribe_stream": {
         "endpoint": "grpc://proxyfixture:8081"
+      },
+      "shared_poll_refresh": {
+        "endpoint": "grpc://proxyfixture:8081"
+      },
+      "map_publish": {
+        "endpoint": "grpc://proxyfixture:8081",
+        "binary_encoding": true,
+        "include_connection_meta": true
+      },
+      "map_remove": {
+        "endpoint": "grpc://proxyfixture:8081",
+        "binary_encoding": true,
+        "include_connection_meta": true
       }
     },
     "without_namespace": {
@@ -106,6 +122,16 @@
       "allow_user_limited_channels": true
     },
     "namespaces": [
+      {
+        "name": "poll",
+        "subscription_type": "shared_poll",
+        "allow_subscribe_for_client": true,
+        "shared_poll": {
+          "mode": "versioned",
+          "refresh_interval": "1s",
+          "publish_enabled": true
+        }
+      },
       {
         "name": "proxied",
         "subscribe_proxy_enabled": true,
@@ -244,6 +270,29 @@
         "allow_subscribe_for_client": true,
         "history_size": 4,
         "history_ttl": "300s"
+      },
+      {
+        "name": "mapproxy",
+        "subscription_type": "map",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "recoverable",
+          "key_ttl": "300s",
+          "stream_size": 16,
+          "stream_ttl": "300s",
+          "publish_proxy_enabled": true,
+          "remove_proxy_enabled": true
+        }
+      },
+      {
+        "name": "pollplain",
+        "subscription_type": "shared_poll",
+        "allow_subscribe_for_client": true,
+        "shared_poll": {
+          "mode": "versionless",
+          "refresh_interval": "1s",
+          "channel_shutdown_delay": "1s"
+        }
       }
     ]
   },

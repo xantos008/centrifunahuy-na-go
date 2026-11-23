@@ -1,0 +1,81 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "lease:retry-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/presence",
+      "status": 200,
+      "body": {
+        "result": {
+          "presence": {
+            "<client:1>": {
+              "chan_info": {
+                "retry": "subscription"
+              },
+              "client": "<client:1>",
+              "conn_info": {
+                "retry": "connection"
+              },
+              "user": "lease-retry"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "lease:retry-RUN",
+          "pub": {
+            "data": "lease-refreshed"
+          }
+        }
+      }
+    }
+  ]
+}

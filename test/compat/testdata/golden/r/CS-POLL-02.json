@@ -1,0 +1,118 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "pollplain:compat",
+          "type": 4
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "epoch": "<epoch:1>",
+          "type": 4
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "sub_refresh": {
+          "channel": "pollplain:compat",
+          "track": [
+            {
+              "items": [
+                {
+                  "key": "quote"
+                }
+              ],
+              "signature": "1:0:74661d1f3e894c46325c249241ea340dfa69a7943d0daa3dae698af7291cfe60"
+            }
+          ],
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "sub_refresh": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "pollplain:compat",
+          "pub": {
+            "data": {
+              "source": "versionless"
+            },
+            "key": "quote",
+            "version": "<version:2>"
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/shared_poll_publish",
+      "status": 200,
+      "body": {
+        "error": {
+          "code": 108,
+          "message": "not available"
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "sub_refresh": {
+          "channel": "pollplain:compat",
+          "type": 2,
+          "untrack": [
+            "quote"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 4,
+        "sub_refresh": {}
+      }
+    }
+  ]
+}

@@ -93,6 +93,16 @@
       "sub_refresh": {
         "endpoint": "http://proxyfixture:8080/sub_refresh",
         "include_connection_meta": true
+      },
+      "map_publish": {
+        "endpoint": "http://proxyfixture:8080/map_publish",
+        "binary_encoding": true,
+        "include_connection_meta": true
+      },
+      "map_remove": {
+        "endpoint": "http://proxyfixture:8080/map_remove",
+        "binary_encoding": true,
+        "include_connection_meta": true
       }
     },
     "without_namespace": {
@@ -232,6 +242,19 @@
         "allow_subscribe_for_client": true,
         "history_size": 4,
         "history_ttl": "300s"
+      },
+      {
+        "name": "mapproxy",
+        "subscription_type": "map",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "recoverable",
+          "key_ttl": "300s",
+          "stream_size": 16,
+          "stream_ttl": "300s",
+          "publish_proxy_enabled": true,
+          "remove_proxy_enabled": true
+        }
       }
     ]
   },

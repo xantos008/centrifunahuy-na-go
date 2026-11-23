@@ -18,6 +18,7 @@ import (
 type fixture struct {
 	p.UnimplementedCentrifugoProxyServer
 	rpcTimeouts *rpcTimeouts
+	retryLeases *retryLeases
 }
 
 func denied() *p.Error {
@@ -51,6 +52,10 @@ func (fixture) Connect(_ context.Context, r *p.ConnectRequest) (*p.ConnectRespon
 }
 
 func (fixture) Subscribe(ctx context.Context, r *p.SubscribeRequest) (*p.SubscribeResponse, error) {
+	if r.User == "lease-retry" && strings.HasPrefix(r.Channel, "lease:retry-") &&
+		r.Client != "" && r.Transport == "websocket" && r.Protocol == "json" && r.Encoding == "json" {
+		return &p.SubscribeResponse{Result: &p.SubscribeResult{ExpireAt: time.Now().Unix() + 2}}, nil
+	}
 	if r.User != "proxy-user" || r.Client == "" || r.Transport != "websocket" || r.Protocol != "json" ||
 		r.Encoding != "json" {
 		return &p.SubscribeResponse{Error: denied()}, nil
@@ -117,7 +122,7 @@ func jsonHandler[Request, Response any](call func(context.Context, *Request) (*R
 }
 
 func main() {
-	f := fixture{rpcTimeouts: &rpcTimeouts{}}
+	f := fixture{rpcTimeouts: &rpcTimeouts{}, retryLeases: &retryLeases{}}
 	listener, err := net.Listen("tcp", ":8081") //nolint:gosec // The peer runs in the same private test network. Compose publishes no fixture ports.
 	if err != nil {
 		log.Fatal(err)
@@ -131,6 +136,8 @@ func main() {
 	mux.HandleFunc("POST /refresh", jsonHandler(f.Refresh))
 	mux.HandleFunc("POST /sub_refresh", jsonHandler(f.SubRefresh))
 	mux.HandleFunc("POST /publish", jsonHandler(f.Publish))
+	mux.HandleFunc("POST /map_publish", jsonHandler(f.MapPublish))
+	mux.HandleFunc("POST /map_remove", jsonHandler(f.MapRemove))
 	mux.HandleFunc("POST /rpc", jsonHandler(f.RPC))
 	mux.HandleFunc("POST /named/subscribe", namedHTTP("alternate_sub", jsonHandler(f.Subscribe)))
 	mux.HandleFunc("POST /named/publish", namedHTTP("alternate_pub", jsonHandler(f.Publish)))
