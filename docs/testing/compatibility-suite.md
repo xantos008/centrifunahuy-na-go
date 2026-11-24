@@ -23,7 +23,7 @@ A diff fails CI unless the scenario is mapped to an **accepted** entry in [known
 
 ```
 test/compat/
-├── go.mod                     module …/test/compat; requires gorilla/websocket v1.5.3, nats.go v1.55.0 (more deps only when a scenario needs them)
+├── go.mod                     module …/test/compat; pins gorilla/websocket and nats.go (more deps only when a scenario needs them)
 ├── docker-compose.yml         ref (image@digest) and sut (our linux binary from .build/, mounted into alpine:3.24: no image build,
 │                              no network inside Docker); per profile: node B (ref-b, sut-b) and one backend set per
 │                              side (redis-ref / redis-sut …) on separate networks ref-net / sut-net, Compose `profiles:`
@@ -92,7 +92,7 @@ Never normalized: codes, messages, field presence or absence, offsets, `recovere
 
 **Status 2026-11-16 (phase 2, step 2.6):** PostgreSQL profiles are green in diff and golden mode:
 - `p`: PG broker and PG controller without NOTIFY, memory presence, two nodes per target. Tagged scenarios: CS-HIST-01/02/04, CS-PUB-01/03/04/05, CS-REC-01/02/04/05 and the new CS-PUB-07.
-- `p-notify`: the same with `use_notify` on, one node. CS-PUB-07 only; its golden is byte-identical to `p`.
+- `p-notify`: the same with `use_notify` on, one node. CS-PUB-07 uses the same golden content as `p`. CS-CONS-02 also exercises a dedicated application outbox.
 
 `sut-default` does not run on `p*`: the PG table prefix is `cf` in both modes, so it would join the sut cluster through the controller. Where a scenario publishes and then subscribes, it calls `s.AwaitDelivery()`. On `p*` this waits 500 ms for the outbox and records a note; elsewhere it does nothing.
 
@@ -129,6 +129,15 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 - CS-SUB-03: server-side subscriptions (`subs` claim, `subscribe` API) and join/leave pushes. M R
 - CS-SUB-04: channel limit (128), name length (255), already subscribed → 105. M
 - CS-SUB-05: subscribe proxy; tags filter (`tf`); delta (fossil) negotiation. M
+- CS-SUB-06 uses the dedicated `r-personal` node on `r` to check automatic personal subscriptions, replacement disconnect 3504 and cross-node delivery.
+
+### Map and shared poll subscriptions
+
+- CS-MAP-01 follows one recoverable map on `m`, `r-lists` and `p-notify` through its initial state, live updates and removals, two recovery pages and a fresh subscription.
+- CS-MAP-02 on `r` and `p` checks a rejected client write, then a backend-approved publish and remove with a rewritten key and tags. The writer gets 107 on both applied operations.
+- CS-MAP-03 on `r` compares ephemeral and persistent map state after reconnect. CS-MAP-04 on the same alternate node checks per-client and per-user presence map entries as two sockets join and leave.
+- CS-POLL-01 on `r` checks signed tracked keys, a backend refresh, versioned cross-node direct publications, reconnect with a known version and untracking.
+- CS-POLL-02 on `r` tracks a key whose refresh callback supplies data without a version. The server assigns a positive version and rejects direct publishing with 108.
 
 ### CS-PUB: publication (OSS-API-01, OSS-SUB)
 - ★ CS-PUB-01: client publish allowed or denied by namespace; server API publish with `tags`, `idempotency_key`, `skip_history`. M R N P
@@ -160,12 +169,15 @@ Each scenario lists the engine profiles it runs on: `M` memory, `R` Redis, `N` N
 - ★ CS-API-02: every HTTP route (21) with a minimal valid request and one invalid request (error code and message). M
 - CS-API-03: the 21 OSS methods over the keyed gRPC API on M. The harness reuses CS-API-02 inputs and the generated service descriptor. An unauthenticated Info gets status 16. All 19 PRO-only methods return status 12 and their HTTP paths return 404 on the pinned reference. The loopback endpoints for ref and sut default to ports 18010 and 28010 and can be overridden with `COMPAT_REF_GRPC_ADDR` and `COMPAT_SUT_GRPC_ADDR`.
 - CS-API-04: `error_mode` variants; `disconnect`, `unsubscribe`, `refresh` by user across 2 nodes. M R
+- CS-API-05 compares plaintext on `m` with verified TLS on `rsh`. It checks reflection, the unary Publish descriptor, default and per-request error handling, and gRPC status details.
 
 ### CS-RPC: client RPC (phase 3)
 
 - CS-RPC-01 runs on the ping-only `m` profile. The custom RPC ping method returns an empty result. The default name and an unknown method return error 104. Verified in diff and golden mode.
 - CS-RPC-02 exercises the RPC proxy over gRPC on `r` and HTTP on `p`. The `probe` namespace echoes the request data or returns application error 470. An unqualified unknown method returns 108 with proxying outside namespaces disabled. An unknown namespace returns 104. Verified in diff and golden mode on both profiles.
 - CS-RPC-03 calls a backend that waits for cancellation. On `r` and `p`, the one-second proxy deadline produces temporary error 100. A second RPC on the same WebSocket checks that the backend observed its request context ending. A third RPC echoes data.
+- CS-RPC-04 uses separate WebSocket clients to observe handler entry, then cancellation after peer disconnect. Both HTTP and gRPC callbacks use the alternate `r-concurrent` node on `r`.
+- CS-RPC-05 enables proxying outside namespaces on the alternate node. An unqualified `echo` reaches the HTTP callback and returns the original payload.
 
 ### CS-PROXY: application callbacks (phase 3)
 
@@ -178,12 +190,42 @@ Each server calls a separate instance of `cmd/proxyfixture` on its private Compo
 - CS-PROXY-05 starts two expiring subscriptions on one WebSocket. Renewal updates channel info in presence and preserves the original connection info. Expiry produces an unsubscribe push (2501) for the second channel. The first still receives a publication. Both callbacks require the channel name and JWT connection meta. In both refresh scenarios the PostgreSQL stream broker includes the stream epoch and offset in delivered publications. Redis omits those fields on these channels.
 - CS-PROXY-06 checks named subscribe, publish and RPC callbacks in one namespace. Each callback requires its own static routing marker. A default RPC on the same client echoes the original payload. Runs on `r` and `p`.
 - CS-PROXY-07 checks subscribe data and tagged publications on unidirectional and bidirectional gRPC streams, client publish over the bidirectional stream, rejection 108 for publish on the unidirectional stream, application rejection 470 and unsubscribe 2500 when the backend stream is interrupted. Runs on `r`.
+- CS-PROXY-08 on `r` and `p` waits for real connection and subscription refresh retries after an initial backend failure. Changed presence metadata and a subsequent delivery establish that both leases survived.
+- CS-PROXY-09 on `r` and `p` compares header precedence for a WebSocket client. The fixture reports the marker it actually received via gRPC or HTTP.
+- CS-PROXY-10 on `m` checks the connect callback status transforms and default temporary error 100.
+- CS-PROXY-11 on `r` delays the first reply from a named subscription stream. The client retries the subscription and receives a later publication. A second namespace routes subscription renewal to the named backend.
+- CS-PROXY-12 on `m` and `r` compares a signed subscription, a user's personal channel with a `#user` suffix and a regular proxied subscription. The scenario checks the source of channel metadata and delivery on all three.
+- CS-PROXY-13 on `r` and `p` observes expiry when a refresh backend returns a custom error or disconnect without a result. It covers connection and subscription refresh separately.
+- CS-PROXY-14 starts with an authenticated unidirectional gRPC connection. A subsequent tokenless connection checks which transport metadata reaches the HTTP callback on `p` and the gRPC callback on `r`. The fixture observes the configured gRPC credential and compressor.
+- CS-PROXY-15 on `m` and `r` returns publication options from the backend. It checks version and epoch changes, repeated idempotency keys, Fossil delta delivery and the resulting channel history.
 
 ### CS-TRANS: other transports (phase 3)
 
 - CS-TRANS-01: unidirectional SSE and HTTP-stream POST connect, initial subscription, framing and API publication delivery. Verified in diff and golden mode on `m`.
 - CS-TRANS-02 exercises unidirectional WebSocket via a first-frame connect request and via `cf_connect`. Both clients receive an API publication, a disconnect push and a WebSocket close frame with code 4001 and the configured reason. M
-- Remaining transport coverage includes emulated SSE and HTTP-stream, unidirectional gRPC, and the other transports in the phase-3 plan.
+- CS-TRANS-03 checks the public unidirectional gRPC service on `m`, including binary publication data and end of stream.
+- CS-TRANS-04 sends commands to the emulation endpoint for an SSE GET and an HTTP-stream POST connection, then checks subscription, delivery, unsubscribe and disconnect on `m`.
+- CS-TRANS-05 checks HTTP 404 on the former SockJS root and info endpoints on `m`.
+- CS-TRANS-06 compares the static-certificate WebTransport handshake on `rsh` for JSON and Protobuf. The pinned golden captures TLS alert `no_application_protocol`. The Cedrazeka default and compatibility modes must complete a verified HTTP/3 session and deliver matching publications over both encodings (KD-09).
+- CS-TRANS-07 compares a bidirectional WebSocket client connect over HTTP/2 extended CONNECT on `m`. The server advertises the HTTP/2 setting, accepts the tunnel and replies to the first masked WebSocket frame. TestCedrazekaUniWebSocketHTTP2 separately verifies a unidirectional connect push followed by a fresh connection on the repaired server (KD-18).
+- CS-TRANS-08 on `m` checks the public init endpoint and configured or default connection rejections on the three unidirectional client endpoints.
+- CS-TRANS-09 on `m` compares binary commands sent to HTTP-stream and emulation, the subscribe/unsubscribe replies and non-UTF-8 publication bytes.
+
+### Async consumers
+
+| Scenario | Profile | Observable contract |
+|---|---|---|
+| CS-CONS-01 | `r-opt` | Redis Streams command and raw publication modes, acknowledged entries and repeat delivery attempts on a pending entry. |
+| CS-CONS-02 | `p-notify` | Committed application outbox rows deliver in order. A rolled-back publication stays out of history. The consumer removes processed rows including an unknown command. |
+| CS-CONS-03 | `n` | JetStream retains unacknowledged work for redelivery and advances the durable consumer acknowledgement floor after processing. |
+| CS-CONS-04 | `cloud` | SQS command delivery, SNS envelopes and deletion of processed messages. |
+| CS-CONS-05 | `cloud` | Pub/Sub method-attribute and command-envelope messages delivered in order with distinct message IDs. |
+| CS-CONS-06 | `kafka` | Envelope commands, tagged raw publication, committed offsets and zero lag for the two consumer groups. |
+| CS-CONS-07 | `azure` | Method-property and command-envelope deliveries over AMQP, followed by inspection of the command queue and its dead-letter queue. |
+
+The Azure profile uses Microsoft’s Service Bus emulator and SQL Server Linux. It runs locally with its own Compose project. Acceptance of the terms for both components is supplied by the operator. The local entry point is `ACCEPT_EULA=Y test/compat/azure.sh diff golden`. [Microsoft emulator setup](https://learn.microsoft.com/en-us/azure/service-bus-messaging/test-locally-with-service-bus-emulator)
+
+After the delivery comparison, the script runs `TestAzureServiceBusConsumer_DrainAcksInFlight` on the dedicated `compat-drain` queue. The test holds a delivery inside the handler, cancels consumption and observes the locked message before releasing the handler. It checks that shutdown finishes and both queues are empty. Run `ACCEPT_EULA=Y test/compat/azure.sh drain` to repeat just this check on a single emulator.
 
 ### CS-ENG: multi-node (phase 2)
 Two sut nodes against two ref nodes. Each scenario first waits until `info` on both nodes lists two nodes. `Session.OnB` points calls and new connections at node B.
