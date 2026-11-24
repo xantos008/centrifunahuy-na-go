@@ -18,7 +18,14 @@
     "proxy": {
       "connect": {
         "enabled": true,
-        "endpoint": "http://proxyfixture:8080/connect"
+        "endpoint": "http://proxyfixture:8080/connect",
+        "grpc_metadata": ["x-compat-connect-marker"],
+        "emulated_headers": ["x-compat-connect-marker"],
+        "http": {
+          "static_headers": {
+            "x-compat-connect-marker": "static"
+          }
+        }
       },
       "refresh": {
         "enabled": true,
@@ -36,6 +43,53 @@
   "uni_http_stream": {
     "enabled": true
   },
+  "uni_grpc": {
+    "enabled": true
+  },
+  "proxies": [
+    {
+      "name": "alternate_sub",
+      "endpoint": "http://proxyfixture:8080/named/subscribe",
+      "http": {
+        "static_headers": {
+          "x-compat-route": "alternate_sub"
+        }
+      }
+    },
+    {
+      "name": "alternate_pub",
+      "endpoint": "http://proxyfixture:8080/named/publish",
+      "http": {
+        "static_headers": {
+          "x-compat-route": "alternate_pub"
+        }
+      }
+    },
+    {
+      "name": "alternate_rpc",
+      "endpoint": "http://proxyfixture:8080/named/rpc",
+      "http": {
+        "static_headers": {
+          "x-compat-route": "alternate_rpc"
+        }
+      }
+    },
+    {
+      "name": "callback_marker",
+      "endpoint": "http://proxyfixture:8080/marker/rpc",
+      "http_headers": [
+        "x-compat-marker"
+      ],
+      "emulated_headers": [
+        "x-compat-marker"
+      ],
+      "http": {
+        "static_headers": {
+          "x-compat-marker": "static"
+        }
+      }
+    }
+  ],
   "rpc": {
     "proxy": {
       "endpoint": "http://proxyfixture:8080/rpc",
@@ -45,6 +99,16 @@
       {
         "name": "probe",
         "proxy_enabled": true
+      },
+      {
+        "name": "named",
+        "proxy_enabled": true,
+        "proxy_name": "alternate_rpc"
+      },
+      {
+        "name": "marker",
+        "proxy_enabled": true,
+        "proxy_name": "callback_marker"
       }
     ]
   },
@@ -58,6 +122,16 @@
       },
       "sub_refresh": {
         "endpoint": "http://proxyfixture:8080/sub_refresh",
+        "include_connection_meta": true
+      },
+      "map_publish": {
+        "endpoint": "http://proxyfixture:8080/map_publish",
+        "binary_encoding": true,
+        "include_connection_meta": true
+      },
+      "map_remove": {
+        "endpoint": "http://proxyfixture:8080/map_remove",
+        "binary_encoding": true,
         "include_connection_meta": true
       }
     },
@@ -79,6 +153,14 @@
         "subscribe_proxy_enabled": true,
         "sub_refresh_proxy_enabled": true,
         "presence": true
+      },
+      {
+        "name": "named",
+        "subscribe_proxy_enabled": true,
+        "subscribe_proxy_name": "alternate_sub",
+        "publish_proxy_enabled": true,
+        "publish_proxy_name": "alternate_pub",
+        "allow_subscribe_for_client": true
       },
       {
         "name": "pcache",
@@ -190,6 +272,19 @@
         "allow_subscribe_for_client": true,
         "history_size": 4,
         "history_ttl": "300s"
+      },
+      {
+        "name": "mapproxy",
+        "subscription_type": "map",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "recoverable",
+          "key_ttl": "300s",
+          "stream_size": 16,
+          "stream_ttl": "300s",
+          "publish_proxy_enabled": true,
+          "remove_proxy_enabled": true
+        }
       }
     ]
   },

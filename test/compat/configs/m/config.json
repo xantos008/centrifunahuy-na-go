@@ -16,8 +16,42 @@
     "proxy": {
       "connect": {
         "enabled": true,
-        "endpoint": "http://proxyfixture:8080/connect"
+        "endpoint": "http://proxyfixture:8080/connect",
+        "emulated_headers": [
+          "x-compat-connect"
+        ],
+        "http": {
+          "status_to_code_transforms": [
+            {
+              "status_code": 429,
+              "to_error": {
+                "code": 471,
+                "message": "try later",
+                "temporary": true
+              }
+            },
+            {
+              "status_code": 403,
+              "to_disconnect": {
+                "code": 4472,
+                "reason": "access declined"
+              }
+            }
+          ]
+        }
       }
+    },
+    "connect_code_to_unidirectional_disconnect": {
+      "enabled": true,
+      "transforms": [
+        {
+          "code": 471,
+          "to": {
+            "code": 3471,
+            "reason": "retry later"
+          }
+        }
+      ]
     }
   },
   "http_api": {
@@ -31,12 +65,57 @@
     "enabled": true
   },
   "uni_sse": {
-    "enabled": true
+    "enabled": true,
+    "connect_code_to_http_response": {
+      "enabled": true,
+      "transforms": [
+        {
+          "code": 471,
+          "to": {
+            "status_code": 429,
+            "body": "retry this connection"
+          }
+        },
+        {
+          "code": 4472,
+          "to": {
+            "status_code": 403
+          }
+        }
+      ]
+    }
   },
   "uni_websocket": {
     "enabled": true
   },
   "uni_http_stream": {
+    "enabled": true,
+    "connect_code_to_http_response": {
+      "enabled": true,
+      "transforms": [
+        {
+          "code": 471,
+          "to": {
+            "status_code": 429,
+            "body": "retry this connection"
+          }
+        },
+        {
+          "code": 4472,
+          "to": {
+            "status_code": 403
+          }
+        }
+      ]
+    }
+  },
+  "uni_grpc": {
+    "enabled": true
+  },
+  "sse": {
+    "enabled": true
+  },
+  "http_stream": {
     "enabled": true
   },
   "rpc": {
@@ -65,6 +144,7 @@
       {
         "name": "proxied",
         "subscribe_proxy_enabled": true,
+        "allow_user_limited_channels": true,
         "presence": true
       },
       {
@@ -172,15 +252,39 @@
         "allow_subscribe_for_client": true
       },
       {
+        "name": "proxystate",
+        "publish_proxy_enabled": true,
+        "allow_subscribe_for_client": true,
+        "history_size": 8,
+        "history_ttl": "300s",
+        "force_positioning": true,
+        "allowed_delta_types": ["fossil"]
+      },
+      {
         "name": "proxywrite",
         "publish_proxy_enabled": true,
         "allow_subscribe_for_client": true,
         "history_size": 4,
         "history_ttl": "300s"
+      },
+      {
+        "name": "board",
+        "subscription_type": "map",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "recoverable",
+          "key_ttl": "300s",
+          "stream_size": 16,
+          "stream_ttl": "300s",
+          "min_page_size": 1
+        }
       }
     ]
   },
   "prometheus": {
+    "enabled": true
+  },
+  "init": {
     "enabled": true
   }
 }

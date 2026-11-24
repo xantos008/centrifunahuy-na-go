@@ -1,0 +1,28 @@
+{
+  "client": {
+    "allowed_origins": ["*"],
+    "token": {"hmac_secret_key": "compat-test-hmac-secret-not-a-real-secret"},
+    "concurrency": 2
+  },
+  "proxies": [
+    {"name": "wait_http", "endpoint": "http://proxyfixture:8080/rpc", "timeout": "25s"},
+    {"name": "wait_grpc", "endpoint": "grpc://proxyfixture:8081", "timeout": "25s"}
+  ],
+  "rpc": {
+    "proxy": {"endpoint": "http://proxyfixture:8080/rpc"},
+    "without_namespace": {"proxy_enabled": true},
+    "namespaces": [
+      {"name": "wait_http", "proxy_enabled": true, "proxy_name": "wait_http"},
+      {"name": "wait_grpc", "proxy_enabled": true, "proxy_name": "wait_grpc"}
+    ]
+  },
+  "http_api": {"key": "compat-test-api-key"},
+  "health": {"enabled": true},
+  "engine": {
+    "type": "redis",
+    "redis": {
+      "address": ["redis://compat:compat-test-redis-password@redis:6379"],
+      "presence_ttl": "5s"
+    }
+  }
+}

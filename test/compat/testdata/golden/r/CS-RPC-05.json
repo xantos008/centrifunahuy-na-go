@@ -1,0 +1,104 @@
+{
+  "events": [
+    {
+      "kind": "note",
+      "text": "stop node-b"
+    },
+    {
+      "kind": "note",
+      "text": "run node-b with configs/r-concurrent"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 25,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "rpc": {
+          "data": {
+            "unqualified": true
+          },
+          "method": "echo"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "rpc": {
+          "data": {
+            "unqualified": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "note",
+      "text": "remove node-b copy"
+    },
+    {
+      "kind": "note",
+      "text": "start node-b"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    }
+  ]
+}

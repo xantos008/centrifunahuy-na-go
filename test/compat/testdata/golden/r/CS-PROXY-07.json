@@ -1,0 +1,219 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "streambi:feed-RUN",
+          "data": {
+            "mode": "bidirectional"
+          },
+          "positioned": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "data": {
+            "mode": "bidirectional"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "publish": {
+          "channel": "streambi:feed-RUN",
+          "data": {
+            "event": "from-client"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "streamuni:feed-RUN",
+          "data": {
+            "mode": "unidirectional"
+          },
+          "positioned": true,
+          "recoverable": true
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "data": {
+            "mode": "unidirectional"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "streamuni:feed-RUN",
+          "pub": {
+            "data": {
+              "event": "welcome"
+            },
+            "tags": {
+              "source": "backend"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "streambi:feed-RUN",
+          "pub": {
+            "data": {
+              "event": "from-client"
+            },
+            "tags": {
+              "source": "client"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "streambi:feed-RUN",
+          "unsubscribe": {
+            "code": 2500,
+            "reason": "insufficient state"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "publish": {
+          "channel": "streamuni:feed-RUN",
+          "data": {
+            "event": "from-client"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 108,
+          "message": "not available"
+        },
+        "id": 3
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "subscribe": {
+          "channel": "streambi:denied-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 470,
+          "message": "fixture denied"
+        },
+        "id": 4
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "subscribe": {
+          "channel": "streamuni:denied-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 470,
+          "message": "fixture denied"
+        },
+        "id": 4
+      }
+    }
+  ]
+}

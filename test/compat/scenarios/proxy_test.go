@@ -163,3 +163,50 @@ func proxyPublication(pub *protocol.Publication) bool {
 	var data struct{ Source string }
 	return json.Unmarshal(pub.GetData(), &data) == nil && data.Source == "proxy"
 }
+
+func TestCS_PROXY_12(t *testing.T) {
+	h.Profiles(t, "m", "r")
+	h.Run(t, "CS-PROXY-12", func(s *h.Session) {
+		const user = "proxy-user"
+		ws := connect(s, h.HS256(h.Claims{Sub: user, Info: &h.Info{Name: "connection"}}))
+		var connected protocol.Reply
+		ws.Last(&connected)
+		client := connected.GetConnect().GetClient()
+
+		// All three channel names match the ordinary callback, which echoes
+		// request data and supplies its own channel info when selected.
+		signed := s.Ch("proxied:allowed-signed")
+		token := h.HS256(h.Claims{Sub: user, Channel: signed, Info: &h.Info{Name: "subscription"}})
+		const probe = `"route-probe"`
+		for i, tc := range []struct{ channel, token, replyData, chanInfo string }{
+			{signed, token, "", `{"name":"subscription"}`},
+			{s.Ch("proxied:allowed-personal") + "#" + user, "", "", ""},
+			{s.Ch("proxied:allowed-control"), "", probe, `{"source":"subscribe"}`},
+		} {
+			id := uint32(i + 2)
+			cmd := protocol.Command{Id: id, Subscribe: &protocol.SubscribeRequest{
+				Channel: tc.channel, Token: tc.token, Data: protocol.Raw(probe),
+			}}
+			frame, err := json.Marshal(&cmd)
+			if err != nil {
+				s.T.Fatal(err)
+			}
+			ws.Send(string(frame))
+			ws.Recv(1)
+			var reply protocol.Reply
+			ws.Last(&reply)
+			if reply.Id != id || reply.Error != nil || reply.Subscribe == nil || string(reply.Subscribe.Data) != tc.replyData {
+				s.T.Fatalf("unexpected subscribe reply on %s: %v", tc.channel, &reply)
+			}
+			proxyMember(s, tc.channel, client, `{"name":"connection"}`, tc.chanInfo)
+			s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":"delivery"}`, tc.channel)})
+			ws.Recv(1)
+			var delivery protocol.Reply
+			ws.Last(&delivery)
+			push := delivery.GetPush()
+			if delivery.Id != 0 || push.GetChannel() != tc.channel || string(push.GetPub().GetData()) != `"delivery"` {
+				s.T.Fatalf("missing publication on %s: %v", tc.channel, &delivery)
+			}
+		}
+	})
+}

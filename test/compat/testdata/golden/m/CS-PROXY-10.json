@@ -1,0 +1,64 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "headers": {
+            "x-compat-connect": "busy"
+          }
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 471,
+          "message": "try later",
+          "temporary": true
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "headers": {
+            "x-compat-connect": "unavailable"
+          }
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 100,
+          "message": "internal server error",
+          "temporary": true
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "headers": {
+            "x-compat-connect": "declined"
+          }
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_close",
+      "text": "access declined",
+      "code": 4472
+    }
+  ]
+}

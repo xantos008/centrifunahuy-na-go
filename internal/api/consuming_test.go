@@ -7,9 +7,14 @@ import (
 	"testing"
 
 	"github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
+	"github.com/xantos008/centrifunahuy-na-go/internal/brand"
 	"github.com/xantos008/centrifunahuy-na-go/internal/config"
 
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
 func TestNewConsumingHandler(t *testing.T) {
@@ -30,6 +35,45 @@ func TestNewConsumingHandler(t *testing.T) {
 	// Bad request must be just logged but no errors other than Internal Error should be returned from Dispatch.
 	err = dispatcher.DispatchCommand(context.Background(), "publish", []byte(`{}`))
 	require.NoError(t, err)
+}
+
+func TestConsumerTelemetryAnnotatesDispatchSpan(t *testing.T) {
+	n := nodeWithMemoryEngine()
+	defer func() { _ = n.Shutdown(context.Background()) }()
+	cfg, err := config.NewContainer(config.DefaultConfig())
+	require.NoError(t, err)
+
+	for _, tc := range []struct {
+		name    string
+		enabled bool
+		payload string
+		status  codes.Code
+	}{
+		{"enabled", true, `{"channel":"events","data":{}}`, codes.Unset},
+		{"reported API error", true, `{"channel":"events","b64data":"!"}`, codes.Error},
+		{"disabled", false, `{"channel":"events","b64data":"!"}`, codes.Unset},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			executor := NewExecutor(n, cfg, nil, ExecutorConfig{Protocol: "consumer", UseOpenTelemetry: tc.enabled})
+			dispatcher := NewDispatcher(NewConsumingHandler(n, executor, ConsumingHandlerConfig{UseOpenTelemetry: tc.enabled}))
+			recorder := tracetest.NewSpanRecorder()
+			provider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorder))
+			defer func() { _ = provider.Shutdown(context.Background()) }()
+
+			ctx, span := provider.Tracer("test").Start(t.Context(), "consume")
+			err := dispatcher.DispatchCommand(ctx, "publish", []byte(tc.payload))
+			span.End()
+			require.NoError(t, err) // Permanent API errors are consumed.
+			spans := recorder.Ended()
+			require.Len(t, spans, 1)
+			require.Equal(t, tc.status, spans[0].Status().Code)
+			if tc.enabled {
+				require.Contains(t, spans[0].Attributes(), attribute.String(brand.Ident()+".channel", "events"))
+			} else {
+				require.Empty(t, spans[0].Attributes())
+			}
+		})
+	}
 }
 
 func TestDispatcherErrorsAfterNodeShutdown(t *testing.T) {

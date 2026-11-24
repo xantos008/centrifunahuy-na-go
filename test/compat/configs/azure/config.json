@@ -1,0 +1,39 @@
+{
+  "client": {
+    "token": {
+      "hmac_secret_key": "compat-test-hmac-secret-not-a-real-secret"
+    },
+    "allowed_origins": [
+      "*"
+    ]
+  },
+  "http_api": {
+    "key": "compat-test-api-key"
+  },
+  "health": {
+    "enabled": true
+  },
+  "channel": {
+    "namespaces": [
+      {
+        "name": "hist",
+        "history_size": 16,
+        "history_ttl": "300s",
+        "allow_subscribe_for_client": true
+      }
+    ]
+  },
+  "consumers": [
+    {
+      "name": "azure_commands",
+      "type": "azure_service_bus",
+      "enabled": true,
+      "azure_service_bus": {
+        "connection_string": "Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;",
+        "queues": [
+          "compat-commands"
+        ]
+      }
+    }
+  ]
+}

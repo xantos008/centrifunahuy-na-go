@@ -18,7 +18,17 @@
     "proxy": {
       "connect": {
         "enabled": true,
-        "endpoint": "grpc://proxyfixture:8081"
+        "endpoint": "grpc://proxyfixture:8081",
+        "grpc_metadata": ["x-compat-connect-marker"],
+        "emulated_headers": ["x-compat-connect-marker"],
+        "grpc": {
+          "credentials_key": "x-compat-connect-credential",
+          "credentials_value": "compat-test-proxy-credential",
+          "compression": true,
+          "static_metadata": {
+            "x-compat-connect-marker": "static"
+          }
+        }
       },
       "refresh": {
         "enabled": true,
@@ -33,9 +43,70 @@
   "health": {
     "enabled": true
   },
+  "shared_poll": {
+    "hmac_secret_key": "compat-test-poll-secret"
+  },
   "uni_http_stream": {
     "enabled": true
   },
+  "uni_grpc": {
+    "enabled": true
+  },
+  "proxies": [
+    {
+      "name": "alternate_sub",
+      "endpoint": "grpc://proxyfixture:8081",
+      "grpc": {
+        "static_metadata": {
+          "x-compat-route": "alternate_sub"
+        }
+      }
+    },
+    {
+      "name": "alternate_pub",
+      "endpoint": "grpc://proxyfixture:8081",
+      "grpc": {
+        "static_metadata": {
+          "x-compat-route": "alternate_pub"
+        }
+      }
+    },
+    {
+      "name": "alternate_rpc",
+      "endpoint": "grpc://proxyfixture:8081",
+      "grpc": {
+        "static_metadata": {
+          "x-compat-route": "alternate_rpc"
+        }
+      }
+    },
+    {
+      "name": "callback_marker",
+      "endpoint": "grpc://proxyfixture:8081",
+      "http_headers": [
+        "x-compat-marker"
+      ],
+      "emulated_headers": [
+        "x-compat-marker"
+      ],
+      "grpc": {
+        "static_metadata": {
+          "x-compat-marker": "static"
+        }
+      }
+    },
+    {
+      "name": "alternate_lease",
+      "endpoint": "grpc://proxyfixture:8081",
+      "timeout": "1s",
+      "include_connection_meta": true,
+      "grpc": {
+        "static_metadata": {
+          "x-compat-route": "alternate_lease"
+        }
+      }
+    }
+  ],
   "rpc": {
     "proxy": {
       "endpoint": "grpc://proxyfixture:8081",
@@ -45,6 +116,16 @@
       {
         "name": "probe",
         "proxy_enabled": true
+      },
+      {
+        "name": "named",
+        "proxy_enabled": true,
+        "proxy_name": "alternate_rpc"
+      },
+      {
+        "name": "marker",
+        "proxy_enabled": true,
+        "proxy_name": "callback_marker"
       }
     ]
   },
@@ -59,6 +140,24 @@
       "sub_refresh": {
         "endpoint": "grpc://proxyfixture:8081",
         "include_connection_meta": true
+      },
+      "subscribe_stream": {
+        "endpoint": "grpc://proxyfixture:8081"
+      },
+      "shared_poll_refresh": {
+        "endpoint": "grpc://proxyfixture:8081"
+      },
+      "map_publish": {
+        "endpoint": "grpc://proxyfixture:8081",
+        "timeout": "4s",
+        "binary_encoding": true,
+        "include_connection_meta": true
+      },
+      "map_remove": {
+        "endpoint": "grpc://proxyfixture:8081",
+        "timeout": "4s",
+        "binary_encoding": true,
+        "include_connection_meta": true
       }
     },
     "without_namespace": {
@@ -70,8 +169,19 @@
     },
     "namespaces": [
       {
+        "name": "poll",
+        "subscription_type": "shared_poll",
+        "allow_subscribe_for_client": true,
+        "shared_poll": {
+          "mode": "versioned",
+          "refresh_interval": "1s",
+          "publish_enabled": true
+        }
+      },
+      {
         "name": "proxied",
         "subscribe_proxy_enabled": true,
+        "allow_user_limited_channels": true,
         "presence": true
       },
       {
@@ -79,6 +189,23 @@
         "subscribe_proxy_enabled": true,
         "sub_refresh_proxy_enabled": true,
         "presence": true
+      },
+      {
+        "name": "named",
+        "subscribe_proxy_enabled": true,
+        "subscribe_proxy_name": "alternate_sub",
+        "publish_proxy_enabled": true,
+        "publish_proxy_name": "alternate_pub",
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "streamuni",
+        "subscribe_stream_proxy_enabled": true
+      },
+      {
+        "name": "streambi",
+        "subscribe_stream_proxy_enabled": true,
+        "subscribe_stream_proxy_bidirectional": true
       },
       {
         "name": "pcache",
@@ -185,11 +312,55 @@
         "allow_subscribe_for_client": true
       },
       {
+        "name": "proxystate",
+        "publish_proxy_enabled": true,
+        "allow_subscribe_for_client": true,
+        "history_size": 8,
+        "history_ttl": "300s",
+        "force_positioning": true,
+        "allowed_delta_types": ["fossil"]
+      },
+      {
         "name": "proxywrite",
         "publish_proxy_enabled": true,
         "allow_subscribe_for_client": true,
         "history_size": 4,
         "history_ttl": "300s"
+      },
+      {
+        "name": "mapproxy",
+        "subscription_type": "map",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "recoverable",
+          "key_ttl": "300s",
+          "stream_size": 16,
+          "stream_ttl": "300s",
+          "publish_proxy_enabled": true,
+          "remove_proxy_enabled": true
+        }
+      },
+      {
+        "name": "pollplain",
+        "subscription_type": "shared_poll",
+        "allow_subscribe_for_client": true,
+        "shared_poll": {
+          "mode": "versionless",
+          "refresh_interval": "1s",
+          "channel_shutdown_delay": "1s"
+        }
+      },
+      {
+        "name": "namedstream",
+        "subscribe_stream_proxy_enabled": true,
+        "subscribe_stream_proxy_name": "alternate_lease"
+      },
+      {
+        "name": "namedlease",
+        "subscribe_proxy_enabled": true,
+        "sub_refresh_proxy_enabled": true,
+        "sub_refresh_proxy_name": "alternate_lease",
+        "presence": true
       }
     ]
   },

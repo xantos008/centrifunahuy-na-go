@@ -17,6 +17,9 @@ import (
 // Engine profiles (docs/plan/phase-2.md). COMPAT_PROFILE selects the one the
 // targets were started with (`make compat-up PROFILE=…`); default "m".
 var profiles = map[string]profileSpec{
+	"azure":    {nodes: 1, backends: []string{"servicebus", "mssql"}, probe: []string{"servicebus"}, noSUTDefault: true},
+	"cloud":    {nodes: 1, backends: []string{"localstack", "pubsub"}, probe: []string{"localstack", "pubsub"}, noSUTDefault: true},
+	"kafka":    {nodes: 1, backends: []string{"kafka"}, probe: []string{"kafka"}, noSUTDefault: true},
 	"m":        {nodes: 1},
 	"r":        {nodes: 2, backends: []string{"redis"}, probe: []string{"redis"}},
 	"r-opt":    {nodes: 1, backends: []string{"redis"}, probe: []string{"redis"}},
@@ -34,8 +37,8 @@ type profileSpec struct {
 	nodes    int      // server nodes per side
 	backends []string // backend hostnames, one service per side ("redis" → redis-ref, redis-sut)
 	probe    []string // CS-ISO-01 probe entry points: nats, postgres, sentinel (writes via the current master), or writable Redis nodes (cluster: any node)
-	// noSUTDefault: sut-default does not run (PG: same table prefix in both
-	// modes, it would join the sut cluster).
+	// noSUTDefault: skip the branding probe where it would share the SUT's
+	// PostgreSQL tables or consume its queue messages.
 	noSUTDefault bool
 	// outbox: delivery is asynchronous (PG broker outbox worker), so a
 	// subscriber that arrives right after a publish may get it as a push.

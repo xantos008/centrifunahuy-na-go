@@ -12,7 +12,7 @@ Delegate routine implementation following an established pattern, test execution
 
 ## Local Git and handoff
 
-Local branches, commits and merges are authorized. Check branch ancestry before merging or branching. Integrate each verified stage into local `main` and track phase acceptance criteria separately from local and remote merge status. A single PR can complete a stage within a phase. Close a numbered phase only after all acceptance checks in its phase plan pass and the complete phase is merged into `main`.
+Local branches, commits and merges are authorized. Check branch ancestry before merging or branching. Use one local integration branch for each numbered phase. Test each substep before committing it on the phase branch or merging it from a local working branch. Keep substep integration local to the phase branch. Each numbered phase reaches `main` through a single PR for the entire phase, opened after all acceptance checks in the phase plan pass. Track phase acceptance criteria separately from local and remote merge status. Close the phase after the complete phase is merged into `main`.
 
 The user handles pushes and remote pull requests unless they explicitly delegate publication for a branch. For a user-owned remote merge, provide the publication handoff and wait for the merge. For a delegated merge, verify the CI results for the exact PR head before merging. Confirm the phase is in `origin/main` and synchronize local `main` with `origin/main` before starting the next numbered phase branch. Always branch the next numbered phase from that synchronized `main`. If a later phase branch already descends from an earlier phase branch, preserve its commits and specify the order in which the PRs should reach remote `main`.
 

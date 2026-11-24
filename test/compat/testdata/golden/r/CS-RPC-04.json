@@ -1,0 +1,254 @@
+{
+  "events": [
+    {
+      "kind": "note",
+      "text": "stop node-b"
+    },
+    {
+      "kind": "note",
+      "text": "run node-b with configs/r-concurrent"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 25,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 25,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "rpc": {
+          "method": "wait_http:hold"
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "rpc": {
+          "data": {
+            "client": "<client:2>"
+          },
+          "method": "wait_http:started"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "rpc": {
+          "data": true
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "closed peer with RPC pending"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "rpc": {
+          "data": {
+            "client": "<client:2>"
+          },
+          "method": "wait_http:was-canceled"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "rpc": {
+          "data": true
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:3>",
+          "ping": 25,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:4>",
+          "ping": 25,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "rpc": {
+          "method": "wait_grpc:hold"
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "rpc": {
+          "data": {
+            "client": "<client:4>"
+          },
+          "method": "wait_grpc:started"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "rpc": {
+          "data": true
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "closed peer with RPC pending"
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "rpc": {
+          "data": {
+            "client": "<client:4>"
+          },
+          "method": "wait_grpc:was-canceled"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "rpc": {
+          "data": true
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "note",
+      "text": "remove node-b copy"
+    },
+    {
+      "kind": "note",
+      "text": "start node-b"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    },
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node b"
+    },
+    {
+      "kind": "note",
+      "text": "info: 2 nodes"
+    },
+    {
+      "kind": "note",
+      "text": "node a"
+    }
+  ]
+}

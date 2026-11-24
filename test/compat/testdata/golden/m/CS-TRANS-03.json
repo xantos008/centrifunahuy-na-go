@@ -1,0 +1,62 @@
+{
+  "events": [
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.unistream.CentrifugoUniStream/Consume",
+      "body": {
+        "token": "<token:1>"
+      }
+    },
+    {
+      "kind": "grpc_push",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 25,
+          "session": "<session:1>",
+          "subs": {
+            "pub:uni-grpc-RUN": {}
+          },
+          "version": "<version:1>"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/publish",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_push",
+      "body": {
+        "channel": "pub:uni-grpc-RUN",
+        "pub": {
+          "data": "AP8BgA=="
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/disconnect",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_push",
+      "body": {
+        "disconnect": {
+          "code": 4001,
+          "reason": "test complete"
+        }
+      }
+    },
+    {
+      "kind": "grpc_eof"
+    }
+  ]
+}

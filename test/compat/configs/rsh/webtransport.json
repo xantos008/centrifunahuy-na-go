@@ -1,0 +1,23 @@
+{
+  "http_server": {
+    "internal_port": 8001,
+    "tls_external": true,
+    "tls": {
+      "enabled": true,
+      "cert_pem": "/etc/compat/tls/server.crt",
+      "key_pem": "/etc/compat/tls/server.key"
+    },
+    "http3": {"enabled": true}
+  },
+  "health": {"enabled": true},
+  "webtransport": {"enabled": true},
+  "client": {
+    "allowed_origins": ["*"],
+    "token": {"hmac_secret_key": "compat-test-hmac-secret-not-a-real-secret"}
+  },
+  "channel": {
+    "namespaces": [
+      {"name": "feed", "allow_subscribe_for_client": true, "allow_publish_for_client": true}
+    ]
+  }
+}

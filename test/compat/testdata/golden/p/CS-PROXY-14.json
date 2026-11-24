@@ -1,0 +1,64 @@
+{
+  "events": [
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.unistream.CentrifugoUniStream/Consume",
+      "body": {
+        "token": "<token:1>"
+      }
+    },
+    {
+      "kind": "grpc_push",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 25,
+          "session": "<session:1>",
+          "version": "<version:1>"
+        }
+      }
+    },
+    {
+      "kind": "grpc_send",
+      "text": "/centrifugal.centrifugo.unistream.CentrifugoUniStream/Consume",
+      "body": {
+        "headers": {
+          "x-compat-connect-marker": "frame"
+        },
+        "name": "proxy-metadata"
+      }
+    },
+    {
+      "kind": "grpc_push",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "data": "eyJ0cmFuc3BvcnQiOiJodHRwIiwibWFya2VycyI6WyJ0cmFuc3BvcnQtZmlyc3QiLCJ0cmFuc3BvcnQtc2Vjb25kIl0sInVubGlzdGVkIjpmYWxzZSwiY3JlZGVudGlhbCI6ZmFsc2UsImd6aXAiOmZhbHNlfQ==",
+          "ping": 25,
+          "session": "<session:2>",
+          "version": "<version:1>"
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/disconnect",
+      "status": 200,
+      "body": {
+        "result": {}
+      }
+    },
+    {
+      "kind": "grpc_push",
+      "body": {
+        "disconnect": {
+          "code": 4001,
+          "reason": "test complete"
+        }
+      }
+    },
+    {
+      "kind": "grpc_eof"
+    }
+  ]
+}

@@ -126,12 +126,37 @@
         "history_size": 10,
         "history_ttl": "300s",
         "allow_subscribe_for_client": true
+      },
+      {
+        "name": "board",
+        "subscription_type": "map",
+        "allow_subscribe_for_client": true,
+        "map": {
+          "mode": "recoverable",
+          "key_ttl": "300s",
+          "stream_size": 16,
+          "stream_ttl": "300s",
+          "min_page_size": 1
+        }
       }
     ]
   },
   "prometheus": {
     "enabled": true
   },
+  "consumers": [
+    {
+      "name": "app_outbox",
+      "enabled": true,
+      "type": "postgresql",
+      "postgresql": {
+        "dsn": "postgres://compat:compat-test-pg-password@postgres:5432/compat?sslmode=disable",
+        "outbox_table_name": "compat_consumer_outbox",
+        "num_partitions": 1,
+        "partition_poll_interval": "250ms"
+      }
+    }
+  ],
   "broker": {
     "enabled": true,
     "type": "postgres",
@@ -139,6 +164,12 @@
       "dsn": "postgres://compat:compat-test-pg-password@postgres:5432/compat?sslmode=disable",
       "use_notify": true,
       "cleanup_interval": "1s"
+    }
+  },
+  "map_broker": {
+    "type": "postgres",
+    "postgres": {
+      "dsn": "postgres://compat:compat-test-pg-password@postgres:5432/compat?sslmode=disable"
     }
   },
   "controller": {

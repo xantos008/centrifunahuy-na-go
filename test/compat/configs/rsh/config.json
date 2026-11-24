@@ -18,6 +18,17 @@
   "http_api": {
     "key": "compat-test-api-key"
   },
+  "grpc_api": {
+    "enabled": true,
+    "key": "compat-test-api-key",
+    "reflection": true,
+    "error_mode": "transport",
+    "tls": {
+      "enabled": true,
+      "cert_pem": "/etc/compat/tls/server.crt",
+      "key_pem": "/etc/compat/tls/server.key"
+    }
+  },
   "health": {
     "enabled": true
   },

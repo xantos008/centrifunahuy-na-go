@@ -105,14 +105,17 @@ type WS struct {
 }
 
 // Dial opens a JSON-protocol WebSocket connection.
-func (s *Session) Dial() *WS { return s.dial(jsonCodec{}) }
+func (s *Session) Dial() *WS { return s.DialWithHeaders(nil) }
+
+// DialWithHeaders adds transport headers to the JSON WebSocket handshake.
+func (s *Session) DialWithHeaders(headers http.Header) *WS { return s.dial(jsonCodec{}, headers) }
 
 // DialProtobuf opens a Protobuf-protocol WebSocket connection.
-func (s *Session) DialProtobuf() *WS { return s.dial(protobufCodec{}) }
+func (s *Session) DialProtobuf() *WS { return s.dial(protobufCodec{}, nil) }
 
-func (s *Session) dial(c codec) *WS {
+func (s *Session) dial(c codec, headers http.Header) *WS {
 	s.T.Helper()
-	return s.dialURL(s.Target.WSURL()+c.query(), c)
+	return s.dialURL(s.Target.WSURL()+c.query(), c, headers)
 }
 
 // DialUniWS supplies the connect request in cf_connect or the first text frame.
@@ -126,7 +129,7 @@ func (s *Session) DialUniWS(request string, inQuery bool) *WS {
 	} else {
 		s.tr.add(Event{Kind: "ws_connect", Text: path})
 	}
-	ws := s.dialURL(endpoint, jsonCodec{})
+	ws := s.dialURL(endpoint, jsonCodec{}, nil)
 	ws.uni = true
 	if !inQuery {
 		ws.Send(request)
@@ -134,9 +137,9 @@ func (s *Session) DialUniWS(request string, inQuery bool) *WS {
 	return ws
 }
 
-func (s *Session) dialURL(endpoint string, c codec) *WS {
+func (s *Session) dialURL(endpoint string, c codec, headers http.Header) *WS {
 	s.T.Helper()
-	conn, resp, err := websocket.DefaultDialer.Dial(endpoint, nil)
+	conn, resp, err := websocket.DefaultDialer.Dial(endpoint, headers)
 	if resp != nil && resp.Body != nil {
 		_ = resp.Body.Close()
 	}

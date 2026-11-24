@@ -87,6 +87,20 @@ Phase 2, step 2.10: the centrifuge library's own test-only modules (e.g. `github
 
 CI action added in step 2.10: `actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9` (v7.0.2, tag SHA from `git ls-remote` on 2026-11-16), library job results only.
 
+### Phase 3 consumer test images
+
+The compatibility suite starts queue providers in a dedicated Compose project. Each reference and Cedrazeka instance has its own network and data store.
+
+| Profile | Image | Pinned manifest |
+|---|---|---|
+| cloud, Pub/Sub | `gcr.io/google.com/cloudsdktool/google-cloud-cli:572.0.0-emulators` | `sha256:727bf8869594d039959bddce6727aae1ea0fd464f3e5b31df55ab6fbb8e687c5` |
+| cloud, SQS | `localstack/localstack:4.14` | `sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a` |
+| kafka | `confluentinc/cp-kafka:8.0.0` | `sha256:9cdc8119cb39c45f0efa6da8e2220058020c7433e3ba3a3ce11a8006a18cb336` |
+| azure, Service Bus | `mcr.microsoft.com/azure-messaging/servicebus-emulator` | `sha256:5a96d893b245031740f7d46e0fe5ff282d24b78c4b7d761dd57590f3f010a9b3` |
+| azure, SQL Server | `mcr.microsoft.com/mssql/server:2022-latest` (linux/amd64) | `sha256:4525e3efac9f3e241cb003bb2ff2a82818b502f37e12049d788b1a9fa7e13b7f` |
+
+The opt-in Azure profile requires operator acceptance of the Microsoft terms for both images. SQL Server uses Developer edition and a new password for each local run.
+
 ## Shared project skills
 
 The instructions live in `.claude/skills/`. Each corresponding directory in `.agents/skills/` is a relative symlink for Codex discovery. ADR-0026 continues to govern project-local tooling. These instructions are authored in this repository and have no executable hooks, credentials, network permissions, or third-party packages.

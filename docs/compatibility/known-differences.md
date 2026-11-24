@@ -20,6 +20,13 @@ Status values:
 | KD-07 | Redis `history_use_lists` (deprecated upstream) | Deprecated; limitations differ between docs and code (INFRA-CONFLICT-04) | inherited, deprecated, not recommended (D2-4; CS-HIST-01 on `r-lists` confirms forward order for `reverse: true`) |
 | KD-08 | Bidirectional gRPC client transport | Does not exist upstream; the user declined it | accepted (DEC-03, ADR-0021) |
 
+## Transport behavior
+
+| ID | Upstream observation | Cedrazeka behavior | Status |
+|---|---|---|---|
+| KD-09 | The WebTransport listener with a static certificate rejects HTTP/3 negotiation with TLS alert 120. | Both naming modes negotiate `h3` and serve the client stream. CS-TRANS-06 checks each side of the difference. | Accepted by [ADR-0031](../architecture/adr/0031-webtransport-http3-alpn.md). |
+| KD-18 | The unidirectional WebSocket handler can terminate the server after accepting an HTTP/2 connection. | The connection loop keeps the HTTP/2 request alive and delivers the initial connect push. | Accepted by [ADR-0032](../architecture/adr/0032-unidirectional-websocket-http2.md). |
+
 ## Same feature, different internals (not observable through public APIs)
 
 | # | Item | Difference | Status |

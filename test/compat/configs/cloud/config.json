@@ -1,0 +1,50 @@
+{
+  "client": {
+    "token": {"hmac_secret_key": "compat-test-hmac-secret-not-a-real-secret"},
+    "allowed_origins": ["*"]
+  },
+  "http_api": {"key": "compat-test-api-key"},
+  "health": {"enabled": true},
+  "channel": {
+    "namespaces": [
+      {"name": "hist", "history_size": 16, "history_ttl": "300s", "allow_subscribe_for_client": true}
+    ]
+  },
+  "consumers": [
+    {
+      "name": "sqs_direct",
+      "type": "aws_sqs",
+      "enabled": true,
+      "aws_sqs": {
+        "region": "us-east-1",
+        "localstack_endpoint": "http://localstack:4566",
+        "queues": ["http://localstack:4566/000000000000/compat-direct"],
+        "wait_time_time": "1s",
+        "visibility_timeout": "5s"
+      }
+    },
+    {
+      "name": "sqs_sns",
+      "type": "aws_sqs",
+      "enabled": true,
+      "aws_sqs": {
+        "region": "us-east-1",
+        "localstack_endpoint": "http://localstack:4566",
+        "queues": ["http://localstack:4566/000000000000/compat-sns"],
+        "sns_envelope": true,
+        "wait_time_time": "1s",
+        "visibility_timeout": "5s"
+      }
+    },
+    {
+      "name": "gpubsub",
+      "type": "google_pub_sub",
+      "enabled": true,
+      "google_pub_sub": {
+        "project_id": "compat-project",
+        "subscriptions": ["compat-sub"],
+        "max_outstanding_messages": 1
+      }
+    }
+  ]
+}

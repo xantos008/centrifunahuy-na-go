@@ -1,0 +1,25 @@
+{
+  "client": {
+    "allowed_origins": ["*"],
+    "token": {"hmac_secret_key": "compat-test-hmac-secret-not-a-real-secret"},
+    "subscribe_to_user_personal_channel": {
+      "enabled": true,
+      "single_connection": true
+    }
+  },
+  "channel": {
+    "without_namespace": {
+      "presence": true,
+      "allow_user_limited_channels": true
+    }
+  },
+  "http_api": {"key": "compat-test-api-key"},
+  "health": {"enabled": true},
+  "engine": {
+    "type": "redis",
+    "redis": {
+      "address": ["redis://compat:compat-test-redis-password@redis:6379"],
+      "presence_ttl": "5s"
+    }
+  }
+}

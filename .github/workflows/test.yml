@@ -147,7 +147,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        profile: [m, r, r-opt, r-lists, rs, rc, rsh, n, n-raw, p, p-notify]
+        profile: [m, r, r-opt, r-lists, rs, rc, rsh, n, n-raw, p, p-notify, cloud, kafka]
     env:
       PROFILE: ${{ matrix.profile }}
     steps:

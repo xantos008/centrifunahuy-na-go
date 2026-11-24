@@ -665,6 +665,9 @@ func (a *App) buildHTTPServers() error {
 		}
 
 		useHTTP3 := cfg.HTTP.HTTP3.Enabled && addr == externalAddr
+		if useHTTP3 && addrTLSConfig == nil {
+			return logFatal(nil, "HTTP/3 requires TLS configured")
+		}
 		useWebtransport := useHTTP3 && handlerFlags&HandlerWebtransport != 0
 
 		var wtServer *webtransport.Server
@@ -691,6 +694,9 @@ func (a *App) buildHTTPServers() error {
 				Handler:   mux,
 			}
 			if useWebtransport {
+				// WebTransport opens its own QUIC listener. Give it the
+				// HTTP/3 ALPN configuration before starting that listener.
+				h3Server.TLSConfig = http3.ConfigureTLSConfig(addrTLSConfig)
 				webtransport.ConfigureHTTP3Server(h3Server)
 				wtServer.H3 = h3Server
 			}
@@ -743,9 +749,6 @@ func (a *App) buildHTTPServers() error {
 		a.httpServers = append(a.httpServers, hs)
 
 		if useHTTP3 {
-			if addrTLSConfig == nil {
-				return logFatal(nil, "HTTP/3 requires TLS configured")
-			}
 			if cfg.HTTP.TLSAutocert.Enabled {
 				return logFatal(nil, "can not use HTTP/3 with autocert")
 			}

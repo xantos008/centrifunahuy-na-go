@@ -179,13 +179,17 @@ func TestCS_PUB_07(t *testing.T) {
 			return fmt.Sprintf(`SELECT out_channel_offset FROM %s(p_channel := '%s', p_data := '%s'%s)`, fn, ch, data, extra)
 		}
 		ws := subscribeOn(s, fmt.Sprintf(`{"channel":%q}`, ch))
+		// Docker/SQL can take longer than the client's pong window. Keep the
+		// reader active throughout each transaction and preserve event order.
+		first := ws.CaptureUntil(`"pub"`, 3*h.Deadline)
 		s.SQL(`CREATE TABLE IF NOT EXISTS app_orders (id bigint)`)
 
 		s.SQL(`BEGIN`, `INSERT INTO app_orders VALUES (1)`, pub("cf_stream_publish", `{"n":1}`, ""), `COMMIT`)
-		ws.Next()
+		first()
+		next := ws.CaptureUntil(`"pub"`, 3*h.Deadline)
 		s.SQL(`BEGIN`, `INSERT INTO app_orders VALUES (2)`, pub("cf_stream_publish", `{"n":2}`, ""), `ROLLBACK`)
 		s.API(h.APIRequest{Path: "/api/publish", Body: fmt.Sprintf(`{"channel":%q,"data":{"n":3}}`, ch)})
-		ws.Next() // n=3 directly after n=1: the rolled-back publication never arrives
+		next() // n=3 directly after n=1: the rolled-back publication never arrives
 
 		finish := ws.CaptureUntil(`"marker"`, 3*h.Deadline)
 		withKey := `, p_idempotency_key := 'k1'`

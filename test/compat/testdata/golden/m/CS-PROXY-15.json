@@ -1,0 +1,341 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "proxystate:document-RUN",
+          "delta": "fossil"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "delta": true,
+          "epoch": "<epoch:1>",
+          "positioned": true
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "publish": {
+          "channel": "proxystate:document-RUN",
+          "data": {
+            "epoch": "<epoch:2>",
+            "key": "",
+            "revision": 1,
+            "sequence": 1,
+            "text": "A sample document with a stable paragraph and a small revision."
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "publish": {
+          "channel": "proxystate:document-RUN",
+          "data": {
+            "epoch": "<epoch:2>",
+            "key": "",
+            "revision": 2,
+            "sequence": 2,
+            "text": "A sample document with a stable paragraph and a small revision."
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 3,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "publish": {
+          "channel": "proxystate:document-RUN",
+          "data": {
+            "epoch": "<epoch:2>",
+            "key": "",
+            "revision": 1,
+            "sequence": 3,
+            "text": "A sample document with a stable paragraph and a small revision."
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 4,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 5,
+        "publish": {
+          "channel": "proxystate:document-RUN",
+          "data": {
+            "epoch": "<epoch:3>",
+            "key": "",
+            "revision": 1,
+            "sequence": 4,
+            "text": "A sample document with a stable paragraph and a small revision."
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 5,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 6,
+        "publish": {
+          "channel": "proxystate:document-RUN",
+          "data": {
+            "epoch": "<epoch:4>",
+            "key": "same",
+            "revision": 0,
+            "sequence": 5,
+            "text": "A sample document with a stable paragraph and a small revision."
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 6,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 7,
+        "publish": {
+          "channel": "proxystate:document-RUN",
+          "data": {
+            "epoch": "<epoch:4>",
+            "key": "same",
+            "revision": 0,
+            "sequence": 6,
+            "text": "A sample document with a stable paragraph and a small revision."
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 7,
+        "publish": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "proxystate:document-RUN",
+          "pub": {
+            "data": "{\"revision\":1,\"epoch\":\"first\",\"key\":\"\",\"sequence\":1,\"text\":\"A sample document with a stable paragraph and a small revision.\"}",
+            "info": {
+              "client": "<client:2>",
+              "user": "proxy-user"
+            },
+            "offset": 1
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "proxystate:document-RUN",
+          "pub": {
+            "data": "1y\nD:{\"revision\":2a@D,1:21A@o,1Wxrno;",
+            "delta": true,
+            "info": {
+              "client": "<client:2>",
+              "user": "proxy-user"
+            },
+            "offset": 2
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "proxystate:document-RUN",
+          "pub": {
+            "data": "1z\nT:{\"revision\":1,\"epoch\":\"secondM@S,1:41A@o,3w1D3u;",
+            "delta": true,
+            "info": {
+              "client": "<client:2>",
+              "user": "proxy-user"
+            },
+            "offset": 3
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "proxystate:document-RUN",
+          "pub": {
+            "data": "1x\nD:{\"revision\":0A@D,R:\",\"key\":\"same\",\"sequence\":51A@p,18VId4;",
+            "delta": true,
+            "info": {
+              "client": "<client:2>",
+              "user": "proxy-user"
+            },
+            "offset": 4
+          }
+        }
+      }
+    },
+    {
+      "kind": "http",
+      "text": "POST /api/history",
+      "status": 200,
+      "body": {
+        "result": {
+          "epoch": "<epoch:1>",
+          "offset": 4,
+          "publications": [
+            {
+              "data": {
+                "epoch": "<epoch:2>",
+                "key": "",
+                "revision": 1,
+                "sequence": 1,
+                "text": "A sample document with a stable paragraph and a small revision."
+              },
+              "info": {
+                "client": "<client:2>",
+                "user": "proxy-user"
+              },
+              "offset": 1
+            },
+            {
+              "data": {
+                "epoch": "<epoch:2>",
+                "key": "",
+                "revision": 2,
+                "sequence": 2,
+                "text": "A sample document with a stable paragraph and a small revision."
+              },
+              "info": {
+                "client": "<client:2>",
+                "user": "proxy-user"
+              },
+              "offset": 2
+            },
+            {
+              "data": {
+                "epoch": "<epoch:3>",
+                "key": "",
+                "revision": 1,
+                "sequence": 4,
+                "text": "A sample document with a stable paragraph and a small revision."
+              },
+              "info": {
+                "client": "<client:2>",
+                "user": "proxy-user"
+              },
+              "offset": 3
+            },
+            {
+              "data": {
+                "epoch": "<epoch:4>",
+                "key": "same",
+                "revision": 0,
+                "sequence": 5,
+                "text": "A sample document with a stable paragraph and a small revision."
+              },
+              "info": {
+                "client": "<client:2>",
+                "user": "proxy-user"
+              },
+              "offset": 4
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

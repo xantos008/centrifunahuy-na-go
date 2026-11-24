@@ -3,11 +3,13 @@ package harness
 import (
 	"context"
 	"encoding/json"
+	"path/filepath"
 	"strings"
 
 	"github.com/xantos008/centrifunahuy-na-go/internal/apiproto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -15,19 +17,35 @@ import (
 	"google.golang.org/protobuf/reflect/protoregistry"
 )
 
-// GRPC opens the side's server API. The concrete generated messages encode
-// the HTTP fixtures' application JSON fields as raw protobuf bytes.
-func (s *Session) GRPC() func(method, body string, authenticated bool, want codes.Code) {
+// GRPCConn opens the side's server API using the listener settings for the profile.
+func (s *Session) GRPCConn() *grpc.ClientConn {
 	s.T.Helper()
 	addr := envOr("COMPAT_REF_GRPC_ADDR", "127.0.0.1:18010")
 	if s.Target.Name == "sut" {
 		addr = envOr("COMPAT_SUT_GRPC_ADDR", "127.0.0.1:28010")
 	}
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	creds := insecure.NewCredentials()
+	if Profile() == "rsh" {
+		dir := filepath.Dir(envOr("COMPAT_COMPOSE_FILE", "../docker-compose.yml"))
+		tlsCreds, err := credentials.NewClientTLSFromFile(filepath.Join(dir, "configs", "rsh", "tls", "ca.crt"), "")
+		if err != nil {
+			s.T.Fatal(err)
+		}
+		creds = tlsCreds
+	}
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		s.T.Fatal(err)
 	}
 	s.T.Cleanup(func() { _ = conn.Close() })
+	return conn
+}
+
+// GRPC opens the side's server API. The concrete generated messages encode
+// the HTTP fixtures' application JSON fields as raw protobuf bytes.
+func (s *Session) GRPC() func(method, body string, authenticated bool, want codes.Code) {
+	s.T.Helper()
+	conn := s.GRPCConn()
 	service := apiproto.File_api_proto.Services().ByName("CentrifugoApi")
 	methods := make(map[string]protoreflect.MethodDescriptor)
 	for i := 0; i < service.Methods().Len(); i++ {

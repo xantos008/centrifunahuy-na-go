@@ -1,0 +1,30 @@
+{
+  "events": [
+    {
+      "kind": "h2_websocket_handshake",
+      "text": "/connection/websocket",
+      "status": 200
+    },
+    {
+      "kind": "h2_websocket_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "h2_websocket_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 25,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    }
+  ]
+}

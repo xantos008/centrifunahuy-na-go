@@ -1,0 +1,103 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "hist:consumed-RUN"
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {}
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:consumed-RUN",
+          "pub": {
+            "data": {
+              "n": 1
+            },
+            "epoch": "<epoch:1>",
+            "offset": 1
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "consumer acknowledged method field"
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:consumed-RUN",
+          "pub": {
+            "data": {
+              "n": 2
+            },
+            "offset": 2
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "consumer acknowledged command envelope"
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "hist:consumed-RUN",
+          "pub": {
+            "data": {
+              "n": 3
+            },
+            "offset": 3,
+            "tags": {
+              "source": "queue"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "note",
+      "text": "consumer acknowledged publication data"
+    },
+    {
+      "kind": "note",
+      "text": "failed publication pending after redelivery"
+    }
+  ]
+}

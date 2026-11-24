@@ -111,6 +111,8 @@ Work in small, reviewable vertical slices:
 
 Do not start all modules in parallel. Establish stable contracts and tests before adding adapters and advanced modules.
 
+Integrate verified substeps on one local branch per numbered phase. Submit one PR to `main` for the complete phase after its acceptance checks pass. See [Local Git and handoff](AGENTS.md#local-git-and-handoff) for publication and merge rules.
+
 ## Required outputs
 
 Maintain:

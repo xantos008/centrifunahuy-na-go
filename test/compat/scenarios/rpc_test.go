@@ -103,3 +103,25 @@ func TestCS_RPC_03(t *testing.T) {
 		}
 	})
 }
+
+func TestCS_RPC_05(t *testing.T) {
+	h.Profiles(t, "r")
+	h.Run(t, "CS-RPC-05", func(s *h.Session) {
+		restore := s.ReplaceB("r-concurrent")
+		defer func() {
+			restore()
+			startB(s)
+		}()
+		s.OnB(func() {
+			ws := connect(s, h.HS256(h.Claims{Sub: "proxy-user"}))
+			ws.Send(`{"id":2,"rpc":{"method":"echo","data":{"unqualified":true}}}`)
+			ws.Recv(1)
+			var reply protocol.Reply
+			ws.Last(&reply)
+			if reply.Id != 2 || reply.Error != nil || string(reply.GetRpc().GetData()) != `{"unqualified":true}` {
+				s.T.Fatalf("unqualified RPC callback returned %v", &reply)
+			}
+			ws.Close()
+		})
+	})
+}

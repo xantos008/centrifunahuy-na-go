@@ -1,0 +1,193 @@
+{
+  "events": [
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:1>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "connect": {
+          "token": "<token:2>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "connect": {
+          "client": "<client:2>",
+          "ping": 2,
+          "pong": true,
+          "version": "<version:1>"
+        },
+        "id": 1
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "channel": "mapproxy:callbacks-RUN",
+          "phase": 2,
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "id": 2,
+        "subscribe": {
+          "epoch": "<epoch:1>",
+          "recoverable": true,
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 2,
+        "publish": {
+          "channel": "mapproxy:callbacks-RUN",
+          "data": "client",
+          "key": "denied",
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 470,
+          "message": "fixture denied"
+        },
+        "id": 2
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 3,
+        "publish": {
+          "channel": "mapproxy:callbacks-RUN",
+          "data": "client",
+          "key": "input",
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        },
+        "id": 3
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "mapproxy:callbacks-RUN",
+          "pub": {
+            "data": "callback",
+            "epoch": "<epoch:1>",
+            "info": {
+              "client": "<client:2>",
+              "user": "map-writer"
+            },
+            "key": "stored",
+            "offset": 1,
+            "tags": {
+              "action": "put"
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 4,
+        "publish": {
+          "channel": "mapproxy:callbacks-RUN",
+          "key": "denied",
+          "removed": true,
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 470,
+          "message": "fixture denied"
+        },
+        "id": 4
+      }
+    },
+    {
+      "kind": "ws_send",
+      "body": {
+        "id": 5,
+        "publish": {
+          "channel": "mapproxy:callbacks-RUN",
+          "key": "input",
+          "removed": true,
+          "type": 1
+        }
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "error": {
+          "code": 107,
+          "message": "bad request"
+        },
+        "id": 5
+      }
+    },
+    {
+      "kind": "ws_recv",
+      "body": {
+        "push": {
+          "channel": "mapproxy:callbacks-RUN",
+          "pub": {
+            "key": "stored",
+            "offset": 2,
+            "removed": true,
+            "tags": {
+              "action": "remove"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
