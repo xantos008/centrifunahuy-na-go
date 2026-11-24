@@ -149,11 +149,13 @@
       },
       "map_publish": {
         "endpoint": "grpc://proxyfixture:8081",
+        "timeout": "4s",
         "binary_encoding": true,
         "include_connection_meta": true
       },
       "map_remove": {
         "endpoint": "grpc://proxyfixture:8081",
+        "timeout": "4s",
         "binary_encoding": true,
         "include_connection_meta": true
       }
